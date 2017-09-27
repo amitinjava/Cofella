@@ -39,7 +39,7 @@ body {
 
 a:hover, a:focus{outline:none !important;}
 .body-container{height: 100%; position:relative;}
-.sidebar_menu{position:fixed; left:0; top:0; bottom:0; width:50px; background:#414142; padding:0 0 60px; z-index:999;}
+.sidebar_menu{position:fixed; left:0; top:0; bottom:0; width:150px; background:#414142; padding:0 0 60px; z-index:999;}
 .sidebar_menu_list{margin:0; padding:0; list-style:none; display:block; height:100%; overflow:auto;}
 .sidebar_menu_list .menu_icon{display:block; height:50px; width:100%; background-color:transparent; background-position:center center; background-repeat:no-repeat; text-indent:-99px; -webkit-transition: all 0.3s ease-in; -moz-transition: all 0.3s ease-in; -ms-transition: all 0.3s ease-in; -o-transition: all 0.3s ease-in; transition: all 0.3s ease-in;}
 .sidebar_menu_list .menu_icon.dashboard{background-image:url(../images/dashboard_active.png);}

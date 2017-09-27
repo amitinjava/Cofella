@@ -64,9 +64,9 @@
         <li><a href="#" class="menu_icon dashboard" data-toggle="tooltip" data-placement="right" title="Dashboard">Dashboard</a></li>
         <li><a href="#" class="menu_icon pointer" data-open="#pickerContainer" data-toggle="tooltip" data-placement="right" title="Picker">Picker</a></li>
         <li><a href="#" class="menu_icon pen" data-toggle="tooltip" data-placement="right" title="Pen Tool" id="pencilButton" onclick = "setId(4,true)">Pen Tool</a></li>
-        <li><a href="#" class="menu_icon pintool" data-toggle="tooltip" data-placement="right" title="Pin Tool" onclick = "setId(4,true)">Pin Tool</a></li>
+        <!-- <li><a href="#" class="menu_icon pintool" data-toggle="tooltip" data-placement="right" title="Pin Tool" onclick = "setId(4,true)">Pin Tool</a></li> -->
        <!--  <li><a href="#" class="menu_icon texttool" data-toggle="tooltip" data-placement="right" title="Text Tool">Text Tool</a></li> -->
-       <li><button id="editorButton" type="button" class="btn btn-default" onclick = "setId(16,true)" ><a href="javascript:void(0)" class="switchContent" data-toggle="tooltip" data-placement="bottom" title="Text Editor"><i class="fa fa-font fa-lg"></i></a></button></li>
+      <!--  <li><button id="editorButton" type="button" class="btn btn-default" onclick = "setId(16,true)" ><a href="javascript:void(0)" class="switchContent" data-toggle="tooltip" data-placement="bottom" title="Text Editor"><i class="fa fa-font fa-lg"></i></a></button></li> -->
         <li><div class="btn-group">
 					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
 						<a><i data-toggle="tooltip" data-placement="bottom" title="Shape Tool"></i><span id="closedShape" >Shapes</span><span class="caret"></span></a>
@@ -86,6 +86,55 @@
 							 </li>
 						</ul>
 				</div></li>
+		 <li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(1,true)" class="switchContent">Rectangle</a>
+					</button>		
+				</div></li>
+		 <li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(23,true)" class="switchContent">Square</a>
+					</button>		
+				</div></li>
+				
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(3,true)" class="switchContent">Line</a>
+					</button>		
+				</div></li>
+				
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(2,true)" class="switchContent">Oval</a>
+					</button>		
+				</div></li>
+		
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(5,true)" class="switchContent">Triangle (free form)</a>
+					</button>		
+				</div></li>
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(12,true)" class="switchContent">Circle</a>
+					</button>		
+				</div></li>
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(13,true)" class="switchContent">Triangle (equilateral)</a>
+					</button>		
+				</div></li>
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(6,true)" class="switchContent">Arrow</a>
+					</button>		
+				</div></li>
+		<li><div class="btn-group">
+					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
+						<a href="#toolOptions" onclick = "setId(11,true)" class="switchContent">Arc</a>
+					</button>		
+				</div></li>
+		
         <li><a href="#" class="menu_icon pages" data-toggle="tooltip" data-placement="right" title="Pages">Pages</a></li>
         <li><a href="#" class="menu_icon links" data-open="#historyContainer" data-toggle="tooltip" data-placement="right" title="Links">Links</a></li>
         <li><a href="#" class="menu_icon time" data-toggle="tooltip" data-placement="right" title="Time">Time</a></li>

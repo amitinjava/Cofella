@@ -106,7 +106,7 @@
 	var keyDownInTxtField = false;
 	
 	jQuery(document).ready(function(){
-		alert("ready")
+		//alert("ready")
 		/*
 		var windowW = window.innerWidth;
 		var windowH = window.innerHeight;
@@ -187,7 +187,7 @@
 
 		canvas.addEventListener("touchstart", function (evt) {
 			var touch = evt.changedTouches[0];
-			alert("touch :: "+touch)
+			//alert("touch :: "+touch)
 			//console.log("Touch Start------------------"+touch.clientX+"::Y::"+touch.clientY);
 			evt.preventDefault();
 			dragFlag = true;
@@ -710,7 +710,7 @@ function setId(id,state){
 		  break;
 		  case 4:
 				var obj = document.getElementById("pencilButton");
-				alert("111 ::"+prevSelButtonObj)
+				//alert("111 ::"+prevSelButtonObj)
 				prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
@@ -1060,7 +1060,7 @@ function handleZoomButton(state){
 function initPlayer(){
 
 	myVid = document.getElementById("audio1");
-	alert(myVid)
+	//alert(myVid)
 	myVid.addEventListener("canplay", function(_event) {
 	//console.log("Can play listener works here ::playingFrom ::"+playingFrom + ":::isPlayingStoped++"+isPlayingStoped);
 	//currentObjId = 7;
@@ -1636,7 +1636,7 @@ function handleMouseUp(e) {
 	var mouseX = parseInt(e.clientX - offsetX);
 	var mouseY = parseInt(e.clientY - offsetY);
 	console.log("handleMouseUp:::"+currentObjId);
-	alert("isDrawing :: "+isDrawing);
+	//alert("isDrawing :: "+isDrawing);
 	if(isDrawing){
 		var tempPointsArray = new Array();
 		if(currentObjId == 4){
@@ -6573,7 +6573,7 @@ function setFilledColor(obj){
 }
 
 function setTextStyleColor(obj){
-	alert("obj "+obj);
+	//alert("obj "+obj);
 	textStyleColor= obj.value;
 	//alert("textStyleColor:;"+textStyleColor);
 	document.getElementById("area1").style.color = textStyleColor;
@@ -7407,7 +7407,7 @@ function checkEvent(eType){
 }
 
 function openMeeting(meetingName){
-	alert("Open Meeting:: "+meetingName);
+	//alert("Open Meeting:: "+meetingName);
 	// var meetingName = "tinu";
 	 jQuery.ajax({
 		  	type:	"get",
@@ -8660,7 +8660,7 @@ function showAttach(){
 
 function attachReference(){
 	var refUrl = document.getElementById("refTxt").value;
-	alert("refUrl::"+refUrl);
+	//alert("refUrl::"+refUrl);
 
 	//console.log("Ref Ataached::::url::"+refUrl+"::selObjArray::"+selObjArray);
 	if(refUrl != ""){
