@@ -1,0 +1,13 @@
+/target/
+target/classes/com/ms/bean/Login.class
+*.class
+target/classes/com/ms/controller/BaseController.class
+*.class
+target/classes/com/ms/util/MSException.class
+*.class
+target/classes/com/ms/util/MSConstant.class
+*.class
+target/classes/com/ms/entity/BaseEntity.class
+*.class
+target/classes/com/ms/controller/BaseController.class
+src/main/webapp/pages/abacusreg.jsp

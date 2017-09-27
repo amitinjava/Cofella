@@ -1,0 +1,132 @@
+/* Reset bootstrap*/
+.row{margin:0px !important;}
+
+.body, .pane { background: #999 }
+
+.right.col { border-left: 1px solid #777; }
+.right.col .body { padding: 10px; }
+        
+
+.item {
+	display:table;
+	margin:10px;
+	width:120px;
+}
+            
+.slide{
+
+	background-color:#fff;
+	height:90px;
+	border:1px solid #ccc;
+	display:table-cell;
+	vertical-align:middle;
+	text-align:center;
+	font-size:1.1em;
+	color:#999;
+}
+
+.add-slide{
+	font-size:2.5em;
+	background-color:#666;
+	color:#eee;
+}
+
+.slide:hover{
+	border:3px solid #36c;
+	cursor:pointer;
+}
+
+.slide-selected{
+	border:2px solid #36c;
+}
+
+/* Pane configuration */
+.left.col { width: 140px; z-index:-1; }
+
+.right.col { left: 140px; right: 0; z-index:-1;}
+
+.body.row { top: 100px; bottom: 50px; }
+
+#topheader{
+	width:100%;
+	height:100px;
+	background-color:#eee;
+	border-bottom:1px solid #777;
+	}
+
+.thefooter.row { 
+	height: 50px;
+	bottom: 0; 
+	line-height: 50px; 
+	border-top:1px solid #777;
+	overflow:visible;
+	}
+
+
+/* Generic pane rules */
+body { margin: 0; -webkit-text-size-adjust: 100%; }
+.page { left: 0; right: 0; top: 0; bottom: 0; }
+.row, .col, .page { overflow: hidden; position: absolute; }
+.row { left: 0; right: 0; }
+.col { top: 0; bottom: 0; }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.fill, .pane { position: absolute; left: 0; top: 0; right: 0; bottom: 0; width: 100%; height: 100% }
+.pane { display: none; }
+
+/* Workaround: in landscape mode, IEMobile makes bottom toolbar overlap the page, so shorten the page by 75px to compensate */
+.iemobile .page { bottom: -6px; }
+@media screen and (orientation:landscape) { .iemobile .page { bottom: 75px; } }
+
+
+/* Header Styles */
+
+#lecture-title{
+	font-size: 1.3em;
+	position:absolute;
+	top:5px;
+	left:65px;
+}
+
+#lecture-title i{
+	color:#999;
+	margin-left:.3em;
+}
+
+.btn-return{
+	position:absolute;
+	top:5px;
+	left:5px;
+}
+
+#text-menu{
+	position:absolute;
+	top:30px;
+	left:65px;
+}
+
+#text-menu a, #toolbar a{
+	color:black;
+}
+
+#text-menu span{
+	margin-right:1em;
+}
+
+#toolbar{
+	position:absolute;
+	top:60px;
+	left:5px;
+}
+
+.table-menu li{
+	text-align:left;
+}
+
+.slide-controls{
+	padding-left:3px;
+}
+
+.delete-slide{
+	overflow:visible;
+}

@@ -1,0 +1,55 @@
+.navbar-brand{
+  background-image:url("../img/ilc-logo.png");
+  background-repeat:no-repeat;
+  background-position: 15px 5px;
+  width: 80px;
+}
+
+.navbar{
+  background-color:#333;
+}
+
+.header {
+  font-size:2em;
+  font-weight: bold;
+}
+
+.navbar {border-radius: 0;}
+
+
+.container{
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+
+.badge {
+  padding: 4px 4px 4px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: #999999;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  border-radius: 9px;
+}
+.badge:hover {
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.badge-info {
+  background-color: #428bca;
+}
+.badge-info:hover {
+  background-color: #266397;
+}
+
+.table-menu > ul{
+	text-align: left;
+}
+
+.table-menu > ul > li:hover{
+	cursor: pointer;
+}

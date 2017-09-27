@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd       
+     http://www.springframework.org/schema/mvc 
+     http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+     http://www.springframework.org/schema/context 
+     http://www.springframework.org/schema/context/spring-context-3.0.xsd        
+     http://www.springframework.org/schema/aop 
+     http://www.springframework.org/schema/aop/spring-aop-3.0.xsd       
+     http://www.springframework.org/schema/tx 
+     http://www.springframework.org/schema/tx/spring-tx.xsd       
+     http://www.springframework.org/schema/jee
+     http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+     http://www.springframework.org/schema/rabbit
+ 	 http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd">
+  
+
+    <bean
+        class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+    <!--- JPA transaction manager -->
+    <!--- -->
+    <bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="punit" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter">
+            <bean
+                class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="database" value="MYSQL" />
+                <property name="showSql" value="true" />
+            </bean>
+        </property>
+    </bean>
+    <bean id="transactionManager"
+        class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory"
+            ref="entityManagerFactory" />
+    </bean>
+
+    <!--- END JPA transaction manager -->
+
+    <!--- JTA transaction manager 
+        <bean id="entityManagerFactory"
+        class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="punit"/>            
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter">
+        <bean
+        class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+        <property name="database" value="MYSQL" />
+        <property name="showSql" value="false" />
+        </bean>
+        </property>
+        <property name="jpaPropertyMap">
+        <map>
+        <entry key="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.JBossTransactionManagerLookup"/>
+        <entry key="hibernate.transaction.flush_before_completion" value="true"/>
+        <entry key="hibernate.transaction.auto_close_session" value="false"/>
+        <entry key="hibernate.current_session_context_class" value="jta"/>
+        <entry key="hibernate.connection.release_mode" value="auto"/>
+        </map>
+        </property>
+        </bean>
+        
+        <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManagerName" value="java:/TransactionManager"/>
+        
+        <property name="userTransactionName">
+        <value>UserTransaction</value>
+        </property>
+        </bean>    
+    -->
+    <!--- END JTA transaction manager -->
+
+<!--     <bean id="dataSource"
+        class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost" />
+        <property name="username" value="root" />
+        <property name="password" value="" />
+    </bean> -->
+    
+        <!-- Start DataSource -->
+    
+    <!-- Spring bean configuration. Tell Spring to bounce off BoneCP -->
+    <bean id="dataSource"
+        class="org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy">
+        <property name="targetDataSource">
+            <ref local="mainDataSource" />
+        </property>
+    </bean>
+    
+    <!-- BoneCP configuration  PRODUCTION SETTINGS START -->
+    <!--
+    <bean id="mainDataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">
+      	<property name="driverClass" value="com.mysql.jdbc.Driver" />
+       	<property name="jdbcUrl" value="jdbc:mysql://localhost" />
+       	<property name="username" value="root"/>
+       	<property name="password" value=""/>
+       	<property name="idleConnectionTestPeriod" value="60"/>
+       	<property name="idleMaxAge" value="240"/>      
+       	<property name="maxConnectionsPerPartition" value="100"/>
+       	<property name="minConnectionsPerPartition" value="20"/>
+       	<property name="partitionCount" value="3"/>
+       	<property name="acquireIncrement" value="20"/>                              
+       	<property name="statementsCacheSize" value="200"/>
+       	<property name="releaseHelperThreads" value="3"/>
+    </bean>
+    -->
+    <!-- BoneCP configuration  PRODUCTION SETTINGS END -->
+    
+    
+    <!-- BoneCP configuration  LOCAL SETTINGS START -->
+    <bean id="mainDataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">
+      	<property name="driverClass" value="com.mysql.jdbc.Driver" />
+       	<property name="jdbcUrl" value="jdbc:mysql://localhost:3306" />
+       	<property name="username" value="root"/>
+       	<property name="password" value="root"/>
+       	<property name="idleConnectionTestPeriod" value="60"/>
+       	<property name="idleMaxAge" value="240"/>      
+       	<property name="maxConnectionsPerPartition" value="10"/>
+       	<property name="minConnectionsPerPartition" value="5"/>
+       	<property name="partitionCount" value="3"/>
+       	<property name="acquireIncrement" value="2"/>                              
+       	<property name="statementsCacheSize" value="50"/>
+       	<property name="releaseHelperThreads" value="3"/>
+    </bean>
+	<!-- BoneCP configuration  LOCAL SETTINGS END -->
+	 
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <!-- DAO beans Start-->
+     <bean id="userDao"  class="com.edspread.meeting.dao.UserDao">
+	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+     <bean id="userLectureDao"  class="com.edspread.meeting.dao.UserLectureDao">
+	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+   
+    <!-- DAO beans End-->
+ 	 
+    
+    <!-- Service beans Start-->
+     <bean id="userService" class="com.edspread.meeting.service.UserService" scope="prototype">
+		 <property name="userDao" ref="userDao"></property>	
+	 </bean>
+	 <bean id="userLectureService" class="com.edspread.meeting.service.UserLectureService" scope="prototype">
+		 <property name="userLectureDao" ref="userLectureDao"></property>	
+	 </bean>
+    <!-- Service beans End-->
+    
+    <!-- Action beans Start-->
+    <bean id="homeAction" class="com.edspread.meeting.action.HomeAction" scope="prototype">
+		<constructor-arg ref="userService"/>
+		<constructor-arg ref="userLectureService"/>
+		<constructor-arg ref="applicationUtility"/>
+	</bean>
+	
+	<bean id="userAction" class="com.edspread.meeting.action.UserAction" scope="prototype">
+		<constructor-arg ref="userService"/>
+		<constructor-arg ref="userLectureService"/>
+		<constructor-arg ref="applicationUtility"/>
+	</bean>
+    
+    <!-- Action beans End-->
+   
+   <!-- Utility Beans Start-->
+    
+   <bean id="autheticationInterceptor" class="com.edspread.meeting.interceptor.AuthenticateInterceptor" scope="singleton">
+    	<property name="userService" ref ="userService"></property>
+    	
+    </bean>
+    
+    <bean id="userAutheticationInterceptor" class="com.edspread.meeting.interceptor.UserAuthenticateInterceptor" scope="singleton">
+    	<property name="userService" ref ="userService"></property>
+    	
+    </bean>
+    
+    <bean id="applicationUtility" class="com.edspread.meeting.util.ApplicationUtillty"
+        scope="singleton">
+        <property name="settings" ref="settings" />
+    </bean>
+   
+    <bean id="settings" class="com.edspread.meeting.util.EmailSettings"
+        scope="singleton">
+        <property name="host" value="smtp.gmail.com" />
+        <property name="port" value="465" />
+        <property name="username" value="edspread.vijay@gmail.com" />
+        <property name="password" value="vijay@123456" />
+        <property name="socketFactoryClass" value="javax.net.ssl.SSLSocketFactory" />
+        <property name="mode" value="live" />
+        <property name="debug" value="true" />
+    </bean>
+    
+   <!-- Utility Beans End--> 
+   </beans>

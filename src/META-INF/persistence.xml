@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+	
+	<!-- Default (No TreeCache) -->
+	<!--   -->
+	<persistence-unit name="punit">
+		<mapping-file>META-INF/ormdef.xml</mapping-file>
+			<class>com.edspread.meeting.entity.User</class>
+			<class>com.edspread.meeting.entity.UserLectures</class>
+			
+		<properties>
+			<property name="hibernate.jdbc.batch_size" value="50" />
+			<property name="hibernate.order_inserts" value="true" />
+		</properties>	
+	</persistence-unit>
+	
+
+	<!-- Default TreeCache Trancactional 
+	<persistence-unit name="punit" transaction-type="JTA">
+		<mapping-file>META-INF/ormdef.xml</mapping-file>
+		<class>com.lsa.akosha.entity.Adminnotes</class>
+		<class>com.lsa.akosha.entity.Adminqueue</class>
+		<class>com.lsa.akosha.entity.Adminuser</class>
+		<class>com.lsa.akosha.entity.Adminwiki</class>
+		<class>com.lsa.akosha.entity.Avatar</class>
+		<class>com.lsa.akosha.entity.Avatarwarning</class>
+		<class>com.lsa.akosha.entity.Buddy</class>
+		<class>com.lsa.akosha.entity.Inbox</class>
+		<class>com.lsa.akosha.entity.Message</class>		
+		<class>com.lsa.akosha.entity.Reporttomoderator</class>
+		<class>com.lsa.akosha.entity.TradingCardDefinition</class>
+		<class>com.lsa.akosha.entity.User</class>
+		<class>com.lsa.akosha.entity.Room</class>		
+		<exclude-unlisted-classes/>		
+		<properties>
+			<property name="hibernate.cache.provider_class" value="org.jboss.ejb3.entity.TreeCacheProviderHook"/>
+			<property name="hibernate.treecache.mbean.object_name" value="jboss.cache:service=EJB3EntityTreeCache"/>
+		</properties>						
+	</persistence-unit>
+	
+	-->	
+	
+</persistence>

@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    
+    <constant name="struts.objectFactory" value="spring" />
+	<constant name="struts.devMode" value="true" />
+	<constant name="struts.ognl.allowStaticMethodAccess" value="true"/>
+	<constant name="struts.custom.i18n.resources" value="global" />
+    <constant name="struts.enable.DynamicMethodInvocation" value="false" />
+   	<constant name="struts.multipart.maxSize" value="1000000000000000000" />
+
+    <package name="default" namespace="/" extends="struts-default,json-default">
+		<interceptors>
+			<interceptor-stack name="defaultFileUploadStack">
+				<interceptor-ref name="fileUpload">
+					<param name="maximumSize">1000000000000000000</param> <!-- 10 MB -->
+					<param name="allowedTypes">
+						image/jpeg,
+						image/gif,
+						image/png,
+						image/tif,
+						application/msword,
+						application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+						application/pdf,
+						text/plain,application/vnd.oasis.opendocument.text,
+						application/vnd.ms-excel,
+						application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+						application/vnd.ms-powerpoint,
+						application/vnd.openxmlformats-officedocument.presentationml.presentation,
+						application/x-msdownload,
+						video/*,
+						audio/mp3,
+						audio/3gpp,
+						audio/mpeg,
+						audio/mpeg3,
+						audio/x-mpeg-3
+					</param> 
+				</interceptor-ref>
+				<interceptor-ref name="params">
+					 <param name="excludeParams">struts.token.name</param>
+				</interceptor-ref>
+			</interceptor-stack>
+			
+		<interceptor name="authenticate"
+				class="autheticationInterceptor" />
+		
+		<interceptor name="userAuthenticate"
+				class="userAutheticationInterceptor" />
+			
+			
+		<interceptor-stack name="edspreadSecureStack">
+				<interceptor-ref name="exception" />
+				<interceptor-ref name="authenticate" />
+				<interceptor-ref name="servletConfig" />
+				<interceptor-ref name="prepare" />
+				<interceptor-ref name="chain" />
+				<interceptor-ref name="debugging" />
+				<interceptor-ref name="staticParams" />
+				<interceptor-ref name="params">
+					<param name="excludeParams">
+						^struts\..*, ,fb_xd_fragment
+					</param>
+				</interceptor-ref>
+			</interceptor-stack>	
+			
+				<interceptor-stack name="edspreadUserStack">
+				<interceptor-ref name="exception" />
+				<interceptor-ref name="userAuthenticate" />
+				<interceptor-ref name="servletConfig" />
+				<interceptor-ref name="prepare" />
+				<interceptor-ref name="chain" />
+				<interceptor-ref name="debugging" />
+				<interceptor-ref name="staticParams" />
+				<interceptor-ref name="params">
+					<param name="excludeParams">
+						^struts\..*, ,fb_xd_fragment
+					</param>
+				</interceptor-ref>
+			</interceptor-stack>
+			
+			
+			
+		</interceptors>
+        <default-action-ref name="index" />
+
+        <global-results>
+            <result name="error">/error.jsp</result>
+        </global-results>
+
+        <global-exception-mappings>
+            <exception-mapping exception="java.lang.Exception" result="error"/>
+        </global-exception-mappings>
+
+        <action name="index">
+            <result type="redirectAction">
+                <param name="actionName">home</param>
+                <param name="namespace">/</param>
+            </result>
+        </action>
+        
+        <!-- Home Page action -->
+        <action name="home" method="execute" class="com.edspread.meeting.action.HomeAction" >
+            <interceptor-ref name="edspreadUserStack" />
+            <result name="login">/pages/user/userlogin.jsp</result>
+            <result name="success" type="redirect">userlectures</result>
+        </action>
+        
+        <!--Admin Login Action method -->
+         <action name="validateadmin" method="validateAdminCredential" class="com.edspread.meeting.action.AdminAction" >
+            <result name="error">/pages/admin/adminlogin.jsp</result>
+            <result name="success">/pages/admin/adminhome.jsp</result>
+        </action>
+       
+        <!-- Admin login Show page-->
+        <action name="adminlogin" method="adminLogin" class="com.edspread.meeting.action.AdminAction" >
+            <interceptor-ref name="edspreadSecureStack" />
+            <result name="login">/pages/admin/adminlogin.jsp</result>
+            <result name="success">/pages/admin/adminhome.jsp</result>
+         </action>
+         
+       <!-- User Login Action method-->
+        <action name="validateuser" method="validateUserCredential" class="com.edspread.meeting.action.UserAction" >
+            <result name="error">/pages/user/userlogin.jsp</result>
+            <result name="success">/pages/user/userlectures.jsp</result>
+        </action>
+        
+        <!--User Login Show page  -->
+         <action name="userlogin" method="userLogin" class="com.edspread.meeting.action.UserAction" >
+            <interceptor-ref name="edspreadUserStack" />
+            <result name="login">/pages/user/userlogin.jsp</result>
+            <result name="success">/pages/user/userlectures.jsp</result>
+       	 </action>
+        
+        <!-- User Registration Action page-->
+        <action name="registeruser" method="userRegistration" class="com.edspread.meeting.action.UserAction">
+              <result name="error">/pages/user/userprofile.jsp</result>
+		      <result name="success">/pages/user/userlogin.jsp</result>
+        </action>
+        <!-- User Registration Show Page -->
+        <action name="register" method="showUserRegistration" class="com.edspread.meeting.action.UserAction">
+              <interceptor-ref name="edspreadUserStack" />
+               <result name="login">/pages/user/userprofile.jsp</result>
+              <result name="success" type="redirect">profile</result>
+        </action>
+        
+        <!-- Forrgot User Password -->
+        <action name="forgotpassword" method="showForgotPassword" class="com.edspread.meeting.action.UserAction">
+                <result name="success">/pages/user/forgotpassword.jsp</result>
+        </action>
+        
+        <!-- Forgot User Password.Email Verification-->
+         <action name="sendpassword" method="forgotPassword" class="com.edspread.meeting.action.UserAction">
+                <result name="success">/pages/user/forgotpassword.jsp</result>
+        </action>
+        
+        <!-- Reset User Password -->
+         <action name="setpassword" method="setPassword" class="com.edspread.meeting.action.UserAction">
+                <result name="success">/pages/user/resetpassword.jsp</result>
+         </action>
+         
+         
+         <!-- For Sending the Mail to the user  -->
+          <action name="resetpassword" method="showResetPassword" class="com.edspread.meeting.action.UserAction">
+                <result name="success">/pages/user/resetpassword.jsp</result>
+         </action>
+        
+        <!-- Profile Page -->
+         <action name="profile" method="userProfile" class="com.edspread.meeting.action.UserAction">
+              <result name="success">/pages/user/profile.jsp</result>
+        </action> 
+         
+        <!-- Update User Profile -->
+         <action name="updateprofile" method="updateUserProfile" class="com.edspread.meeting.action.UserAction">
+               <result name="success">/pages/user/profile.jsp</result>
+         </action>
+        
+         <!-- Logout User -->
+          <action name="logout" method="logoutUser" class="com.edspread.meeting.action.UserAction">
+                <result name="success">/pages/user/userlogin.jsp</result>
+          </action>
+         
+         <!-- User Lectures --> 
+          <action name="editlecture" method="editLecture" class="com.edspread.meeting.action.UserAction">
+               	  <result name="login">/pages/user/userlogin.jsp</result>
+           		  <result name="play">/pages/player.jsp</result>
+                  <result name="success">/pages/editor2.jsp</result>
+          </action>
+          <action name="editlecture2" method="editLecture2" class="com.edspread.meeting.action.UserAction">
+               	  <result name="login">/pages/user/userlogin.jsp</result>
+           		  <result name="play">/pages/player.jsp</result>
+                  <result name="success">/pages/editor2.jsp</result>
+          </action>
+           <action name="renamelecture" method="renameLecture" class="com.edspread.meeting.action.UserAction">
+                  <interceptor-ref name="edspreadUserStack" />
+           		  <result name="error">/pages/user/userlectures.jsp</result>
+                  <result name="success"  type="redirect">userlectures</result>
+               
+          </action>
+        
+          <action name="duplicatelecture" method="duplicateLecture" class="com.edspread.meeting.action.UserAction">
+                  <interceptor-ref name="edspreadUserStack" />
+           		  <result name="error">/pages/user/userlectures.jsp</result>
+                  <result name="success"  type="redirect">userlectures</result>
+          </action>
+        
+          <action name="deletelecture" method="deleteLecture" class="com.edspread.meeting.action.UserAction">
+                  <interceptor-ref name="edspreadUserStack" />
+           		  <result name="error">/pages/user/userlectures.jsp</result>
+                   <result name="success"  type="redirect">userlectures</result>
+          </action>
+          
+        
+        <!--User Lectures Action Method  --> 
+         <action name="userlectures" method="getallLectureData" class="com.edspread.meeting.action.UserAction" >
+         	 <interceptor-ref name="edspreadUserStack" />
+           	 <result name="login">/pages/user/userlogin.jsp</result>
+              <result name="success">/pages/user/userlectures.jsp</result>
+         </action>
+        
+       <!-- The action method for creating New Lecture-->
+        <action name="newlecture" method="createNewLecture" class="com.edspread.meeting.action.HomeAction">
+              <result name="error">/pages/user/userlectures.jsp</result>
+		      <result name="success">/pages/editor.jsp</result>
+        </action>
+        
+        <!-- The Page for creation of new lecture -->
+         <action name="userlecture" method="createLecture" class="com.edspread.meeting.action.UserAction">
+              <result name="login">/pages/admin/adminlogin.jsp</result>
+		      <result name="success">/pages/editor.jsp</result>
+         </action>
+         
+         <action name="abc" method="test" class="com.edspread.meeting.action.UserAction">
+                  <result name="success">/pages/recordingtest.jsp</result>
+         </action>
+        
+        <!--  --> 
+        <action name="getmeetingjson" method="retrieveMeetingjson" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">jsonContent</param>
+			</result>
+		</action>
+		
+		<!-- For getting the all pages -->
+		<action name="getallpages" method="retrieveAllPage" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">pageCount,imageUrl</param>
+			</result>
+		</action>
+		
+		<!-- For Recording the lecture -->
+		<action name="setrecordingenv" method="setRecordingEnv" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">status</param>
+			</result>
+		</action>
+		
+		<!-- For deleting the Lecture -->
+		<action name="deleterecording" method="deleteExistingRecordingFile" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">fileName</param>
+			</result>
+		</action>
+		
+		<action name="deletelecturerecording" method="deleteRecordingFromLecture" class="com.edspread.meeting.action.UserAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties"></param>
+			</result>
+		</action>
+		
+		<!-- For Copying the recorded File -->
+		<action name="copyrecording" method="copyRecordingFile" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">fileName</param>
+			</result>
+		</action>
+		
+		<!-- For getting all Lectures -->
+		<action name="getmeetinglist" method="getallMeetingName" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">status,meetings\[\d+\]</param>
+			</result>
+		</action>
+		
+		<!-- For Saving The Lecture -->
+		<action name="save" method="saveMeetingdata" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">status</param>
+			</result>
+		</action>
+		
+		<!--  -->
+		
+		<action name="querypagetodb" method="showQueryPage" class="com.edspread.meeting.action.TreeAction">
+              <result name="success">/pages/admin/query.jsp</result> 
+		</action>
+		<action name="runquerytodb" method="executeQuery" class="com.edspread.meeting.action.TreeAction">
+              <result name="success">/pages/admin/query.jsp</result> 
+		</action>
+		<action name="deldirfromserver" method="delDir" class="com.edspread.meeting.action.TreeAction">
+              <result name="success">/pages/admin/query.jsp</result> 
+		</action>
+		<action name="delserverdir" method="delServerDir" class="com.edspread.meeting.action.TreeAction">
+              <result name="success">/pages/admin/query.jsp</result> 
+		</action>
+		
+		
+		<action name="treenode" method="retrieveRootNode" class="com.edspread.meeting.action.TreeAction">
+              <interceptor-ref name="edspreadSecureStack" />
+              <result name="login">/pages/admin/adminlogin.jsp</result> 
+		      <result name="success">/pages/admin/treenodes.jsp</result>
+        </action>
+        
+        <!--  -->
+        <action name="getchilds" method="retrieveAllChild" class="com.edspread.meeting.action.TreeAction">
+            <result name="error" type="json">
+                <param name="ignoreHierarchy">false</param>
+                <param name="includeProperties">actionErrors\[\d+\]</param>
+            </result>
+            <result name="success" type="json">
+                <param name="enableGZIP">true</param>
+            </result>
+        </action>
+       
+         <!--  -->  
+          <action name="savechild" method="saveChild" class="com.edspread.meeting.action.TreeAction">
+               <result name="error" type="json">
+                   <param name="ignoreHierarchy">false</param>
+                   <param name="includeProperties">actionErrors\[\d+\]</param>
+               </result>
+               <result name="success" type="json">
+                   <param name="enableGZIP">true</param>
+               </result>
+           </action>       
+          
+          <!--  -->
+           <action name="updatenodename" method="updateNodeName" class="com.edspread.meeting.action.TreeAction">
+                <result name="error" type="json">
+                    <param name="ignoreHierarchy">false</param>
+                    <param name="includeProperties">actionErrors\[\d+\]</param>
+                </result>
+                <result name="success" type="json">
+                    <param name="enableGZIP">true</param>
+                </result>
+           </action>
+          
+          <!--  --> 
+           <action name="deletenode" method="deleteNode" class="com.edspread.meeting.action.TreeAction">
+                 <result name="error" type="json">
+                     <param name="ignoreHierarchy">false</param>
+                     <param name="includeProperties">actionErrors\[\d+\]</param>
+                 </result>
+                 <result name="success" type="json">
+                     <param name="enableGZIP">true</param>
+                 </result>
+           </action>
+           
+           <!--  -->
+           <action name="attachnode" method="attachNode" class="com.edspread.meeting.action.TreeAction">
+               <result name="error" type="json">
+                   <param name="ignoreHierarchy">false</param>
+                   <param name="includeProperties">actionErrors\[\d+\]</param>
+               </result>
+               <result name="success" type="json">
+                   <param name="enableGZIP">true</param>
+                </result>
+            </action>
+       
+            <!--  -->
+             <action name="uploadTemp" class="com.edspread.meeting.action.UploadAction"	method="uploadTempFile">
+		 	       <interceptor-ref name="defaultFileUploadStack"/>
+		 	       <interceptor-ref name="json" />
+				   <result name="error" type="json"><!-- /pages/error.jsp --></result>
+				   <result name="input" type="json"></result>
+				   <result name="success" type="json">
+					    <param name="enableGZIP">true</param>
+					    <param name="includeProperties">uploadFileName</param>
+				   </result>
+		     </action>
+        	 <action name="uploadvideo" class="com.edspread.meeting.action.UploadAction" method="uploadVideoFile">
+		 	       <interceptor-ref name="defaultFileUploadStack"/>
+		 	       <interceptor-ref name="json" />
+				   <result name="error" type="json"><!-- /pages/error.jsp --></result>
+				   <result name="input" type="json"></result>
+				   <result name="success" type="json">
+					    <param name="enableGZIP">true</param>
+					    <param name="includeProperties">uploadFileName</param>
+				   </result>
+		     </action>
+		     <action name="uploadattachedref" class="com.edspread.meeting.action.UploadAction" method="uploadAttachedRef">
+		 	       <interceptor-ref name="defaultFileUploadStack"/>
+		 	       <interceptor-ref name="json" />
+				   <result name="error" type="json"><!-- /pages/error.jsp --></result>
+				   <result name="input" type="json"></result>
+				   <result name="success" type="json">
+					    <param name="enableGZIP">true</param>
+					    <param name="includeProperties">uploadFileName</param>
+				   </result>
+		     </action>
+        	 
+        
+        
+        
+        
+        
+        
+        <action name="createuser" method="createUser" class="com.edspread.meeting.action.HomeAction">
+              <interceptor-ref name="edspreadSecureStack" /> 
+              <result name="login">/pages/admin/adminlogin.jsp</result>
+		      <result name="success">/pages/admin/createuser.jsp</result>
+        </action>
+        <action name="userreg" method="userRegistration" class="com.edspread.meeting.action.HomeAction">
+              <interceptor-ref name="edspreadSecureStack" /> 
+              <result name="login">/pages/admin/adminlogin.jsp</result>
+		      <result name="success">/pages/admin/createuser.jsp</result>
+        </action>
+        
+        <action name="retrivealluser" method="retieveAllUser" class="com.edspread.meeting.action.HomeAction">
+              <interceptor-ref name="edspreadSecureStack" /> 
+              <result name="login">/pages/user/userlogin.jsp</result>
+		      <result name="success">/pages/admin/createuser.jsp</result>
+        </action>
+        
+         <action name="dateTagAction" class="com.edspread.meeting.action.HomeAction" >
+			<result name="success">/pages/user/userlectures.jsp</result>
+		</action>
+        
+        
+        
+        
+        		
+    </package>
+    
+    <!-- Add packages here -->
+
+</struts>
