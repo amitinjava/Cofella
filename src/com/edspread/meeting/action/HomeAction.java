@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
@@ -31,14 +32,21 @@ import org.xml.sax.InputSource;
 
 import com.edspread.meeting.DTO.UserLectureDTO;
 import com.edspread.meeting.constants.MeetingConstant;
+import com.edspread.meeting.entity.ExMessage;
 import com.edspread.meeting.entity.User;
 import com.edspread.meeting.entity.UserLectures;
+import com.edspread.meeting.json.Meeting;
+import com.edspread.meeting.json.Page;
+import com.edspread.meeting.service.ChannelService;
+import com.edspread.meeting.service.ExMessageService;
 import com.edspread.meeting.service.UserLectureService;
 import com.edspread.meeting.service.UserService;
 import com.edspread.meeting.util.ApplicationUtillty;
 import com.edspread.meeting.util.DateUtil;
 import com.edspread.meeting.util.MeetingException;
 import com.edspread.meeting.util.SessionUtil;
+import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import com.opensymphony.xwork2.ActionSupport;
 
 public class HomeAction extends ActionSupport {
@@ -50,6 +58,7 @@ public class HomeAction extends ActionSupport {
 	private int pageCount;
 	private String imageUrl;
 	private String meetingName;
+	private int channel_id;
 	private String jsonContent;
 	private boolean status;
 	private String fileName;
@@ -66,14 +75,18 @@ public class HomeAction extends ActionSupport {
 	
 
 	private UserService userService;
+	private ChannelService channelService;
+	private ExMessageService exMessageService;
 	private UserLectureService userLectureService;
 	private ApplicationUtillty applicationUtillty;
 	
 
-	public HomeAction(UserService userService,UserLectureService userLectureService,ApplicationUtillty applicationUtillty) {
+	public HomeAction(UserService userService,UserLectureService userLectureService,ApplicationUtillty applicationUtillty, ChannelService channelService, ExMessageService exMessageService) {
 		this.userService = userService;
 		this.applicationUtillty = applicationUtillty;
 		this.userLectureService = userLectureService;
+		this.channelService = channelService;
+		this.exMessageService = exMessageService;
 	}
 
 	public String execute() throws Exception {
@@ -228,6 +241,7 @@ public class HomeAction extends ActionSupport {
 	*/
 	public String saveMeetingdata() {
 		try {
+			String uniqueID=UUID.randomUUID().toString();
 			HttpServletRequest request = ServletActionContext.getRequest();
 			StringBuffer jb = new StringBuffer();
 			String line = null;
@@ -242,12 +256,13 @@ public class HomeAction extends ActionSupport {
 			String CONTEXT_PATH = SessionUtil.getServerDeploymentPath();
 			Map<String, String> meetingData = getMeetingData(jb.toString());
 			meetingName = meetingData.get(MeetingConstant.MEETINGNAME);
+			String channelId = meetingData.get("channelId");
 			User user = (User) SessionUtil.getSession().get(
 					MeetingConstant.USER_SESSION_VAR);
 			if (meetingName != null) {
 				
 				status = writeJSONFile(CONTEXT_PATH, meetingName,
-						jb.toString(), user.getEmail());
+						jb.toString(), user.getEmail(),uniqueID,channelId);
 			} else {
 				addActionError("Error Occured while saving");
 				return ERROR;
@@ -530,6 +545,10 @@ public class HomeAction extends ActionSupport {
 				fileList.put(MeetingConstant.MEETINGNAME,
 						jsonObject.get(MeetingConstant.MEETING).toString());
 			}
+			if (jsonObject.get(MeetingConstant.CHANNELID) != null) {
+				fileList.put(MeetingConstant.CHANNELID,
+						jsonObject.get(MeetingConstant.CHANNELID).toString());
+			}
 			if (jsonObject.get(MeetingConstant.TEMPRECFILENAME) != null) {
 				fileList.put(MeetingConstant.TEMPRECFILENAME,
 						jsonObject.get(MeetingConstant.TEMPRECFILENAME)
@@ -562,7 +581,9 @@ public class HomeAction extends ActionSupport {
 	* For the json file ;
 	*/
 	public boolean writeJSONFile(String path, String meetingName,
-			String content, String name) {
+			String content, String name, String uniqueID, String channelId) {
+		System.out.println("meetingName :: "+meetingName);
+		content = parseJsonContent(content,uniqueID);
 		File file = new File(path + File.separator + MeetingConstant.ENOTEBOOK
 				+ File.separator + name + File.separator + meetingName);
 		// if dir doesn't exists, then create it
@@ -570,7 +591,9 @@ public class HomeAction extends ActionSupport {
 			file.mkdirs();
 		}
 		System.out.println("Path:::" + file.getAbsolutePath());
-		file = new File(file.getAbsolutePath() + File.separator + meetingName
+		
+		
+		file = new File(file.getAbsolutePath() + File.separator + meetingName+"_"+uniqueID
 				+ MeetingConstant.JSONFORMAT);
 		FileWriter fw;
 		try {
@@ -582,20 +605,135 @@ public class HomeAction extends ActionSupport {
 			e.printStackTrace();
 			return false;
 		}
+		try {
+			
+		List<ExMessage> exmsgs =exMessageService.findByChannelId(Integer.parseInt(channelId));
+		int nextSeqNo = exmsgs.size()+1;
+		ExMessage em = new ExMessage();
+		em.setChannel_id(Integer.parseInt(channelId));
+		em.setSequenceNo(nextSeqNo);
+		em.setHttpmessagepath(file.getAbsoluteFile().getAbsolutePath());
+		em.setCreated_by(name);
+		byte active = 1;
+		//em.setActive(active);
+		
+			exMessageService.save(em);
+		} catch (MeetingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		return true;
 
 	}
-    
+    public String parseJsonContent(String content, String uniqueID){
+    	Gson g = new Gson();
+		
+			Meeting meeting = g.fromJson(content, Meeting.class);
+			List<Object> ltms = new ArrayList<>();
+			for(Page page:meeting.getPageList()){
+				for	(Object obj : page.getGraphicsObject()){
+					LinkedTreeMap ltm = (LinkedTreeMap)obj; 
+					System.out.println(ltm);
+					if(ltm.get("usersObjectIdentifierId").equals("undefined")){
+						System.out.println("1234");
+						ltm.put("usersObjectIdentifierId", uniqueID);
+						ltms.add(ltm);
+					}
+					
+					page.setGraphicsObject(ltms);
+				}
+			}
+		content = 	g.toJson(meeting);
+		System.out.println(content);
+    	return content;
+    	
+    }
 	public String retrieveMeetingjson() {
 		String CONTEXT_PATH = SessionUtil.getServerDeploymentPath();
 		System.out.println("CONTEXT_PATH::" + CONTEXT_PATH);
-		/*User user = (User) SessionUtil.getSession().get(
-				MeetingConstant.USER_SESSION_VAR);*/
-		File file = new File(CONTEXT_PATH + File.separator
+		User user = (User) SessionUtil.getSession().get(
+				MeetingConstant.USER_SESSION_VAR);
+		System.out.println("channelId : home "+channel_id);
+		List<ExMessage> exmsgs = null;
+		try {
+			exmsgs =exMessageService.findByChannelId(channel_id);
+		} catch (MeetingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		File folder = new File(CONTEXT_PATH + File.separator
 				+ MeetingConstant.ENOTEBOOK + File.separator
-				+ email + File.separator + meetingName
+				+ user.getEmail() + File.separator + meetingName);
+		File[] listOfFiles = folder.listFiles();
+		System.out.println(listOfFiles.length);
+		List<File> files = new ArrayList<>();
+		File exmFile = null;
+		try{
+		for(ExMessage em : exmsgs){
+			exmFile = new File(em.getHttpmessagepath());
+			files.add(exmFile);
+		}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		File file1 = new File(CONTEXT_PATH + File.separator
+				+ MeetingConstant.ENOTEBOOK + File.separator
+				+ user.getEmail() + File.separator + meetingName
 				+ File.separator + meetingName + MeetingConstant.JSONFORMAT);
-		System.out.println("MeetingPath:::"+file.getAbsolutePath());
+		System.out.println("MeetingPath:::"+file1.getAbsolutePath());
+		
+		if(files.size() == 0){
+
+			if (!file1.exists()) {
+				addActionError("Meeting Not Found");
+				return ERROR;
+			} else {
+				BufferedReader in = null;
+				try {
+					in = new BufferedReader(new FileReader(file1));
+					String line;
+					StringBuilder recievedXML = new StringBuilder();
+					while ((line = in.readLine()) != null) {
+						recievedXML.append(line);
+					}
+					jsonContent = recievedXML.toString();
+					System.out.println("jsonContent:::"+jsonContent);
+					
+					
+					
+					System.out.println("jsonContent11:::"+jsonContent);
+					isAppend = true;
+					if (setRecordingEnv().equals(ERROR)) {
+						addActionError("Error occured while copying recording file.");
+						return ERROR;
+					}
+					/*
+					 * HttpServletResponse response =
+					 * ServletActionContext.getResponse();
+					 * response.setContentType("application/json");
+					 * response.getWriter().write(jsonContent );
+					 */
+					System.out.println("-----JSON Content-Found----");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} finally {
+					if (in != null) {
+						try {
+							in.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+			}
+		}
+		
+		
+		Meeting mt=null;
+		for(File file : files){
 		if (!file.exists()) {
 			addActionError("Meeting Not Found");
 			return ERROR;
@@ -609,6 +747,29 @@ public class HomeAction extends ActionSupport {
 					recievedXML.append(line);
 				}
 				jsonContent = recievedXML.toString();
+				System.out.println("jsonContent:::"+jsonContent);
+				
+				Gson g = new Gson();
+				if(mt == null){
+					mt = g.fromJson(jsonContent, Meeting.class);
+				}else{
+					Meeting nextMt = g.fromJson(jsonContent, Meeting.class);
+					
+					for(Page page:nextMt.getPageList()){
+						for(Page ppage:mt.getPageList()){
+							if(page.getPagenumber() == ppage.getPagenumber()){
+								ppage.getGraphicsObject().addAll(page.getGraphicsObject());
+							}
+						}
+					}
+					
+				}
+				System.out.println(mt.getMeetingName());
+				System.out.println(mt.getPageList());
+
+						
+				jsonContent = g.toJson(mt);
+				System.out.println("jsonContent11:::"+jsonContent);
 				isAppend = true;
 				if (setRecordingEnv().equals(ERROR)) {
 					addActionError("Error occured while copying recording file.");
@@ -634,9 +795,11 @@ public class HomeAction extends ActionSupport {
 				}
 			}
 
-		}
+		}}
 		return SUCCESS;
 	}
+	
+	
 	
 	
 	public int getPageCount() {
@@ -653,6 +816,14 @@ public class HomeAction extends ActionSupport {
 
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
+	}
+
+	public int getChannel_id() {
+		return channel_id;
+	}
+
+	public void setChannel_id(int channel_id) {
+		this.channel_id = channel_id;
 	}
 
 	public String getMeetingName() {
@@ -705,6 +876,22 @@ public class HomeAction extends ActionSupport {
 	public void setUserService(UserService userService) {
 		this.userService = userService;
 	}
+	public ChannelService getChannelService() {
+		return channelService;
+	}
+
+	public void setChannelService(ChannelService channelService) {
+		this.channelService = channelService;
+	}
+
+	public ExMessageService getExMessageService() {
+		return exMessageService;
+	}
+
+	public void setExMessageService(ExMessageService exMessageService) {
+		this.exMessageService = exMessageService;
+	}
+
 	public String getFileName() {
 		return fileName;
 	}

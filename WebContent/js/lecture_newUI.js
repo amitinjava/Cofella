@@ -104,7 +104,6 @@
 	var AttachRef = false;
 	var refText;
 	var keyDownInTxtField = false;
-	var usersObjectIdentifierId;
 	
 	jQuery(document).ready(function(){
 		//alert("ready")
@@ -3512,7 +3511,7 @@ function drawPoints(points) {
 	
 }
 
-function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillColor,opacity,imageLoaded,textObj,ref,usersObjectIdentifierId){
+function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillColor,opacity,imageLoaded,textObj,ref){
 	this.id = id;
 	this.type = type;
 	this.pointsArray = pointsArray;
@@ -3526,7 +3525,6 @@ function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillCol
 	this.text = textObj;
 	this.ref = ref;
 	this.attachment = null;
-	this.usersObjectIdentifierId = usersObjectIdentifierId;
 }
 function Text(text,fontType,fontSize,isBold,isUnderLine,isItalic){
 	this.textData = text;
@@ -7167,7 +7165,6 @@ function createJSON(){
 	var duration = getDurationInMinAndSec(recFileDuration);
 	//console.log("recFileDuration:::::"+duration);
 	var data = '{"MeetingName":"'+ meetingName +'"';
-	data = data + ', "channelId":"'+ channel_id +'"';
 	if(filename != null && filename.length >0 ){
 		var pos = filename.lastIndexOf('/');
 		var fname;
@@ -7197,7 +7194,6 @@ function createJSON(){
 				 	 var graphicsObject = objectTable.get(objectTable.getKey());
 				 	 objectData = objectData + '"id":' + graphicsObject.id + ',';
 					 objectData = objectData + '"type":' + graphicsObject.type + ',';
-					 objectData = objectData + '"usersObjectIdentifierId":"' + graphicsObject.usersObjectIdentifierId + '",';
 					 if(graphicsObject.pointsArray != null){
 						 var pointsArray = graphicsObject.pointsArray;
 						 var points = '';
@@ -7230,9 +7226,6 @@ function createJSON(){
 					 if(graphicsObject.imageLoaded != null){	 
 					 	objectData = objectData + '"imageLoaded":"' + graphicsObject.imageLoaded + '",';
 					 }
-					 if(graphicsObject.usersObjectIdentifierId != null){	 
-						 	objectData = objectData + '"usersObjectIdentifierId":"' + graphicsObject.usersObjectIdentifierId + '",';
-						 }
 					 if(graphicsObject.text != null){	
 					 	var textobj = graphicsObject.text;
 						var textJson = '{"textData":"'+(textobj.textData).trim()+'","fontType":"'+textobj.fontType+'","fontSize":"'+textobj.fontSize+'","isBold":"'+textobj.isBold+'","isUnderLine":"'+textobj.isUnderLine+'","isItalic":"'+textobj.isItalic+'"}'
@@ -7416,11 +7409,10 @@ function checkEvent(eType){
 function openMeeting(meetingName){
 	//alert("Open Meeting:: "+meetingName);
 	// var meetingName = "tinu";
-	var channelId = document.getElementById("channel_id").value
 	 jQuery.ajax({
 		  	type:	"get",
 	  		url: 	"getmeetingjson.action",
-	  		data: 	"meetingName="+meetingName+"&status="+true+"&channel_id="+channelId,
+	  		data: 	"meetingName="+meetingName+"&status="+true,
 		  		success:function(msg) {
 		  			//alert(msg);
 		  			
@@ -7531,7 +7523,8 @@ function parseGraphicsObjectList(pageNum,gObjectList){
 		if(obj.text != null){
 			textObj= new Text(obj.text.textData,obj.text.fontType,obj.text.fontSize,obj.text.isBold,obj.text.isUnderLine,obj.text.isItalic);
 		}
-		var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref,obj.usersObjectIdentifierId);
+		
+		var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref);
 		//count++;
 		if((gObj.type == 1 || gObj.type == 2 || gObj.type == 23) && (obj.pointsList.length == 4)){
 			checkAndAddPonitsForNewVersion(gObj);

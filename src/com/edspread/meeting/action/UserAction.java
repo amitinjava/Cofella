@@ -19,8 +19,11 @@ import org.apache.struts2.StrutsStatics;
 import com.edspread.meeting.DTO.MeetingDTO;
 import com.edspread.meeting.DTO.UserLectureDTO;
 import com.edspread.meeting.constants.MeetingConstant;
+import com.edspread.meeting.entity.Channel;
 import com.edspread.meeting.entity.User;
 import com.edspread.meeting.entity.UserLectures;
+import com.edspread.meeting.service.ChannelService;
+import com.edspread.meeting.service.ExMessageService;
 import com.edspread.meeting.service.UserLectureService;
 import com.edspread.meeting.service.UserService;
 import com.edspread.meeting.util.ApplicationUtillty;
@@ -39,8 +42,10 @@ public class UserAction extends ActionSupport {
 	private static final long serialVersionUID = 1L;
 	private String lectureId;
     private String meetingName;
+    private int channel_id;
 	private List<String> meetings;
 	private List<UserLectureDTO> lectureList;
+	private List<Channel> channelList;
 	private String oldFileName;
 	private String fileName;
     private String userName;
@@ -58,13 +63,17 @@ public class UserAction extends ActionSupport {
 	
 
 	private UserService userService;
+	private ChannelService channelService;
+	private ExMessageService exMessageService;
 	private UserLectureService userLectureService;
 	private ApplicationUtillty applicationUtillty;
 
-	public UserAction(UserService userService,UserLectureService userLectureService,ApplicationUtillty applicationUtillty) {
+	public UserAction(UserService userService,UserLectureService userLectureService,ApplicationUtillty applicationUtillty, ChannelService channelService, ExMessageService exMessageService) {
 		this.userService = userService;
 		this.applicationUtillty = applicationUtillty;
 		this.userLectureService = userLectureService;
+		this.channelService = channelService;
+		this.exMessageService = exMessageService;
 	}
 
 	public String execute() throws Exception {
@@ -263,6 +272,14 @@ public class UserAction extends ActionSupport {
 		return SUCCESS;
 	}
   
+	public int getChannel_id() {
+		return channel_id;
+	}
+
+	public void setChannel_id(int channel_id) {
+		this.channel_id = channel_id;
+	}
+
 	/**
 	* For updating the user profile;
 	*/
@@ -357,6 +374,8 @@ public String getallLectureData() {
 		meetingName= null;
 	}else{
 			try {
+				channelList = channelService.findByOwner(user.getEmail());
+				System.out.println("channel size :: "+channelList.size());
 				List<UserLectures> userLecturesList= userLectureService.findByUser(user.getId());
 				lectureList = new ArrayList<UserLectureDTO>();
 				for (UserLectures userLectures : userLecturesList) {
@@ -662,6 +681,22 @@ public String searchLecture(){
 		this.userService = userService;
 	}
 
+	public ChannelService getChannelService() {
+		return channelService;
+	}
+
+	public void setChannelService(ChannelService channelService) {
+		this.channelService = channelService;
+	}
+
+	public ExMessageService getExMessageService() {
+		return exMessageService;
+	}
+
+	public void setExMessageService(ExMessageService exMessageService) {
+		this.exMessageService = exMessageService;
+	}
+
 	public String getEmail() {
 		return email;
 	}
@@ -776,6 +811,14 @@ public String searchLecture(){
 
 	public void setTimeZoneOffset(String timeZoneOffset) {
 		this.timeZoneOffset = timeZoneOffset;
+	}
+
+	public List<Channel> getChannelList() {
+		return channelList;
+	}
+
+	public void setChannelList(List<Channel> channelList) {
+		this.channelList = channelList;
 	}
 	
 }

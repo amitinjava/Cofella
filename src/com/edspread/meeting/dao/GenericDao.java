@@ -7,13 +7,16 @@ import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTemplate;
 import org.springframework.orm.jpa.support.JpaDaoSupport;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.edspread.meeting.entity.Domain;
+import com.edspread.meeting.entity.ExMessage;
 import com.edspread.meeting.util.MeetingException;
 
 
@@ -333,5 +336,35 @@ public class GenericDao<K, E extends Domain<?>> extends JpaDaoSupport implements
 			}
 		}
 		return (Long) jpaCountQuery.getSingleResult();
+	}
+	//@Transactional
+	public void saveChannelsExMessage(int channel_id,int sequenceNo, String httpmessagepath, String localmessagepath, String created_by){
+		//getEntityManager().getTransaction().begin();
+		Query query = getEntityManager().createNativeQuery("INSERT INTO exmessage(  channel_id  ,sequenceNo  ,httpmessagepath  ,localmessagepath  ,created_by   ,active) VALUES (  1   ,2   ,'111'  ,'www'  ,'amit'    ,1 )");
+		query = getEntityManager().createQuery("Select em from ExMessage");
+	       /* query.setParameter(1, channel_id);
+	        query.setParameter(2, sequenceNo);
+	        query.setParameter(3, "xx");
+	        query.setParameter(4, "yy");
+	        query.setParameter(5, created_by);
+	        query.setParameter(6, 1);*/
+	        //query.executeUpdate();
+	        List ls = query.getResultList();
+	        System.out.println("size :: "+ls.size());
+	       // getEntityManager().getTransaction().commit();
+	        //query.
+	        try{
+	        	/*EntityTransaction trx = getEntityManager().getTransaction();
+	        	trx.begin();*/
+	        ExMessage entity = new ExMessage();
+	        entity.setSequenceNo(1233);
+	        getEntityManager().persist(entity);
+	       /* trx.commit();
+	        getEntityManager().flush();*/
+	        System.out.println("id ::"+entity.getId());
+	        }catch(Exception e){
+	        	e.printStackTrace();
+	        }
+	        
 	}
 }

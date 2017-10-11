@@ -60,8 +60,59 @@
 <form action="editlecture" name="editlectureform" method="post">
      <input type="hidden" name="meetingName" id="meetingName">
 	 <input type="hidden" name="autoPlay" id="autoPlay">
+	 <input type="hidden" name="channel_id" id="channel_id">
 	 
 </form>
+
+<table class="table table-hover">
+        <thead>
+          <tr>
+            <th class="col-sm-5">Channel</th>
+            <!-- <th class="col-sm-2 text-right">Time</th>
+            <th class="col-sm-2 text-right">Slides</th>
+            <th class="col-sm-3 text-right">Date Modified</th> -->
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+        
+
+          <s:iterator id="meeting" value="channelList">
+          <tr>
+            <!--<td><a href="#" onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','false')"><s:property value='#meeting.lectureTitle'/></a></td> -->
+			
+		    <td>
+              <div class="dropdown table-menu">
+                <!--<a data-toggle="dropdown" href="#"><span class="badge badge-info">. . .</span></a> -->
+				<a data-toggle="dropdown" href="#"><s:property value='#meeting.name'/></a>
+                <ul class="dropdown-menu dropdown-menu-left" role="menu" aria-labelledby="dLabel">
+                  <li onclick="setRenameModaldata('<s:property value='#meeting.name'/>')"><a id="editMd" data-toggle="modal" data-target="#editModal">Rename</a></li>
+                  <s:if test="#meeting.lectureDuration.equals('00:00')" >
+                 	<li><a  style="color:#ddd;cursor:not-allowed;">Play</a></li>
+                  </s:if>
+                  <s:else>
+                  <li onclick="submitEditLectureform('<s:property value='#meeting.name'/>','true')"><a>Play</a></li>
+                  </s:else>
+				  <li onclick="submitEditLectureform('<s:property value='#meeting.name'/>','false', '<s:property value='#meeting.id'/>')"><a>Edit</a></li>
+                  <li onclick="setDuplicateModaldata('<s:property value='#meeting.id'/>','<s:property value='#meeting.name'/>')"><a data-toggle="modal" data-target="#dupModal">Duplicate</a></li>
+                  <li onclick="setDeleteModaldata('<s:property value='#meeting.id'/>','<s:property value='#meeting.name'/>')" ><a data-toggle="modal" data-target="#delLectureModal">Delete</a></li>
+                </ul>
+              </div>
+            </td>
+			<%-- <td class="text-right"><s:property value='#meeting.lectureDuration'/></td>
+            <td class="text-right"><s:property value='#meeting.slides'/></td>
+            <td class="text-right"><s:property value='#meeting.updatedAt'/></td> --%>
+			
+            
+                
+          </tr>
+           </s:iterator>
+       
+         </tbody>
+      </table>
+
+
 <table class="table table-hover">
         <thead>
           <tr>
@@ -90,7 +141,7 @@
                  	<li><a  style="color:#ddd;cursor:not-allowed;">Play</a></li>
                   </s:if>
                   <s:else>
-                  <li onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','true')"><a>Play</a></li>
+                  <li onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','true','0')"><a>Play</a></li>
                   </s:else>
 				  <li onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','false')"><a>Edit</a></li>
                   <li onclick="setDuplicateModaldata('<s:property value='#meeting.id'/>','<s:property value='#meeting.lectureTitle'/>')"><a data-toggle="modal" data-target="#dupModal">Duplicate</a></li>
@@ -321,9 +372,10 @@
     	
     	 document.searchform.submit();
      }
-     function submitEditLectureform(lectureName,isAutoPlay){
+     function submitEditLectureform(lectureName,isAutoPlay, channelId){
     	document.getElementById("meetingName").value = lectureName;
 		document.getElementById("autoPlay").value = isAutoPlay;
+		document.getElementById("channel_id").value = channelId;
     	//alert(document.getElementById("meetingName").value)
     	document.editlectureform.submit();
      }

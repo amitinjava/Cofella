@@ -5,6 +5,7 @@ public class MeetingConstant {
 	public static final String TEMP = "temp";
 	public static final String RECORDING = "recording";
 	public static final String MEETING= "MeetingName";
+	public static final String CHANNELID= "channelId";
 	public static final String TEMPRECORDING = "recordings";
 	public static final String MEETINGNAME = "mname";
 	public static final String RECFILENAME = "RecFname";

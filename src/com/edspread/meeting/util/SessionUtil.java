@@ -27,7 +27,12 @@ public class SessionUtil
 		HttpServletRequest request = (HttpServletRequest)context.get(StrutsStatics.HTTP_REQUEST);
 		return request.getSession();
 	}
-
+	public static String getSessionId()
+	{
+		ActionContext context = ActionContext.getContext();
+		HttpServletRequest request = (HttpServletRequest)context.get(StrutsStatics.HTTP_REQUEST);
+		return request.getSession().getId();
+	}
 	
 	public static String getContextPath()
 	{

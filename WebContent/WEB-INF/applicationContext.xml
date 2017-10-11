@@ -121,7 +121,7 @@
       	<property name="driverClass" value="com.mysql.jdbc.Driver" />
        	<property name="jdbcUrl" value="jdbc:mysql://localhost:3306" />
        	<property name="username" value="root"/>
-       	<property name="password" value="root"/>
+       	<property name="password" value="123456"/>
        	<property name="idleConnectionTestPeriod" value="60"/>
        	<property name="idleMaxAge" value="240"/>      
        	<property name="maxConnectionsPerPartition" value="10"/>
@@ -142,7 +142,12 @@
      <bean id="userLectureDao"  class="com.edspread.meeting.dao.UserLectureDao">
 	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
-   
+    <bean id="channelDao"  class="com.edspread.meeting.dao.ChannelDao">
+	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+     <bean id="exMessageDao"  class="com.edspread.meeting.dao.ExMessageDao">
+	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
     <!-- DAO beans End-->
  	 
     
@@ -153,6 +158,15 @@
 	 <bean id="userLectureService" class="com.edspread.meeting.service.UserLectureService" scope="prototype">
 		 <property name="userLectureDao" ref="userLectureDao"></property>	
 	 </bean>
+	 
+	 <bean id="channelService" class="com.edspread.meeting.service.ChannelService" scope="prototype">
+		 <property name="channelDao" ref="channelDao"></property>	
+	 </bean>
+	 
+	  <bean id="exMessageService" class="com.edspread.meeting.service.ExMessageService" scope="prototype">
+		 <property name="exMessageDao" ref="exMessageDao"></property>	
+	 </bean>
+	 
     <!-- Service beans End-->
     
     <!-- Action beans Start-->
@@ -160,12 +174,16 @@
 		<constructor-arg ref="userService"/>
 		<constructor-arg ref="userLectureService"/>
 		<constructor-arg ref="applicationUtility"/>
+		<constructor-arg ref="channelService"/>
+		<constructor-arg ref="exMessageService"/>
 	</bean>
 	
 	<bean id="userAction" class="com.edspread.meeting.action.UserAction" scope="prototype">
 		<constructor-arg ref="userService"/>
 		<constructor-arg ref="userLectureService"/>
 		<constructor-arg ref="applicationUtility"/>
+		<constructor-arg ref="channelService"/>
+		<constructor-arg ref="exMessageService"/>
 	</bean>
     
     <!-- Action beans End-->

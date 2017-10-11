@@ -220,6 +220,7 @@ Other Styles
 <body ng-controller="RecorderController"  onresize="windowResize()">
 	<form action="editlecture" name="editlectureform" method="post">
 		<input type="hidden" name="meetingName" id="meetingName" value = "<s:property value = '%{meetingName}' />" >
+		<input type="hidden" name="channel_id" id="channel_id" value = "<s:property value = '%{channel_id}' />" >
 	</form>
 	<img id="pointerImg" src="images/meeting/pointer_image.png" style="position:absolute;top:-50px;left:-50px;width:32px;height:32px;z-index:1" />
     <div id = "meetingDiv" style="position:absolute;top:150px;left:300px;width:510px;height:265px;z-index:1;border:1px solid;background-color:#CCCCCA;display:none;">
@@ -705,8 +706,10 @@ Other Styles
 <script type="text/javascript">
 	var meetingName = "<s:property value = '%{meetingName}' />";
 	var isAutoPlay = "<s:property value = '%{autoPlay}' />";
+	var channel_id = "<s:property value = '%{channel_id}' />";
 	var mode = "<s:property value = '%{mode}' />";
 	var userId = "<s:property value='%{#session.user.email}'/>";
+	var email = "<s:property value='%{#session.user.email}'/>";
  </script>
 
 </body>

@@ -11,3 +11,4 @@ target/classes/com/ms/entity/BaseEntity.class
 *.class
 target/classes/com/ms/controller/BaseController.class
 src/main/webapp/pages/abacusreg.jsp
+/build/
