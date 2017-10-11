@@ -143,7 +143,7 @@
                   <s:else>
                   <li onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','true','0')"><a>Play</a></li>
                   </s:else>
-				  <li onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','false')"><a>Edit</a></li>
+				  <li onclick="submitEditLectureform('<s:property value='#meeting.lectureTitle'/>','false','0')"><a>Edit</a></li>
                   <li onclick="setDuplicateModaldata('<s:property value='#meeting.id'/>','<s:property value='#meeting.lectureTitle'/>')"><a data-toggle="modal" data-target="#dupModal">Duplicate</a></li>
                   <li onclick="setDeleteModaldata('<s:property value='#meeting.id'/>','<s:property value='#meeting.lectureTitle'/>')" ><a data-toggle="modal" data-target="#delLectureModal">Delete</a></li>
                 </ul>
