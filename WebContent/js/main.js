@@ -1,10 +1,9 @@
 		var filename="";
-		var recSaved=false;
+		var isSaved=false;
 		var recCount = 0;
 		var isRecRunning = false;
 		var recorderApp = angular.module('recorder', [ ]);
 		var ans = false;
-		var audio_context;
 
 		recorderApp.controller('RecorderController', [ '$scope' , function($scope) {
 			$scope.stream = null;
@@ -18,7 +17,6 @@
 			$scope.bitrate = 64;
 			$scope.bitrates = [ 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160, 192, 224, 256, 320 ];
 			$scope.recordButtonStyle = "red-btn";
-			/*
 			$scope.initPlayer = function(){
 				//alert("init player");
 				var myPlayer=document.getElementById("audio1");
@@ -30,11 +28,10 @@
 						recFileDuration = Math.ceil(duration * 1000);
 						//console.log("duration:-------------------------------"+recFileDuration);
 					*/	
-			/*	
+				
 				});
 			}
 			$scope.initPlayer();
-			*/
 			$scope.checkRecordingButton = function(){
 				if(recordButton.className == 'recinactive'){
 					return;
@@ -69,76 +66,76 @@
 			};
 			
 			$scope.setRecordingEnv =function(){
-				if(recCount == 0){
-					// First Time recording case
-					filename ='Enotebook/'+userId + '/'+meetingName+'/temp/'+meetingName+'.mp3';
-					$scope.startRecording();
-				}else{
-					if(!ans){
-					    // Recording Not Append case
+				if(!ans){
 						recFileDuration = 0;
 						document.getElementById("cTime").innerHTML = "<b>00:00</b>";
 						document.getElementById("eTime").innerHTML = "<b>00:00</b>";
-						//if(isSaved){
+						if(isSaved){
 							//Delete existing recording file
 								
 								jQuery.ajax({
 								  	type:	"get",
 							  		url: 	"deleterecording.action",
-							  		data: 	"meetingName="+meetingName,
+							  		data: 	"",
 						  		success:function(msg) {
-									//alert("Delete existing recording");
+									alert("Delete existing recording");
 									//console.log("-------Delete Existing Recording------");
 						  			if(msg.actionErrors != null){
 						  				alert("error");
 						  				return;
 						  		  	}else{
-										//alert("Delete existing recording done");
-										filename = 'Enotebook/'+userId + '/'+meetingName+'/temp/'+msg.fileName;
-										$scope.startRecording();
-										//console.log("------Successfully Deleted------");
+									alert("Delete existing recording done");
+						  		  	//console.log("------Successfully Deleted------");
 						  		  	}
 						  	}});
 							
-						//}else{
-							//filename = "recordings/" + "recording"+ Math.round(Math.random()*1000)+".mp3";
+						}else{
+							filename = "recordings/" + "recording"+ Math.round(Math.random()*1000)+".mp3";
+						}
+						objectTimeTable.moveFirst();
+						while(objectTimeTable.next()){
+							var pageNum = null;
+							var val = objectTimeTable.getKey();
+							var recordedObjArr = timeRefTable.get(objectTimeTable.getValue());
+							for(var i=0;i< recordedObjArr.length;i++){
+								var pageObj = recordedObjArr[i];
+									if(pageObj != null){
+										pageNum = pageObj.num;
+										var objId = pageObj.objectId;
+										if(objId == val)
+											break;
+										}
+							}
 							
-						//}
-							objectTimeTable.moveFirst();
-							while(objectTimeTable.next()){
-								var pageNum = null;
-								var val = objectTimeTable.getKey();
-								var recordedObjArr = timeRefTable.get(objectTimeTable.getValue());
-								for(var i=0;i< recordedObjArr.length;i++){
-									var pageObj = recordedObjArr[i];
-										if(pageObj != null){
-											pageNum = pageObj.num;
-											var objId = pageObj.objectId;
-											if(objId == val)
-												break;
-											}
-								}
-								
-								var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
-								if(nonRecordingObjArray == null){
-									nonRecordingObjArray = new Array();
-									nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
-								}
-								//console.log("------convert recorded to non recorded------"+val);
-								nonRecordingObjArray[nonRecordingObjArray.length] = val;
-							//console.log("------convert recorded to non recorded------"+nonRecordingObjArray.length);
-						 }
-						 timeRefTable= null;
-						 objectTimeTable = null;
-						 timeRefTable = new Hashtable();
-						 objectTimeTable = new Hashtable();
+							var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+							if(nonRecordingObjArray == null){
+								nonRecordingObjArray = new Array();
+								nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+							}
+							//console.log("------convert recorded to non recorded------"+val);
+							nonRecordingObjArray[nonRecordingObjArray.length] = val;
+						//console.log("------convert recorded to non recorded------"+nonRecordingObjArray.length);
+					 }
+					 timeRefTable= null;
+					 objectTimeTable = null;
+					 timeRefTable = new Hashtable();
+					 objectTimeTable = new Hashtable();
 					 				
 					}else{
-						// Recording Append case
 						if(filename.length >0){
+								//alert("host 1 ::"+window.location.host)
 								var myPlayer=document.getElementById("audio1");
-								//myPlayer.src = "http://"+window.location.host+"/"+filename;
+								myPlayer.src = "http://"+window.location.host+"/"+filename;
 								/*
+								myPlayer.addEventListener("loadedmetadata", function(_event) {
+									//alert("load meta data");
+										var duration = myPlayer.duration;
+										recFileDuration = Math.ceil(duration * 1000);
+										//console.log("duration:-------------------------------"+recFileDuration);
+										
+								
+								});
+								*/
 								var oldFileName = filename;
 								var pos = filename.lastIndexOf('[');
 								if(pos == -1){
@@ -149,25 +146,26 @@
 										var fCount = filename.substring(pos+1,pos2-1);
 										filename = filename.substring(0,pos)+ '[' + (parseInt(fCount)+1)+']' + filename.substring(pos2,filename.length);
 								}
-								*/
+								
 								//console.log("filename:-----**************************************--------------------------"+filename);
 								jQuery.ajax({
 										type:	"get",
 										url: 	"copyrecording.action",
-										data: 	"fileName="+filename+"&meetingName="+meetingName,
+										data: 	"fileName="+filename+"&oldFileName="+oldFileName,
 									success:function(msg) {
 										//console.log("-------Copy Existing Recording------");
 										if(msg.actionErrors != null){
 											alert("error");
 											return;
 										}else{
-											 filename = 'Enotebook/'+userId + '/'+meetingName+'/temp/'+msg.fileName;
-											// alert("copy done:::::"+filename);
-											$scope.startRecording();
 										//console.log("------Successfully Copied------");
 										}
 								}});
-							}else{
+
+
+
+								
+						}else{
 							/*
 							ctx.clearRect(0, 0, canvas.width, canvas.height);
 							restore();
@@ -184,14 +182,10 @@
 								document.getElementById("pagenum").value = pageObj.num;
 						}
 					}
-					
-					
-				}
-				
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				restore();
-				$scope.stopPlaying();
-				
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					restore();
+					$scope.stopPlaying();
+					$scope.startRecording();
 				
 					/*
 					jQuery.ajax({
@@ -272,6 +266,7 @@
 				$scope.encoder = new Worker('js/encoder.js');
 				//console.log('initializing encoder with samplerate = ' + $scope.samplerate + ' and bitrate = ' + $scope.bitrate);
 				$scope.encoder.postMessage({ cmd: 'init', config: { samplerate: $scope.samplerate, bitrate: $scope.bitrate } });
+
 				$scope.encoder.onmessage = function(e) {
 					$scope.ws.send(e.data.buf);
 					if (e.data.cmd == 'end') {
@@ -282,21 +277,20 @@
 					}
 				};
 				var loc = window.location.host;
+				//alert("loc :: "+loc);
 				//loc = loc.substring(0,loc.indexOf(':'));
-				//console.log("loc::::"+loc);
-				//alert("filename:::"+filename);
+				console.log("loc::::"+loc);
 				if(filename.length == 0){
-				//	filename = "recordings/" + "recording"+ Math.round(Math.random()*1000)+".mp3";
-					
-					filename ='Enotebook/'+userId + '/'+meetingName+'/temp/'+meetingName+'.mp3';
+					filename = "recordings/" + "recording"+ Math.round(Math.random()*1000)+".mp3";
 				}
 				recCount = recCount + 1;
 				//console.log("<-------filename----->"+filename);
 				//alert("filename"+filename);
 				try{
 					//console.log("--------------------Try to open websocket----------------------------------")
-					//alert("222222222");
-					$scope.ws = new WebSocket("ws://"+loc+":9000/ws/audio?recording="+filename);
+					//$scope.ws = new WebSocket("ws://"+loc+":9000/ws/audio?recording="+filename);
+					 $scope.ws = new WebSocket("ws://localhost:9000/ws/audio?recording="+filename);
+					// alert("ws://localhost:9000/ws/audio?recording="+filename);
 					//$scope.ws = new WebSocket("ws://ttmachine.edupeak.com:9000/ws/audio?recording="+filename);
 				}catch(err){
 					console.log("<------------error occured----------------->");
@@ -308,17 +302,10 @@
 					navigator.webkitGetUserMedia({ video: false, audio: true }, $scope.gotUserMedia, $scope.userMediaFailed);
 					//console.log("--------------Recording Start-----");
 				};
-				$scope.ws.onerror = function() {
-					//Communication with the streaming server Failed
-					document.getElementById("errorMsg").innerHTML = "Communication with the streaming server Failed.";
-					$('#error-Modal').modal('show');
-					//console.log("--------------Recording Start-----");
-				};
 			};
 
 			$scope.userMediaFailed = function(code) {
-				document.getElementById("errorMsg").innerHTML = "Error occured while grabing microphone.";
-				$('#error-Modal').modal('show');
+				//console.log('grabbing microphone failed: ' + code);
 			};
 
 			$scope.startmeeting = function(code) {
@@ -326,7 +313,6 @@
 				//console.log('startmeeting ---------------------------');
 
 			};
-			
 
 			$scope.gotUserMedia = function(localMediaStream) {
 				$scope.recording = true;
@@ -342,6 +328,7 @@
 							//myVid.src = "http://localhost:8080/"+filename;
 							//myVid.src = "http://localhost/"+filename;
 							myPlayer.src = "http://"+window.location.host+"/"+filename;
+							//alert("myPlayer.src :: "+myPlayer.src);
 							currentMiliSec =  Math.ceil(recFileDuration * 1000);
 							//console.log("duration:"+currentMiliSec);
 							/*
@@ -363,10 +350,11 @@
 
 				console.log('success grabbing microphone');
 				$scope.stream = localMediaStream;
-				if(audio_context == null){
-				 audio_context = new window.webkitAudioContext();
-				}
-		
+
+				
+		        window.AudioContext = window.AudioContext||window.webkitAudioContext;
+				//var audio_context = new window.webkitAudioContext();
+				var audio_context = new AudioContext();
 				$scope.input = audio_context.createMediaStreamSource($scope.stream);
 				//console.log("hdkfhkdshfdshkfhds::;"+$scope.input.context.createScriptProcessor(4096, 1, 1));
 				try{
@@ -418,7 +406,7 @@
 				}
 				$scope.recordButtonStyle = "red-btn";
 				//console.log('stop recording');
-				$scope.stream.stop();
+				//$scope.stream.stop();
 				$scope.recording = false;
 				isRecRunning = false;
 				
@@ -429,16 +417,9 @@
 				$scope.node.disconnect();
 				$scope.input = $scope.node = null;
 				clearTimeout(timer);
-				$('#recording-Modal').modal('show'); 
-				recSaved = true;
-				$scope.ws.onclose = function()
-				 { 
-					// websocket is closed.
-					//alert("Connection is closed..."); 
-					myVid.src = "http://"+window.location.host+"/"+filename;
-					console.log("src::::"+myVid.src);
-				 };
-				
+				myVid.src = "http://"+window.location.host+"/"+filename;
+				//alert("myVid.src :: "+myVid.src)
+				console.log("src::::"+myVid.src);
 			};
 	}]);
 		

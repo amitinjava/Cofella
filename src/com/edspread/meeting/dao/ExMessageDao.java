@@ -20,4 +20,9 @@ private static final long serialVersionUID = 1L;
 		
 		return list;
 	}
+
+	public void getParticipants(int channelId, String email) {
+		// TODO Auto-generated method stub
+		
+	}
 }

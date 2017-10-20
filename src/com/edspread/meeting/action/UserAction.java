@@ -20,6 +20,7 @@ import com.edspread.meeting.DTO.MeetingDTO;
 import com.edspread.meeting.DTO.UserLectureDTO;
 import com.edspread.meeting.constants.MeetingConstant;
 import com.edspread.meeting.entity.Channel;
+import com.edspread.meeting.entity.ExMessage;
 import com.edspread.meeting.entity.User;
 import com.edspread.meeting.entity.UserLectures;
 import com.edspread.meeting.service.ChannelService;
@@ -59,6 +60,7 @@ public class UserAction extends ActionSupport {
 	private String message;
 	private String autoPlay;
 	private String timeZoneOffset;
+	private List<Integer> participants;
 
 	
 
@@ -127,7 +129,21 @@ public class UserAction extends ActionSupport {
 	* For editing the lectures;
 	*/
     public String editLecture() {
-		if(autoPlay.equalsIgnoreCase(MeetingConstant.TRUE)){
+    	User user = (User) SessionUtil.getSession().get(
+    			MeetingConstant.USER_SESSION_VAR);
+    	System.out.println("channelId : User "+channel_id+" : email : "+user.getEmail());
+    	List<ExMessage> participantList = null;
+    	try {
+    		participantList = exMessageService.getParticipants(channel_id, email);
+		} catch (MeetingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	participants = new ArrayList<>();
+    	for(ExMessage em : participantList){
+    	participants.add(em.getSequenceNo());
+    	}
+    	if(autoPlay.equalsIgnoreCase(MeetingConstant.TRUE)){
 			return MeetingConstant.PLAY;
 		}else{
 			return SUCCESS;
@@ -819,6 +835,14 @@ public String searchLecture(){
 
 	public void setChannelList(List<Channel> channelList) {
 		this.channelList = channelList;
+	}
+
+	public List<Integer> getParticipants() {
+		return participants;
+	}
+
+	public void setParticipants(List<Integer> participants) {
+		this.participants = participants;
 	}
 	
 }

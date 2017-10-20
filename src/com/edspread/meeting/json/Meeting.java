@@ -6,6 +6,11 @@ public class Meeting {
 	private String MeetingName;
 	private String channelId;
 	private String sessionId;
+	private Integer sequenceNo;
+	private Integer recSequenceNo;
+	private String TempRecFile;
+	private String RecFname;
+	private String RecFileDuration;
 	private List<Page> PageList;
 	public String getMeetingName() {
 		return MeetingName;
@@ -31,6 +36,37 @@ public class Meeting {
 	public void setChannelId(String channelId) {
 		this.channelId = channelId;
 	}
+	public String getTempRecFile() {
+		return TempRecFile;
+	}
+	public void setTempRecFile(String tempRecFile) {
+		TempRecFile = tempRecFile;
+	}
+	public String getRecFname() {
+		return RecFname;
+	}
+	public void setRecFname(String recFname) {
+		RecFname = recFname;
+	}
+	public String getRecFileDuration() {
+		return RecFileDuration;
+	}
+	public void setRecFileDuration(String recFileDuration) {
+		RecFileDuration = recFileDuration;
+	}
+	public Integer getSequenceNo() {
+		return sequenceNo;
+	}
+	public void setSequenceNo(Integer sequenceNo) {
+		this.sequenceNo = sequenceNo;
+	}
+	public Integer getRecSequenceNo() {
+		return recSequenceNo;
+	}
+	public void setRecSequenceNo(Integer recSequenceNo) {
+		this.recSequenceNo = recSequenceNo;
+	}
+	
 	
 
 }

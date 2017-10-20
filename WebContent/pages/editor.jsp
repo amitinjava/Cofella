@@ -332,7 +332,7 @@ Other Styles
 				<button id="selButton" type="button" class="btn btn-default" onclick = "setId(7,true)" ><a href="#toolOptions" onclick = "setId(7)" class="switchContent" data-toggle="tooltip" data-placement="bottom" title="Select Tool"><i class="fa fa-hand-o-up fa-lg"></i></a></button>
 				<button type="button" id ="zoom" class="btn btn-default" disabled onclick="setZoomEnableDisable(true)"><a class="switchContent"  data-toggle="tooltip" data-placement="bottom" title="Zoom Tool"><i class="fa fa-search fa-lg"></i></a></button>
 				<!-- <a id="pencilButton111" type="button" class="btn btn-default" onclick = "setId(4,true)" >111</a> -->
-				<a href="#" class="menu_icon pencil" data-toggle="tooltip" data-placement="right" title="Pencil" id="pencilButton" onclick = "setId(4,true)">Pencil</a>				
+				<!-- <a href="#" class="menu_icon pencil" data-toggle="tooltip" data-placement="right" title="Pencil" id="pencilButton" onclick = "setId(4,true)">Pencil</a> -->				
 
 				<div class="btn-group">
 					<button id="shapeButton" type="button" class="btn btn-default dropdown-toggle" onclick = "checkAndSetId(this)" data-toggle="dropdown">
@@ -436,7 +436,13 @@ Other Styles
 						<option value ="0.9">90</option>
 						<option value ="1" selected>100</option>
 					</select>			
-			<button type="button" id="closeTools" class="btn btn-default"><i class="fa fa-caret-left fa-lg"></i></button>		
+			<button type="button" id="closeTools" class="btn btn-default"><i class="fa fa-caret-left fa-lg"></i></button>	
+			<select id="participantId" name="participantId" class="form-control number-selector" onchange ="getCanvasObject1(this);"  >
+			<option value ="-1">Participants</option>
+			<s:iterator id="participant" value="participants">
+			<option value ='<s:property value='#participant'/>'><s:property value='#participant'/></option>
+			</s:iterator>	
+			</select>
 		</div>
 
 
@@ -710,6 +716,14 @@ Other Styles
 	var mode = "<s:property value = '%{mode}' />";
 	var userId = "<s:property value='%{#session.user.email}'/>";
 	var email = "<s:property value='%{#session.user.email}'/>";
+	
+	function getCanvasObject1(obj){
+		//alert(obj.value);
+		getCanvasObject(obj, meetingName, channel_id);
+	}
+	
+	
+	
  </script>
 
 </body>

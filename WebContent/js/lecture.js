@@ -105,9 +105,10 @@
 	var refText;
 	var keyDownInTxtField = false;
 	var usersObjectIdentifierId;
+	var sequenceNo;
+	var recSequenceNo;
 	
 	jQuery(document).ready(function(){
-		//alert("ready")
 		/*
 		var windowW = window.innerWidth;
 		var windowH = window.innerHeight;
@@ -123,7 +124,6 @@
 			canvas.width = (windowW + 180);
 			canvas.height = (windowH - 1);
 			canvas.style.display = "block";
-			alert("isAutoPlay  -- "+isAutoPlay)
 			if(isAutoPlay == "true"){
 				document.getElementById("recordMenu").width = (windowW - 40);
 			}
@@ -142,7 +142,6 @@
 				//alert("width::"+document.getElementById("recordMenu").width);
 			}
 		}
-		//alert("1")
 		ctx = canvas.getContext("2d");
 		canvasBoundedRectanglePoints[canvasBoundedRectanglePoints.length] = 0;
 		canvasBoundedRectanglePoints[canvasBoundedRectanglePoints.length] = 0;
@@ -160,14 +159,13 @@
 			document.getElementById("area1").style.fontSize = textFontSize+"px";
 			document.getElementById("area1").style.fontFamily = textFontType;
 		}
-		//alert("3")
+		
 		currentObjId = 7;
 		if(document.getElementById("toolOptions1") != null){
 			document.getElementById("toolOptions1").style.display = "inline-block";
 		}
 		
 		init();
-		//alert("222 :"+document.getElementById("selButton"))
 		if(document.getElementById("selButton") != null){
 			prevSelButtonObj = document.getElementById("selButton");
 			prevSelButtonObj.className = "btn btn-default active";
@@ -184,11 +182,50 @@
 		offsetY = canvasOffset.top;
 		initPlayer();
 		
+		pointerImg = document.getElementById("pointerImg");
+		jQuery('#ex1').slider('setValue',sliderPos);
+		jQuery('#ex1').slider({
+			formater: function(value) {
+			}
+		});
+
+		jQuery("#ex1").on('slide', function(slideEvt) {
+			sliderPos = slideEvt.value;
+			
+		});
+		jQuery("#ex1").on('slideStop', function (e) {
+			//console.log("-----------slideStop-------------"+sliderPos);
+			if(!isRecRunning){
+				//console.log("----runningTimerId---After---"+runningTimerId);
+				//console.log(" clearTimeout(sliderTimer)222222222");
+				//console.log("----runningTimerId---Before---"+runningTimerId);
+				clearTimeout(runningTimerId);	
+				clearTimeout(sliderTimer);
+				playingFrom = 2;
+				//console.log("Source::::"+myVid.src);
+				if(myVid.src == null || myVid.src == ''){
+					myVid.src = "http://"+window.location.host+"/"+filename;
+					
+					
+					//myVid.currentTime  = currentAudioTime;
+				}else{
+					currentAudioTime  = sliderPos*recFileDuration / 100;
+					//console.log("-----------currentAudioTime-------"+currentAudioTime);
+					currentAudioTime =  Math.ceil(currentAudioTime / 1000);
+					myVid.currentTime  = currentAudioTime;
+				}
+			}
+		});
 		
+		jQuery("#ex1").on('slideStart', function (e) {
+			myVid.pause();
+			document.getElementById("playpause").className  = "play";
+		});
+
+
 
 		canvas.addEventListener("touchstart", function (evt) {
 			var touch = evt.changedTouches[0];
-			//alert("touch :: "+touch)
 			//console.log("Touch Start------------------"+touch.clientX+"::Y::"+touch.clientY);
 			evt.preventDefault();
 			dragFlag = true;
@@ -421,7 +458,6 @@
 		$("#canvas").on('mousedown', function (e) {
 			e.preventDefault();
 			dragFlag = true;
-			//alert("e :: "+e)
 			handleMouseDown(e);
 		}).on('mouseup', function(e) {
 			e.preventDefault();
@@ -679,7 +715,6 @@ function setId(id,state){
 		//alert("setid"+selObjArray);
 		//var obj = document.getElementById("closeShapeButton")
 		//obj.className = "btn btn-default active";
-	//alert(id);
 		switch(id){
 		  case 1:
 				var obj = document.getElementById("shapeButton");
@@ -711,7 +746,6 @@ function setId(id,state){
 		  break;
 		  case 4:
 				var obj = document.getElementById("pencilButton");
-				//alert("111 ::"+prevSelButtonObj)
 				prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
@@ -1061,10 +1095,10 @@ function handleZoomButton(state){
 function initPlayer(){
 
 	myVid = document.getElementById("audio1");
-	//alert(myVid)
 	myVid.addEventListener("canplay", function(_event) {
 	//console.log("Can play listener works here ::playingFrom ::"+playingFrom + ":::isPlayingStoped++"+isPlayingStoped);
 	//currentObjId = 7;
+	//alert("playingFrom : "+playingFrom);
 	
 	switch(playingFrom){
 				case 1:// Normal play from playing button
@@ -1083,6 +1117,7 @@ function initPlayer(){
 						checkAndMergeTimeRefTable();
 						timeRefTable = sortObjectTimeTable(timeRefTable);
 						//console.log("3333333333333333333333333333"+timeRefTable);
+						console.log("recSequenceNo11 :: "+recSequenceNo);
 						drawNonRecordingObject("1");
 						timeRefTable.moveFirst();
 						//console.log("timeRefTable::::playing:"+timeRefTable);
@@ -1271,6 +1306,7 @@ function initPlayer(){
 	myVid.addEventListener("loadedmetadata", function(_event) {
 		//alert("loadedmetadata called");
 			//console.log("loadedmetadata called"+myVid.src);
+			var recSaved;
 			var duration = myVid.duration;
 			recFileDuration = duration * 1000;
 			duration = getDurationInMinAndSec(recFileDuration);
@@ -1637,7 +1673,6 @@ function handleMouseUp(e) {
 	var mouseX = parseInt(e.clientX - offsetX);
 	var mouseY = parseInt(e.clientY - offsetY);
 	console.log("handleMouseUp:::"+currentObjId);
-	//alert("isDrawing :: "+isDrawing);
 	if(isDrawing){
 		var tempPointsArray = new Array();
 		if(currentObjId == 4){
@@ -3090,6 +3125,7 @@ function drawObject(objectTable,id,highlight){
 	}
 	*/
 	var graphicsObject = objectTable.get(id);
+	//console.log((graphicsObject.sequenceNo+" :: "+recSequenceNo);
 	if(graphicsObject != null){
 	//console.log("drawObject:::graphicsObject:;"+graphicsObject.type);
 	ctx.beginPath();
@@ -3512,7 +3548,7 @@ function drawPoints(points) {
 	
 }
 
-function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillColor,opacity,imageLoaded,textObj,ref,usersObjectIdentifierId){
+function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillColor,opacity,imageLoaded,textObj,ref,usersObjectIdentifierId, sequenceNo){
 	this.id = id;
 	this.type = type;
 	this.pointsArray = pointsArray;
@@ -3527,6 +3563,7 @@ function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillCol
 	this.ref = ref;
 	this.attachment = null;
 	this.usersObjectIdentifierId = usersObjectIdentifierId;
+	this.sequenceNo = sequenceNo;
 }
 function Text(text,fontType,fontSize,isBold,isUnderLine,isItalic){
 	this.textData = text;
@@ -6575,7 +6612,6 @@ function setFilledColor(obj){
 }
 
 function setTextStyleColor(obj){
-	//alert("obj "+obj);
 	textStyleColor= obj.value;
 	//alert("textStyleColor:;"+textStyleColor);
 	document.getElementById("area1").style.color = textStyleColor;
@@ -7168,6 +7204,7 @@ function createJSON(){
 	//console.log("recFileDuration:::::"+duration);
 	var data = '{"MeetingName":"'+ meetingName +'"';
 	data = data + ', "channelId":"'+ channel_id +'"';
+	data = data + ',"recSequenceNo":-1';
 	if(filename != null && filename.length >0 ){
 		var pos = filename.lastIndexOf('/');
 		var fname;
@@ -7196,6 +7233,7 @@ function createJSON(){
 					 objectData = objectData + '{';
 				 	 var graphicsObject = objectTable.get(objectTable.getKey());
 				 	 objectData = objectData + '"id":' + graphicsObject.id + ',';
+				 	 objectData = objectData + '"sequenceNo":"' + graphicsObject.sequenceNo + '",';
 					 objectData = objectData + '"type":' + graphicsObject.type + ',';
 					 objectData = objectData + '"usersObjectIdentifierId":"' + graphicsObject.usersObjectIdentifierId + '",';
 					 if(graphicsObject.pointsArray != null){
@@ -7232,6 +7270,10 @@ function createJSON(){
 					 }
 					 if(graphicsObject.usersObjectIdentifierId != null){	 
 						 	objectData = objectData + '"usersObjectIdentifierId":"' + graphicsObject.usersObjectIdentifierId + '",';
+						 }
+					 
+					 if(graphicsObject.sequenceNo != null){	 
+						 	objectData = objectData + '"sequenceNo":"' + graphicsObject.sequenceNo + '",';
 						 }
 					 if(graphicsObject.text != null){	
 					 	var textobj = graphicsObject.text;
@@ -7498,6 +7540,104 @@ function openMeeting(meetingName){
 		  	}});
 }
 
+function getCanvasObject( obj, meetingName, channel_id){
+	//$('#save-Modal').modal('show');
+	//var jsonData = createJSON();
+	//console.log("jsonData:::"+jsonData);
+	var jsondata = '{"participantId":'+obj.value+'}' 
+	//alert(obj.id+" -:::- "+obj.value);
+	 jQuery.ajax({
+		  	type:	"get",
+	  		url: 	"getmeetingjson.action",
+	  		data: "meetingName="+meetingName+"&status="+true+"&channel_id="+channel_id+"&participantId= "+obj.value,
+	  		contentType: 'application/json; charset=utf-8',
+	  		dataType: 'json',
+		  		success:function(msg) {
+		  			//alert(msg.parentId);
+		  			 //$('#save-Modal').modal('hide');
+		  			if(msg.actionErrors != null)
+		  			{
+		  				//alert("error");
+						showSaveModal('error');
+		  		  	}else{
+		  		  		//console.log("showchild"+msg.jsonContent);
+		  		  		var json = JSON.parse(msg.jsonContent);
+		  		  		//alert(json);
+		  		  		if(json == null){
+		  		  			return;
+		  		  		}
+		  		  		meetingName = json.MeetingName;
+		  		  		recSequenceNo = json.recSequenceNo;
+		  		  		alert("recSequenceNo :: "+recSequenceNo);
+						//alert(document.getElementById("meetingName").value);
+						if(json.RecFname!= null){
+							var fname = json.RecFname;
+							var pos = fname.lastIndexOf('/');
+							var recFileName;
+							if(pos != -1){		
+								 recFileName = fname.substring(pos+1,fname.length);
+							}
+							console.log("Recording recFileName::"+recFileName);
+							filename = json.TempRecFile;
+							recCount = 1;
+							var pos2 = filename.lastIndexOf('/');
+							if(pos2 != -1){		
+								filename = filename.substring(0,pos2+1) + recFileName;
+							}
+							alert("Recording file name::"+filename);
+							
+						}
+		  		  		initDataStruture();
+		  		  		if(json.PageList != null){
+		  		  			parseMeetingJSON(json.PageList);
+		  		  		}
+		  		  			
+						createNewMeeting();
+						pageObjTable.moveFirst();
+						var pageNum;
+						if(pageObjTable.next()){
+							pageNum = pageObjTable.getKey();
+						}else{
+							pageNum = 1;
+						}
+						document.getElementById("pagenum").value = pageNum;
+						//console.log("22222222222222222222222222222");
+		  		  		drawNonRecordingObject(pageNum, false);
+						restoreAllRecordedObj(pageNum, false);
+						//console.log("---------------filename----------------------------"+filename);
+						if(filename.length >0){
+							myVid=document.getElementById("audio1");
+							myVid.src = "http://"+window.location.host+"/"+filename;
+							if(isAutoPlay == "true"){
+								//alert("startttttttttttttttt");
+								var playButObj = document.getElementById("playpause")
+								playButObj.className  = "pause";
+								playObject();
+								isAutoPlay = "false";
+								 $('#openRecord').click();
+							}
+							
+							/*
+							myVid.addEventListener("loadedmetadata", function(_event) {
+									var duration = myVid.duration;
+									recFileDuration = duration * 1000;
+									//console.log("duration:"+recFileDuration);
+							
+							});*/
+						}
+						
+						//var obj =document.getElementById("pt");
+						//document.getElementById("petrol").innerHTML= "BYEEEEEEE";
+						//fireEvent(obj,'click');
+		  		  		//drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3],imageUrl);	
+		  		  		//showChild(msg.parentId,msg.childList,false);
+		  		  	}
+		  			/* if (eventType =='exit'){
+		  		   		window.location.href = "userlectures";
+		  			} */
+		  }});
+}
+
 function parseMeetingJSON(pageList){
 	//console.log(pageList);
 	jQuery.each(pageList, function(i, obj) {
@@ -7531,7 +7671,7 @@ function parseGraphicsObjectList(pageNum,gObjectList){
 		if(obj.text != null){
 			textObj= new Text(obj.text.textData,obj.text.fontType,obj.text.fontSize,obj.text.isBold,obj.text.isUnderLine,obj.text.isItalic);
 		}
-		var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref,obj.usersObjectIdentifierId);
+		var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref,obj.usersObjectIdentifierId, obj.sequenceNo);
 		//count++;
 		if((gObj.type == 1 || gObj.type == 2 || gObj.type == 23) && (obj.pointsList.length == 4)){
 			checkAndAddPonitsForNewVersion(gObj);

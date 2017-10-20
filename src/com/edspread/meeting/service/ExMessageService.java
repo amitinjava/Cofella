@@ -36,6 +36,12 @@ public class ExMessageService {
 		}
 
 	}
+	
+	public List<ExMessage> getParticipants(int channelId,String email) throws MeetingException {
+		return exMessageDao.findByChannelId(channelId);
+		
+
+	}
 
 	public ExMessageDao getExMessageDao() {
 		return exMessageDao;
