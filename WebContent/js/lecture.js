@@ -7472,7 +7472,10 @@ function openMeeting(meetingName){
 		  		  	}else{
 		  		  		//console.log("showchild"+msg.jsonContent);
 		  		  		var json = JSON.parse(msg.jsonContent);
-		  		  		//alert(json)
+		  		  		
+		  		  		if(json == null){
+			  		  		return;
+		  		  		}
 		  		  		meetingName = json.MeetingName;
 						//alert(document.getElementById("meetingName").value);
 						if(json.RecFname!= null){
