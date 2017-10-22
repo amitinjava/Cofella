@@ -55,13 +55,14 @@
 			
 			$scope.checkRecordingStatus = function(){
 				//alert("setRecordingEnv:::");
-				if(recCount != 0){
+				/*if(recCount != 0){
 					$('#player-Modal').modal('show');
 				}
-				else{
+				else{*/
 					canvas.style.cursor  = "wait";
 					$scope.setRecordingEnv(false);
-				}
+				//}
+				
 					
 			};
 			

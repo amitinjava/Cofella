@@ -7589,8 +7589,9 @@ function getCanvasObject( obj, meetingName, channel_id){
 		  		  		}
 		  		  		meetingName = json.MeetingName;
 		  		  		recSequenceNo = json.recSequenceNo;
-		  		  		alert("recSequenceNo :: "+recSequenceNo);
+		  		  		console.log("recSequenceNo :: "+recSequenceNo);
 						//alert(document.getElementById("meetingName").value);
+		  		  		filename ='';
 						if(json.RecFname!= null){
 							var fname = json.RecFname;
 							var pos = fname.lastIndexOf('/');
@@ -7605,7 +7606,7 @@ function getCanvasObject( obj, meetingName, channel_id){
 							if(pos2 != -1){		
 								filename = filename.substring(0,pos2+1) + recFileName;
 							}
-							alert("Recording file name::"+filename);
+							console.log("Recording file name::"+filename);
 							
 						}
 		  		  		initDataStruture();
@@ -7626,6 +7627,7 @@ function getCanvasObject( obj, meetingName, channel_id){
 		  		  		drawNonRecordingObject(pageNum, false);
 						restoreAllRecordedObj(pageNum, false);
 						//console.log("---------------filename----------------------------"+filename);
+						//myVid = '';
 						if(filename.length >0){
 							myVid=document.getElementById("audio1");
 							myVid.src = "http://"+window.location.host+"/"+filename;
@@ -7645,6 +7647,13 @@ function getCanvasObject( obj, meetingName, channel_id){
 									//console.log("duration:"+recFileDuration);
 							
 							});*/
+						}else{
+							recFileDuration = 0;
+							filename = "";
+							recCount = 0;
+							document.getElementById("eTime").innerHTML = "<b>00:00</b>";				
+							document.getElementById("cTime").innerHTML = "<b>00:00</b>";
+							clearRecordedObjectTime();	
 						}
 						
 						//var obj =document.getElementById("pt");
