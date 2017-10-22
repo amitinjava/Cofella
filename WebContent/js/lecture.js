@@ -7,6 +7,7 @@
 	var pageObjTable =  new Hashtable();
 	var pageGrpObjTable =  new Hashtable();
 	var nonRecordinPageObjTable =  new Hashtable();
+	var seqBasedPageRecObjTable =  new Hashtable();
 	//var objectTable = new Hashtable();
 	var timeRefTable = new Hashtable();
 	var objectTimeTable = new Hashtable();
@@ -1119,6 +1120,7 @@ function initPlayer(){
 						//console.log("3333333333333333333333333333"+timeRefTable);
 						console.log("recSequenceNo11 :: "+recSequenceNo);
 						drawNonRecordingObject("1");
+						restoreRecordedObjWithSeq("1",recSequenceNo);
 						timeRefTable.moveFirst();
 						//console.log("timeRefTable::::playing:"+timeRefTable);
 						playCount = 0;
@@ -4110,24 +4112,26 @@ function checkPageAndDrawObj(key){
 	if(pageObj.num == document.getElementById("pagenum").value){
 		//console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"+recordedObjArr.length);
 		for(var i=0;i<recordedObjArr.length;i++){
-			
 			pageObj = recordedObjArr[i];
-			if(i == 0){
-				var graphicsObject = objectTable.get(pageObj.objectId);
-				//console.log("graphicsObject::::"+graphicsObject);
-				var pointsArray = graphicsObject.pointsArray;
-			
-				if( pointsArray != null){	
-				//console.log("pointerX::"+pointerX+"::pointerY:;"+pointerY+":;pointsArray[0]::"+pointsArray[0]+"::pointsArray[3]:"+pointsArray[3]);
-					currentPointerPath = getPointsOnPointerPath(pointerX,pointerY,pointsArray[0],pointsArray[3],50);
-					clearTimeout(pointerTimerId);	
-					pointCtr = 0;
-					//console.log("currentPointerPath::::"+currentPointerPath);
-					drawPointerPath();
+			var graphicsObject = objectTable.get(pageObj.objectId);
+			console.log("recSequenceNo11 :: "+recSequenceNo);
+			if(graphicsObject.sequenceNo == recSequenceNo){
+				if(i == 0){
+						//console.log("graphicsObject::::"+graphicsObject);
+						var pointsArray = graphicsObject.pointsArray;
+				
+						if( pointsArray != null){	
+						//console.log("pointerX::"+pointerX+"::pointerY:;"+pointerY+":;pointsArray[0]::"+pointsArray[0]+"::pointsArray[3]:"+pointsArray[3]);
+							currentPointerPath = getPointsOnPointerPath(pointerX,pointerY,pointsArray[0],pointsArray[3],50);
+							clearTimeout(pointerTimerId);	
+							pointCtr = 0;
+							//console.log("currentPointerPath::::"+currentPointerPath);
+							drawPointerPath();
+						}
 				}
+				//console.log("-777777777777777777");
+				drawObject(objectTable,pageObj.objectId,false);
 			}
-			//console.log("-777777777777777777");
-			drawObject(objectTable,pageObj.objectId,false);
 		}
 		restoreInsertedObjectInStream(pageObj.num);
 	}else{
@@ -4204,6 +4208,23 @@ function restoreAllRecordedObj(pageNum){
 		
 	}
 }
+
+function restoreRecordedObjWithSeq(pageNum,sequenceNum){
+	var objectTable = pageObjTable.get(pageNum);
+	for(var ctr = 1; ctr < sequenceNum; ctr++ ){
+		var seqBasedPageTable = seqBasedPageRecObjTable.get(ctr);
+		if(seqBasedPageTable != null){
+			var recordedObjArr = seqBasedPageTable.get(pageNum);
+			if(recordedObjArr != null){
+				for(var i=0;i<recordedObjArr.length;i++){
+					var pageObj = recordedObjArr[i];
+					drawObject(objectTable,pageObj.objectId,false);
+				}
+			}
+		}
+	}
+}
+
 function drawNonRecordingObject(pageNum){
 	
 	var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
@@ -7472,10 +7493,7 @@ function openMeeting(meetingName){
 		  		  	}else{
 		  		  		//console.log("showchild"+msg.jsonContent);
 		  		  		var json = JSON.parse(msg.jsonContent);
-		  		  		
-		  		  		if(json == null){
-			  		  		return;
-		  		  		}
+		  		  		//alert(json)
 		  		  		meetingName = json.MeetingName;
 						//alert(document.getElementById("meetingName").value);
 						if(json.RecFname!= null){
@@ -7701,6 +7719,19 @@ function parseGraphicsObjectList(pageNum,gObjectList){
 			recordedObjArr[recordedObjArr.length] = pageObject;
 			timeRefTable.put(obj.timeStamp,recordedObjArr);
 			
+			var seqBasedPageTable = seqBasedPageRecObjTable.get(obj.sequenceNo);
+			if(seqBasedPageTable == null){
+				seqBasedPageTable = new Hashtable(); 
+				seqBasedPageRecObjTable.put(obj.sequenceNo,seqBasedPageTable);
+			}
+			var recObjArrayOnPage = seqBasedPageTable.get(pageNum);
+			if(recObjArrayOnPage == null){
+				recObjArrayOnPage = new Array();
+			}
+			recObjArrayOnPage[recObjArrayOnPage.length] = pageObject;
+			seqBasedPageTable.put(pageNum,recObjArrayOnPage);
+			
+			
 			
 			//timeRefTable.put(obj.timeStamp,pageObject);
 		}else{
@@ -7711,7 +7742,7 @@ function parseGraphicsObjectList(pageNum,gObjectList){
 	});
 	nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
 	pageObjTable.put(pageNum,objectTable);
-	//console.log("objectTable:::::"+objectTable);
+	console.log("seqBasedPageRecObjTable:::::"+seqBasedPageRecObjTable);
 }
 
 function parseGroupObjectList(pageNum,grpObjectList){
@@ -9544,3 +9575,4 @@ function arrayDifference(array1,array2){
 	//console.log("difference::"+difference);
 	return difference;
 }
+//alert("hii");
