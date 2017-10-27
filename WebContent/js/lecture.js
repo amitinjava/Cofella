@@ -6618,6 +6618,11 @@ function setLineWidth(obj){
 	 changeSelectedObjectLineWidth(lineWidth)
 }
 
+function setNewUILineWidth(obj){
+	 lineWidth = obj;
+	 changeSelectedObjectLineWidth(lineWidth)
+}
+
 function setGlobalAlpha(obj){
 	 globalAlpha = obj.value;
 	 changeSelectedObjectGlobalAlpha(globalAlpha)
@@ -6629,6 +6634,18 @@ function setFilledColor(obj){
 	}else{
 		fillColor= obj.value;
 	}
+	setFillPropOnSelctedObject(fillColor);
+}
+
+function setNewUIFilledColor(obj){
+	var clr = document.getElementById("hex").value;
+	clr = "#"+clr;
+	if(clr == ""){
+		fillColor = null;
+	}else{
+		fillColor= clr;
+	}
+	alert(fillColor);
 	setFillPropOnSelctedObject(fillColor);
 }
 
@@ -7493,6 +7510,9 @@ function openMeeting(meetingName){
 		  		  	}else{
 		  		  		//console.log("showchild"+msg.jsonContent);
 		  		  		var json = JSON.parse(msg.jsonContent);
+			  		  	if(json == null){
+		  		  			return;
+		  		  		}
 		  		  		//alert(json)
 		  		  		meetingName = json.MeetingName;
 						//alert(document.getElementById("meetingName").value);

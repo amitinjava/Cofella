@@ -186,7 +186,7 @@
           <action name="editlecture" method="editLecture" class="com.edspread.meeting.action.UserAction">
                	  <result name="login">/pages/user/userlogin.jsp</result>
            		  <result name="play">/pages/player.jsp</result>
-                  <result name="success">/pages/editor.jsp</result>
+                  <result name="success">/pages/editor3.jsp</result>
           </action>
           <action name="editlecture2" method="editLecture2" class="com.edspread.meeting.action.UserAction">
                	  <result name="login">/pages/user/userlogin.jsp</result>
