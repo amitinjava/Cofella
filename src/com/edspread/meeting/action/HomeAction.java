@@ -3,6 +3,7 @@ package com.edspread.meeting.action;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,16 +13,18 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -31,10 +34,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.edspread.meeting.DTO.DraftMessageDTO;
 import com.edspread.meeting.DTO.UserLectureDTO;
 import com.edspread.meeting.constants.MeetingConstant;
-import com.edspread.meeting.entity.ExMessage;
+import com.edspread.meeting.entity.Message;
 import com.edspread.meeting.entity.User;
+import com.edspread.meeting.entity.UserDetails;
 import com.edspread.meeting.entity.UserLectures;
 import com.edspread.meeting.json.Meeting;
 import com.edspread.meeting.json.Page;
@@ -72,9 +77,21 @@ public class HomeAction extends ActionSupport {
 	private String errorMsg;
 	private List<UserLectureDTO> lectureList;
 	private boolean isAppend;
-	private int participantId;
+	private float participantId;
+	private Integer userId;
+	private Integer draftMsgId;
+	private List<DraftMessageDTO> draftMsgList;
+	private String message;
+	private Byte toOrFrom;
+	private String toOrFromName;
 	
+	private String toUserName;
+	private String toUserPic;
+	
+	private String fromUserName;
+	private String fromUserPic;
 
+	
 	private UserService userService;
 	private ChannelService channelService;
 	private ExMessageService exMessageService;
@@ -233,8 +250,6 @@ public class HomeAction extends ActionSupport {
 		} catch(Exception e){
 			e.printStackTrace();
 		}
-		
-		
 	}
 
 	/**
@@ -257,30 +272,37 @@ public class HomeAction extends ActionSupport {
 			String CONTEXT_PATH = SessionUtil.getServerDeploymentPath();
 			Map<String, String> meetingData = getMeetingData(jb.toString());
 			meetingName = meetingData.get(MeetingConstant.MEETINGNAME);
-			String channelId = meetingData.get("channelId");
-			User user = (User) SessionUtil.getSession().get(
+			userId =  Integer.parseInt(meetingData.get(MeetingConstant.USERID));
+			String channelId = meetingData.get(MeetingConstant.CHANNELID);
+			String contextMsgSeq = meetingData.get(MeetingConstant.MEETINGCTXSEQ);
+			String draftMsgId = meetingData.get(MeetingConstant.DRAFTMSGID);
+			String toId = meetingData.get(MeetingConstant.TOID);
+			String groupId = meetingData.get(MeetingConstant.GROUPID);
+			byte sendStatus = Byte.parseByte(meetingData.get(MeetingConstant.SENDSTATUS));
+			/*User user = (User) SessionUtil.getSession().get(
 					MeetingConstant.USER_SESSION_VAR);
+			*/
 			if (meetingName != null) {
-				
 				status = writeJSONFile(CONTEXT_PATH, meetingName,
-						jb.toString(), user.getEmail(),uniqueID,channelId);
+						jb.toString(), userId.toString(),uniqueID,channelId,sendStatus,contextMsgSeq,draftMsgId,toId,groupId);
 			} else {
 				addActionError("Error Occured while saving");
 				return ERROR;
 			}
-			if (meetingData.get(MeetingConstant.RECFILENAME) != null
+			// Comment because now recording is done by IOS Application
+	/*		if (meetingData.get(MeetingConstant.RECFILENAME) != null
 					&& meetingData.get(MeetingConstant.RECFILENAME).trim()
 							.length() > 0) {
 				// Delete all files in recording folder
 				String destPath = CONTEXT_PATH + File.separator
-						+ MeetingConstant.ENOTEBOOK + File.separator +user.getEmail() 
+						+ MeetingConstant.ENOTEBOOK + File.separator +userId 
 						+ File.separator + meetingName
 						+ File.separator + MeetingConstant.RECORDING;
 				File file = new File(destPath);
 				if(file.exists() && file.isDirectory()) {
 					File[] fileList = file.listFiles();
 					for (File file2 : fileList) {	
-						/*try {
+						try {
 								if (!FileUtils.deleteQuietly(file2)) {
 									addActionError("Error occured while deleting file");
 									return ERROR;
@@ -290,7 +312,7 @@ public class HomeAction extends ActionSupport {
 								addActionError("Error occured while deleting file");
 								return ERROR;
 			
-							}*/
+							}
 					}
 
 				}
@@ -301,7 +323,7 @@ public class HomeAction extends ActionSupport {
 						.println("--------------copy recording file--------------" + meetingData.get(MeetingConstant.TEMPRECFILENAME));
 				String srcPath = CONTEXT_PATH + File.separator
 						+ meetingData.get(MeetingConstant.TEMPRECFILENAME);
-				/*
+				
 				String recDirPath = CONTEXT_PATH + File.separator
 						+ MeetingConstant.ENOTEBOOK + File.separator
 						+ user.getEmail() + File.separator + meetingName + File.separator
@@ -315,14 +337,14 @@ public class HomeAction extends ActionSupport {
 						addActionError("Error Occured while saving recording");
 						return ERROR;
 					}
-				}*/
+				}
 				System.out.println("srcFile ::: 1" + srcPath);
-				/*String destPath = CONTEXT_PATH + File.separator
+				String destPath = CONTEXT_PATH + File.separator
 						+ MeetingConstant.ENOTEBOOK + File.separator
 						+ user.getEmail() + File.separator + meetingName + File.separator
 						+ MeetingConstant.RECORDING + File.separator + meetingName
 						+ MeetingConstant.RECORDINGFILEFORMAT;
-				*/
+				
 				destPath = CONTEXT_PATH + File.separator 
 						+ meetingData.get(MeetingConstant.RECFILENAME);
 				System.out.println("destFile ::: " + destPath);
@@ -331,8 +353,8 @@ public class HomeAction extends ActionSupport {
 					return ERROR;
 				}
 				
-			}
-			String lectureDuration = meetingData.get(MeetingConstant.RECFILEDURATION);
+			}*/
+			/*String lectureDuration = meetingData.get(MeetingConstant.RECFILEDURATION);
 			String slides = meetingData.get(MeetingConstant.PAGELIST);
 			System.out.println("Lecture Duration::----------------------->"+lectureDuration);
 			if(lectureDuration== null){
@@ -340,7 +362,7 @@ public class HomeAction extends ActionSupport {
 			}if(slides == null){
 				slides = "0";
 			}
-			updateLectureInDB(user,meetingName,lectureDuration,slides);
+			updateLectureInDB(userId,meetingName,lectureDuration,slides);*/
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -350,8 +372,27 @@ public class HomeAction extends ActionSupport {
 		return SUCCESS;
 	}
     
-	private void updateLectureInDB(User user, String lectureTitle,String lectureDuration,String slides) throws MeetingException {
-		userLectureService.updateLectureInDB(user,lectureTitle,lectureDuration,Integer.parseInt(slides));
+	private void updateLectureInDB(Integer userId, String lectureTitle,String lectureDuration,String slides) throws MeetingException {
+		userLectureService.updateLectureInDB(userId,lectureTitle,lectureDuration,Integer.parseInt(slides));
+	}
+	
+	public String retrieveDraftMessages() {
+		try {
+			List<Message> messages = exMessageService.findByUserId(""+userId, MeetingConstant.DRAFT);
+			draftMsgList = new ArrayList<>();
+			for (Message message : messages) {
+				DraftMessageDTO draftMessageDTO =  new DraftMessageDTO();
+				draftMessageDTO.setMessageId(message.getId());
+				draftMessageDTO.setTitle(message.getTitle());
+				draftMessageDTO.setChannelId(message.getxMsgId());
+				draftMessageDTO.setCreatedAt(message.getCreatedAt().toString());
+				draftMsgList.add(draftMessageDTO);
+			}
+			
+		} catch (MeetingException e) {
+			e.printStackTrace();
+		}
+		return SUCCESS;
 	}
 
 	/**
@@ -566,6 +607,36 @@ public class HomeAction extends ActionSupport {
 						jsonObject.get(MeetingConstant.RECFILEDURATION)
 								.toString());
 			}
+			if (jsonObject.get(MeetingConstant.SENDSTATUS) != null) {
+				fileList.put(MeetingConstant.SENDSTATUS,
+						jsonObject.get(MeetingConstant.SENDSTATUS)
+								.toString());
+			}
+			if (jsonObject.get(MeetingConstant.MEETINGCTXSEQ) != null) {
+				fileList.put(MeetingConstant.MEETINGCTXSEQ,
+						jsonObject.get(MeetingConstant.MEETINGCTXSEQ)
+								.toString());
+			}
+			if (jsonObject.get(MeetingConstant.USERID) != null) {
+				fileList.put(MeetingConstant.USERID,
+						jsonObject.get(MeetingConstant.USERID)
+								.toString());
+			}
+			if (jsonObject.get(MeetingConstant.DRAFTMSGID) != null) {
+				fileList.put(MeetingConstant.DRAFTMSGID,
+						jsonObject.get(MeetingConstant.DRAFTMSGID)
+								.toString());
+			}
+			if (jsonObject.get(MeetingConstant.TOID) != null) {
+				fileList.put(MeetingConstant.TOID,
+						jsonObject.get(MeetingConstant.TOID)
+								.toString());
+			}
+			if (jsonObject.get(MeetingConstant.GROUPID) != null) {
+				fileList.put(MeetingConstant.GROUPID,
+						jsonObject.get(MeetingConstant.GROUPID)
+								.toString());
+			}
 			JSONArray pageList= (JSONArray)jsonObject.get(MeetingConstant.PAGELIST);
 			if (pageList != null ) {
 				fileList.put(MeetingConstant.PAGELIST,""+
@@ -581,22 +652,19 @@ public class HomeAction extends ActionSupport {
     
 	/**
 	* For the json file ;
+	 * @param sendStatus 
+	 * @param contextMsgSeq 
+	 * @param draftMsgId 
+	 * @param groupId 
+	 * @param toId 
 	*/
 	public boolean writeJSONFile(String path, String meetingName,
-			String content, String name, String uniqueID, String channelId) {
-		System.out.println("meetingName :: "+meetingName);
-		List<ExMessage> exmsgs = new ArrayList<>();
-		try {
-			exmsgs = exMessageService.findByChannelId(Integer.parseInt(channelId));
-		} catch (NumberFormatException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (MeetingException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		int nextSeqNo = exmsgs.size()+1;
-		content = parseJsonContent(content,uniqueID, nextSeqNo);
+			String content, String name, String uniqueID, String channelId, byte sendStatus, String contextMsgSeq, String draftMsgId, String toId, String groupId) {
+		
+		float nextSeqNo =  getNextSequenceNumber(channelId,contextMsgSeq);
+		
+		//float nextSeqNo = exmsgs.size()+1;
+		content = parseJsonContent(content,uniqueID, nextSeqNo,sendStatus);
 		File file = new File(path + File.separator + MeetingConstant.ENOTEBOOK
 				+ File.separator + name + File.separator + meetingName);
 		// if dir doesn't exists, then create it
@@ -618,44 +686,114 @@ public class HomeAction extends ActionSupport {
 			e.printStackTrace();
 			return false;
 		}
-		try {
-			
-		
-		ExMessage em = new ExMessage();
-		em.setChannel_id(Integer.parseInt(channelId));
-		em.setSequenceNo(nextSeqNo);
-		em.setHttpmessagepath(file.getAbsoluteFile().getAbsolutePath());
-		em.setCreated_by(name);
-		byte active = 1;
-		//em.setActive(active);
-		
-			exMessageService.save(em);
-		} catch (MeetingException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		saveMessage(name, channelId, nextSeqNo,meetingName, file,sendStatus,draftMsgId,toId,groupId);
 		return true;
 
 	}
-    public String parseJsonContent(String content, String uniqueID, int sequenceNo){
+
+	private float getNextSequenceNumber(String channelId, String contextMsgSeq) {
+		List<Message> exmsgs = new ArrayList<>();
+		float seqNumber = -1;
+		try {
+			exmsgs = exMessageService.findByxMsgId(Integer.parseInt(channelId),MeetingConstant.SEND);
+			List<Float> seqnumList = new ArrayList();
+			System.out.println("getNextSequenceNumber::exmsgs.size():"+exmsgs.size());
+			if(exmsgs.size() == 0){
+				seqNumber = (float) 1.0;
+			}else{
+				for (Message message : exmsgs) {
+					seqnumList.add(Float.parseFloat(message.getSequenceNum()));
+				}
+			}
+			System.out.println("getNextSequenceNumber::contextMsgSeq:"+contextMsgSeq+":::"+seqnumList.size());
+			if(contextMsgSeq != null && seqnumList.size() > 0){
+				int index = seqnumList.indexOf(Float.parseFloat(contextMsgSeq));
+				if(index == -1){
+					System.out.println("Invalid Context Sequence Number");
+				}else{
+					if(index == seqnumList.size()-1){
+						// tail
+						seqNumber = seqnumList.get(index)+1;
+						System.out.println("tail::::"+seqNumber);
+					}else{
+						// insert in middle
+						seqNumber =  (seqnumList.get(index) +  seqnumList.get(index+1))/2;
+						System.out.println("insertion::::"+seqNumber);
+					}
+				}
+			}else{
+				seqNumber = (float) 1.0;
+				System.out.println("else case::::"+seqNumber);
+			}
+		} catch (NumberFormatException e2) {
+			e2.printStackTrace();
+		} catch (MeetingException e2) {
+			e2.printStackTrace();
+		}
+		return seqNumber;
+	}
+
+	private void saveMessage(String name, String channelId, float nextSeqNo,String title, File file, byte sendStatus, String draftMsgId, String toId, String groupId) {
+		try {
+			Message message = new Message();
+			if(draftMsgId != null){
+				message.setId(Integer.parseInt(draftMsgId));
+			}
+			message.setxMsgId(Integer.parseInt(channelId));
+			message.setSequenceNum(""+nextSeqNo);
+			message.setHttpmessagepath(file.getAbsoluteFile().getAbsolutePath());
+			message.setCreated_by(name);
+			message.setTitle(title);
+			message.setActive((byte) 1);
+			if(toId != null && !toId.isEmpty()){
+				message.setToId(Integer.parseInt(toId));
+			}
+			if(groupId != null && !groupId.isEmpty()){
+				message.setGroupId(Integer.parseInt(groupId));
+			}
+			message.setSendOrDraft(sendStatus);
+			exMessageService.save(message);
+		} catch (MeetingException e1) {
+			e1.printStackTrace();
+		}
+	}
+    public String parseJsonContent(String content, String uniqueID, float sequenceNo, byte sendStatus){
     	Gson g = new Gson();
 		
 			Meeting meeting = g.fromJson(content, Meeting.class);
-			List<Object> ltms = new ArrayList<>();
-			for(Page page:meeting.getPageList()){
-				System.out.println("seqqq ::"+meeting.getRecSequenceNo());
-				meeting.setRecSequenceNo(sequenceNo);
-				
-				for	(Object obj : page.getGraphicsObject()){
-					LinkedTreeMap ltm = (LinkedTreeMap)obj;
+			List<Object> ltms = null;
+			if(meeting.getPageList() != null){
+				for(Page page:meeting.getPageList()){
+					ltms =  new ArrayList<>();
+					System.out.println("seqqq ::"+meeting.getRecSequenceNo());
+					meeting.setRecSequenceNo(""+sequenceNo);
 					
-					if(ltm.get("usersObjectIdentifierId").equals("undefined")){
-						ltm.put("usersObjectIdentifierId", uniqueID);
-						ltm.put("sequenceNo", sequenceNo);
-						ltms.add(ltm);
+					for	(Object obj : page.getGraphicsObject()){
+						LinkedTreeMap ltm = (LinkedTreeMap)obj;
+						/*if(ltm.get("usersObjectIdentifierId").equals("undefined")){
+							ltm.put("usersObjectIdentifierId", uniqueID);
+							ltm.put("sequenceNo", sequenceNo);
+							ltms.add(ltm);
+						}*/
+						System.out.println(ltm.get("id"));
+						ltm.put("id",generateUniqueObjectId((int)sequenceNo));
+						
+						if(ltm.get("isDraft").equals("1")){
+							ltms.add(ltm);
+							ltm.put("sequenceNo", sequenceNo);
+							if(sendStatus == 0)
+								ltm.put("isDraft", 1);
+							else if(sendStatus == 1)
+								ltm.put("isDraft", 0);
+						}
+						if(((Double)ltm.get("type")).doubleValue() ==27){
+							LinkedTreeMap ltm2 = (LinkedTreeMap)ltm.get("media");
+							System.out.println(ltm2.get("fileName"));
+							ltm2.put("fileName",System.currentTimeMillis());
+						}
+						
+						page.setGraphicsObject(ltms);
 					}
-					
-					page.setGraphicsObject(ltms);
 				}
 			}
 		content = 	g.toJson(meeting);
@@ -666,38 +804,84 @@ public class HomeAction extends ActionSupport {
 	public String retrieveMeetingjson() {
 		String CONTEXT_PATH = SessionUtil.getServerDeploymentPath();
 		System.out.println("CONTEXT_PATH::" + CONTEXT_PATH);
-		User user = (User) SessionUtil.getSession().get(
-				MeetingConstant.USER_SESSION_VAR);
+		/*User user = (User) SessionUtil.getSession().get(
+				MeetingConstant.USER_SESSION_VAR);*/
 		//System.out.println("channelId : home "+channel_id);
-		List<ExMessage> exmsgs = null;
+		List<Message> exmsgs = null;
 		try {
-			exmsgs =exMessageService.findByChannelId(channel_id);
+			exmsgs =exMessageService.findByxMsgId(channel_id,MeetingConstant.SEND);
 		} catch (MeetingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		File folder = new File(CONTEXT_PATH + File.separator
+		/*File folder = new File(CONTEXT_PATH + File.separator
 				+ MeetingConstant.ENOTEBOOK + File.separator
-				+ user.getEmail() + File.separator + meetingName);
+				+ userId + File.separator + meetingName);
 		File[] listOfFiles = folder.listFiles();
 		if(listOfFiles == null){
 			jsonContent = null;
 			return SUCCESS;
 		}
-		System.out.println(listOfFiles.length);
+		System.out.println(listOfFiles.length);*/
+		File draftMessage = null;
+		StringBuilder jb= new StringBuilder();
+		Message msgTobeShown = null;
+		if(draftMsgId != null){
+			try {
+				Message message = exMessageService.findByMsgId(draftMsgId);
+				msgTobeShown = message;
+				draftMessage = new File(message.getHttpmessagepath());
+				String line = null;
+				BufferedReader reader = null;
+				try {
+					reader = new BufferedReader(new FileReader(draftMessage));
+					while ((line = reader.readLine()) != null)
+						jb.append(line);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}finally {
+					try {
+						reader.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+			} catch (MeetingException e) {
+				e.printStackTrace();
+			}
+			
+			Map<String, String> draftMsgData = getMeetingData(jb.toString());
+			String msgContextId = draftMsgData.get(MeetingConstant.MEETINGCTXSEQ);
+			if(msgContextId != null){
+				participantId = Float.parseFloat(msgContextId);
+			}
+			
+		}
+		
 		List<File> files = new ArrayList<>();
 		File exmFile = null;
 		try{
 			if(participantId == 0){
-		for(ExMessage em : exmsgs){
-			exmFile = new File(em.getHttpmessagepath());
-			files.add(exmFile);
-		}
-			}else{
-				for(ExMessage em : exmsgs){
+				for(Message em : exmsgs){
 					exmFile = new File(em.getHttpmessagepath());
-					if(em.getSequenceNo() <= participantId)
 					files.add(exmFile);
+					System.out.println("**********participantId==0****"+draftMsgId);
+					//setToOrFrom(userId, em);
+					if(draftMsgId == null)
+						msgTobeShown = em;
+				}
+			}else{
+				for(Message em : exmsgs){
+					exmFile = new File(em.getHttpmessagepath());
+					float seqNum = Float.parseFloat(em.getSequenceNum());
+					if(seqNum <= participantId){
+						files.add(exmFile);
+						//setToOrFrom(userId, em);
+						System.out.println("**********else****"+draftMsgId);
+						if(draftMsgId == null)
+							msgTobeShown = em;
+					}
 				}
 			}
 		}catch(Exception e){
@@ -706,12 +890,15 @@ public class HomeAction extends ActionSupport {
 		
 		File file1 = new File(CONTEXT_PATH + File.separator
 				+ MeetingConstant.ENOTEBOOK + File.separator
-				+ user.getEmail() + File.separator + meetingName
+				+ userId + File.separator + meetingName
 				+ File.separator + meetingName + MeetingConstant.JSONFORMAT);
 		//System.out.println("MeetingPath:::"+file1.getAbsolutePath());
 		
+		if(draftMessage != null){
+			files.add(draftMessage);
+			setToOrFrom(MeetingConstant.TO);
+		}
 		if(files.size() == 0){
-
 			if (!file1.exists()) {
 				addActionError("Meeting Not Found");
 				return ERROR;
@@ -725,25 +912,15 @@ public class HomeAction extends ActionSupport {
 						recievedXML.append(line);
 					}
 					jsonContent = recievedXML.toString();
-					//System.out.println("jsonContent:::"+jsonContent);
 					
-					
-					
-					//System.out.println("jsonContent11:::"+jsonContent);
 					isAppend = true;
 					if (setRecordingEnv().equals(ERROR)) {
 						addActionError("Error occured while copying recording file.");
 						return ERROR;
 					}
-					/*
-					 * HttpServletResponse response =
-					 * ServletActionContext.getResponse();
-					 * response.setContentType("application/json");
-					 * response.getWriter().write(jsonContent );
-					 */
+					
 					System.out.println("-----JSON Content-Found----");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
 					if (in != null) {
@@ -757,11 +934,11 @@ public class HomeAction extends ActionSupport {
 
 			}
 		}
-		
-		
+		Map<Integer, Page> pageMap = null;
 		Meeting mt=null;
 		Meeting lstMeeting = null;
 		Gson g = new Gson();
+		
 		for(File file : files){
 		if (!file.exists()) {
 			addActionError("Meeting Not Found");
@@ -778,43 +955,37 @@ public class HomeAction extends ActionSupport {
 				jsonContent = recievedXML.toString();
 				//System.out.println("jsonContent:::"+jsonContent);
 				
-				//Gson g = new Gson();
+				//  g = new Gson();
+				
 				if(mt == null){
 					mt = g.fromJson(jsonContent, Meeting.class);
 					lstMeeting = mt;
+					pageMap = createPageMap(mt);
 				}else{
 					Meeting nextMt = g.fromJson(jsonContent, Meeting.class);
-					
-					for(Page page:nextMt.getPageList()){
-						for(Page ppage:mt.getPageList()){
-							if(page.getPagenumber() == ppage.getPagenumber()){
-								ppage.getGraphicsObject().addAll(page.getGraphicsObject());
+					if(nextMt.getPageList() != null){
+						for(Page page:nextMt.getPageList()){
+							Page existingPage = pageMap.get(page.getPagenumber().intValue());
+							if(existingPage == null){
+								pageMap.put(page.getPagenumber().intValue(), page);
+							}else{
+								existingPage.getGraphicsObject().addAll(page.getGraphicsObject());
 							}
+							
 						}
 					}
 					lstMeeting = nextMt;
-					
 				}
 				System.out.println(mt.getMeetingName());
-				//System.out.println(mt.getPageList());
 				System.out.println("rec name :: "+mt.getRecFname());
-						
-				//jsonContent = g.toJson(mt);
-				//System.out.println("jsonContent11:::"+jsonContent);
-				//isAppend = true;
+				
 				if (setRecordingEnv().equals(ERROR)) {
 					addActionError("Error occured while copying recording file.");
 					return ERROR;
 				}
-				/*
-				 * HttpServletResponse response =
-				 * ServletActionContext.getResponse();
-				 * response.setContentType("application/json");
-				 * response.getWriter().write(jsonContent );
-				 */
+				
 				System.out.println("-----JSON Content-Found----");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
 				if (in != null) {
@@ -826,19 +997,160 @@ public class HomeAction extends ActionSupport {
 				}
 			}
 
-		}}
+		}
+		}
+		
+		if(pageMap != null){
+			List<Page> pageList = new ArrayList<>();
+			Set<Entry<Integer,Page>> eSet = pageMap.entrySet();
+			for (Iterator<Entry<Integer, Page>> iterator = eSet.iterator(); iterator.hasNext();) {
+				Entry<Integer, Page> entry = (Entry<Integer, Page>) iterator.next();
+				pageList.add(entry.getValue());
+			}
+			mt.setPageList(pageList);
+		}
 		
 		mt.setRecFileDuration(lstMeeting.getRecFileDuration());
 		mt.setRecFname(lstMeeting.getRecFname());
 		mt.setTempRecFile(lstMeeting.getTempRecFile());
+		mt.setRecSequenceNo(lstMeeting.getRecSequenceNo());
+		mt.setSend(lstMeeting.getSend());
+		mt.setMeetingContextSequence(lstMeeting.getMeetingContextSequence());
 		//mt.setSessionId(lstMeeting.getSessionId());
 		//mt.setSequenceNo(participantId);
-		mt.setRecSequenceNo(participantId);
+		//mt.setRecSequenceNo(participantId);
+		System.out.println("last Message Recording file path::"+mt.getRecFname());
 		jsonContent = g.toJson(mt);
 		isAppend = true;
+		//setToOrFrom();
+		System.out.println("*************jsonContent******"+jsonContent);
+		System.out.println("**********Finally msgTobeShown****"+msgTobeShown);
+		setSenderReceiverDetails(msgTobeShown,userId);
 		return SUCCESS;
 	}
 	
+	private void setSenderReceiverDetails(Message msgTobeShown,Integer userId) {
+		try {
+			Integer toId = msgTobeShown.getToId();
+			Integer fromId = Integer.parseInt(msgTobeShown.getCreated_by());
+			User fromUser = userService.findById(fromId);
+			UserDetails fromUserDetails = userService.findByUserId(fromId);
+			if(fromId.intValue() ==  userId.intValue()){
+				setFromUserName("Me");
+			}else{
+				setFromUserName(fromUser.getName());
+			}
+			System.out.println("*********fromUserDetails****"+fromUserDetails);
+			if(fromUserDetails != null){
+				setFromUserPic(fromUserDetails.getProfilePix());
+			}
+			User toUser = userService.findById(toId);
+			UserDetails toUserDetails = userService.findByUserId(toId);
+			System.out.println("*********toUserDetails****"+toUserDetails);
+			if(toUserDetails!= null){
+				setToUserPic(toUserDetails.getProfilePix());
+			}
+			if(toId.intValue() ==  userId.intValue()){
+				setToUserName("Me");
+			}else{
+				setToUserName(toUser.getName());
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void setToOrFrom() {
+		StringBuilder toFrom = new StringBuilder();
+		try {
+			User user = userService.findById(Integer.parseInt(getToOrFromName()));
+			if(getToOrFrom().byteValue() == MeetingConstant.TO){
+				toFrom.append("To:");
+			}else{
+				toFrom.append("From:");
+			}
+			toFrom.append(user.getEmail());
+		} catch (NumberFormatException | MeetingException e) {
+			e.printStackTrace();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		setToOrFromName(toFrom.toString());
+	}
+
+	private void setToOrFrom(Integer userId,Message message){
+		if(Integer.parseInt(message.getCreated_by()) == userId.intValue()){
+			 setToOrFrom(MeetingConstant.TO);
+			 setToOrFromName(""+message.getToId());
+		}else{
+			setToOrFrom(MeetingConstant.FROM);
+			setToOrFromName(""+message.getCreated_by());
+		}
+		
+	}
+	
+	private Map<Integer, Page> createPageMap(Meeting mt) {
+		Map<Integer, Page> pageMap = new HashMap<>();
+		if(mt.getPageList() != null){
+			for(Page page:mt.getPageList()){
+				pageMap.put(page.getPagenumber().intValue(), page);
+			}
+		}
+		return pageMap;
+	}
+
+	public String saveMessageStatusToSend() {
+		message= ERROR;
+		try {
+			Message msg = exMessageService.findByMsgId(draftMsgId);
+			if(msg != null){
+				updateSendStatusInJSON(msg.getHttpmessagepath());
+				msg.setSendOrDraft(MeetingConstant.SEND);
+				exMessageService.save(msg);
+				message = MeetingConstant.XMSG_SERVERHTTPPATH+"?title="+msg.getTitle()+"&userId="+msg.getCreated_by()+"&xmsgId="+msg.getxMsgId()+"&sequenceNum="+msg.getSequenceNum();
+			}else{
+				message ="Message not found";
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return SUCCESS;
+	}
+	
+	private void updateSendStatusInJSON(String jsonPath) {
+		BufferedReader in = null;
+		Meeting mt=null;
+		Gson g = new Gson();
+		try {
+			in = new BufferedReader(new FileReader(jsonPath));
+			String line;
+			StringBuilder recievedJson = new StringBuilder();
+			while ((line = in.readLine()) != null) {
+				recievedJson.append(line);
+			}
+			jsonContent = recievedJson.toString();
+			mt = g.fromJson(jsonContent, Meeting.class);
+			mt.setSend("1");
+			jsonContent = g.toJson(mt);
+			
+			FileWriter fw;
+			try {
+				fw = new FileWriter(jsonPath);
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(jsonContent);
+				bw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+
 	//PartCipants Code
 /*	public String retrieveParticipantsjson() {
 		String CONTEXT_PATH = SessionUtil.getServerDeploymentPath();
@@ -962,6 +1274,12 @@ public class HomeAction extends ActionSupport {
 		return SUCCESS;
 	}
 	*/
+	
+	private int generateUniqueObjectId(int seq){
+		Random rand = new Random(); 
+		int value = rand.nextInt(seq*10000); 
+		return value;
+	}
 	
 	public int getPageCount() {
 		return pageCount;
@@ -1132,11 +1450,93 @@ public class HomeAction extends ActionSupport {
 		this.isAppend = isAppend;
 	}
 
-	public int getParticipantId() {
+	
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public float getParticipantId() {
 		return participantId;
 	}
 
-	public void setParticipantId(int participantId) {
+	public void setParticipantId(float participantId) {
 		this.participantId = participantId;
 	}
+
+	public Integer getDraftMsgId() {
+		return draftMsgId;
+	}
+
+	public void setDraftMsgId(Integer draftMsgId) {
+		this.draftMsgId = draftMsgId;
+	}
+
+	public List<DraftMessageDTO> getDraftMsgList() {
+		return draftMsgList;
+	}
+
+	public void setDraftMsgList(List<DraftMessageDTO> draftMsgList) {
+		this.draftMsgList = draftMsgList;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public Byte getToOrFrom() {
+		return toOrFrom;
+	}
+
+	public void setToOrFrom(Byte toOrFrom) {
+		this.toOrFrom = toOrFrom;
+	}
+
+	public String getToOrFromName() {
+		return toOrFromName;
+	}
+
+	public void setToOrFromName(String toOrFromName) {
+		this.toOrFromName = toOrFromName;
+	}
+
+	public String getToUserName() {
+		return toUserName;
+	}
+
+	public void setToUserName(String toUserName) {
+		this.toUserName = toUserName;
+	}
+
+	public String getToUserPic() {
+		return toUserPic;
+	}
+
+	public void setToUserPic(String toUserPic) {
+		this.toUserPic = toUserPic;
+	}
+
+	public String getFromUserName() {
+		return fromUserName;
+	}
+
+	public void setFromUserName(String fromUserName) {
+		this.fromUserName = fromUserName;
+	}
+
+	public String getFromUserPic() {
+		return fromUserPic;
+	}
+
+	public void setFromUserPic(String fromUserPic) {
+		this.fromUserPic = fromUserPic;
+	}
+
 }

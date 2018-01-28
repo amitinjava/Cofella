@@ -4,6 +4,7 @@ import java.util.List;
 
 public class Page {
 	private Integer pagenumber;
+	private Integer pagebg;
 	private List<Object> graphicsObject;
 	public Integer getPagenumber() {
 		return pagenumber;
@@ -16,6 +17,12 @@ public class Page {
 	}
 	public void setGraphicsObject(List<Object> graphicsObject) {
 		this.graphicsObject = graphicsObject;
+	}
+	public Integer getPagebg() {
+		return pagebg;
+	}
+	public void setPagebg(Integer pagebg) {
+		this.pagebg = pagebg;
 	}
 	
 

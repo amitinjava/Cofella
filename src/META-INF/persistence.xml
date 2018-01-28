@@ -5,7 +5,7 @@
 	<!--   -->
 	<persistence-unit name="punit">
 		<mapping-file>META-INF/ormdef.xml</mapping-file>
-			<class>com.edspread.meeting.entity.User</class>
+			<class>com.edspread.meeting.entity.UserDetails</class>
 			<class>com.edspread.meeting.entity.UserLectures</class>
 			
 		<properties>

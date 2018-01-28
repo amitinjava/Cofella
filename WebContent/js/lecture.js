@@ -1,6 +1,8 @@
 <!--
 	var canvas;
 	var ctx;
+	var canvas2
+	var ctx2;
 	var canvasOffset;
 	var offsetX;
 	var offsetY;
@@ -8,11 +10,9 @@
 	var pageGrpObjTable =  new Hashtable();
 	var nonRecordinPageObjTable =  new Hashtable();
 	var seqBasedPageRecObjTable =  new Hashtable();
-	//var objectTable = new Hashtable();
 	var timeRefTable = new Hashtable();
 	var objectTimeTable = new Hashtable();
 	var objectPageRefTable = new Hashtable();
-	//var nonRecordingObjArray = new Array();
 	var selObjArray = new Array();
 	var selGroupObjArray = new Array();
 	var freeHandQdArr ;
@@ -21,7 +21,7 @@
 	var startY;
 	var triEndX;
 	var triEndY;
-	var globalAlpha = 1.0;
+	var globalAlpha;;
 	var count = 0;
 	var grpObjCount = 0;
 	var currentObjId;
@@ -30,10 +30,11 @@
 	var rectangleSelObject = null;
 	var dragFlag = false;
 	var highlightedObj = null;
-	var lineWidth = 2;
-	var styleColor = "#000000";
+	var lineWidth;
+	var styleColor;
 	var textStyleColor = "#000000";
 	var fillColor;
+	var fillType;
 	var myVid;
 	var tempX;
 	var tempY;
@@ -60,7 +61,7 @@
 	var tempTranslatePointsArr = new Array();
 	var smoothLength = 4; 
 	var minDist = 8; 
-	var selCircleRedius = 7; 
+	var selCircleRedius = 8; 
 	var timeDuration;
 	var nextPlayingObjKey;
 	var nextPlayingObjtime;
@@ -88,7 +89,7 @@
 	var selectedTxtObj;
 	var copiedObjArr = new Array();
 	var textFontType = "dancing";
-	var textFontSize = 50;
+	var textFontSize = 20;
 	var isBold= false;
 	var isUnderLine = false;
 	var isItalic = false;
@@ -108,42 +109,96 @@
 	var usersObjectIdentifierId;
 	var sequenceNo;
 	var recSequenceNo;
+	var colorType = 1;
+	var recordingFilePath= "";
+	var meetingContextSequence;
+	var selFillColor;
+	var heighlighterColor = "#d9f442";
+	var heighlighterOpacity =0.4 ;
+	var highlighterLineWidth = 20;
+	var path;
+	var ratio;
+	var canvasWidth;
+	var canvasHeight;
+	var toId = '';
+	var grId = '';
+	var user_Id = "";
+	var textImgObjTable = new Hashtable();
+	var mediaIconTable = new Hashtable();
+	var imgObjTable = new Hashtable();
+	var selectedShape;
+	var openShutterId;
+	
+	var defStrokeWidth;
+	var defStrokeColor;
+	var defFillType;
+	var defFillColor;
+	var defGlobalAlpha;
+	var defHighlighterLineWidth;
+	var defHeighlighterColor;
+	var defHighLighterOpacity;
+	var defPageBg;
+	var prevActiveMsg;
+	var prevActiveBg;
+	var pageBgTable = new Hashtable();
+	var weblinkImgLoaded = false;
+	var webLinkImg = new Image();
+	var pinPageNum;
+	var genImgTable = new Hashtable();
 	
 	jQuery(document).ready(function(){
-		/*
+		
+		getToOrGroupId();
+		setToOrGroupId('to:276','274')
+		//setRecordingFilePath("test.mp3");
+		
+		
+		
 		var windowW = window.innerWidth;
 		var windowH = window.innerHeight;
-		*/
-		var windowW = 1280;
-		var windowH = 720;
+		
 		
 		var isMobDevice = detectmob();
-		//console.log("count on load"+count);
 		refText  = document.getElementById("refTxt");
 		canvas = document.getElementById("canvas");
-		if(isMobDevice){
-			canvas.width = (windowW + 180);
-			canvas.height = (windowH - 1);
-			canvas.style.display = "block";
-			if(isAutoPlay == "true"){
-				document.getElementById("recordMenu").width = (windowW - 40);
-			}
-		}else{
-			
-			var canvasHeight = (windowH -150);
-			var canvasWidth =(canvasHeight * 4 / 3);
-			//alert("currentHeight::"+canvasWidth+"::2nd hei::"+);
-			canvas.width = (windowW - 40);
-			canvas.height = (windowH -200);
-			canvas.style.display = "block";
-			//alert("isAutoPlay:::"+isAutoPlay);
-			if(isAutoPlay == "true"){
-				document.getElementById("recordMenu").width = (windowW - 40);
-				canvas.height = (windowH -200);
-				//alert("width::"+document.getElementById("recordMenu").width);
-			}
-		}
 		ctx = canvas.getContext("2d");
+		
+		canvas2 = document.getElementById("dummy_canvas");
+		ctx2 = canvas.getContext("2d");
+		
+		
+		devicePixelRatio = window.devicePixelRatio || 1,
+        backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+                            ctx.mozBackingStorePixelRatio ||
+                            ctx.msBackingStorePixelRatio ||
+                            ctx.oBackingStorePixelRatio ||
+                            ctx.backingStorePixelRatio || 1,
+
+        ratio = devicePixelRatio / backingStoreRatio;
+		ratio = 2;//defined to 2 beacuse its giving 2 for ipad eitc.
+		//alert("devicePixelRatio::"+devicePixelRatio+"::backingStoreRatio::"+backingStoreRatio);
+		//alert("screen orientation angle"+screen.orientation.angle);
+		if(isMobDevice){
+			canvasWidth = (windowW - 60);
+			canvasHeight = (windowH - 150);
+		}else{
+			canvasWidth = (windowW - 60);
+			canvasHeight = (windowH - 100);
+		}
+		canvas.style.width = canvasWidth +"px";
+		canvas.style.height = canvasHeight +"px";
+		
+		canvas.width = ratio*canvasWidth;
+		canvas.height = ratio*canvasHeight;
+		
+		//console.log(canvasWidth + " " + canvasHeight);
+		$(".redlineruler").css('height',canvasHeight);
+		
+		canvas.style.display = "block";
+		if(isAutoPlay == "true"){
+			document.getElementById("recordMenu").width = (windowW - 40);
+		}
+		
 		canvasBoundedRectanglePoints[canvasBoundedRectanglePoints.length] = 0;
 		canvasBoundedRectanglePoints[canvasBoundedRectanglePoints.length] = 0;
 		canvasBoundedRectanglePoints[canvasBoundedRectanglePoints.length] = canvas.width;
@@ -153,15 +208,19 @@
 		ctx.lineWidth = lineWidth;
 		ctx.styleColor = styleColor;
 		ctx.globalAlpha = globalAlpha;
+		
+		
+		
 		if(document.getElementById("opacityCtrl") != null){
 			document.getElementById("opacityCtrl").value = globalAlpha;
 		}
-		if(document.getElementById("area1") != null){
-			document.getElementById("area1").style.fontSize = textFontSize+"px";
-			document.getElementById("area1").style.fontFamily = textFontType;
+		if(document.getElementById("editor") != null){
+			document.getElementById("editor").style.fontSize = textFontSize+"px";
+			document.getElementById("editor").style.fontFamily = textFontType;
 		}
 		
-		currentObjId = 7;
+		
+		
 		if(document.getElementById("toolOptions1") != null){
 			document.getElementById("toolOptions1").style.display = "inline-block";
 		}
@@ -172,23 +231,33 @@
 			prevSelButtonObj.className = "btn btn-default active";
 			prevSelShapeId = 1;
 		}
-
-		if(meetingName != null || meetingName!= ''){
+		
+		openMeeting(sequenceNum);
+		/*
+        if(sequenceNum != null && sequenceNum !=''){
+        	getCanvasObject(sequenceNum);
+        	//alert("sequenceNum::"+sequenceNum+"___");
+        }
+        else if(meetingName != null && meetingName!= ''){
 			//alert("meetingName"+meetingName);
 			openMeeting(meetingName);
 		}
-		
+		*/
+		paper.setup(canvas2);
+		//alert(paper);
 		canvasOffset = $("#canvas").offset();
 		offsetX = canvasOffset.left;
 		offsetY = canvasOffset.top;
+		console.log("offsetX::"+offsetX)
+		console.log("offsetY::"+offsetY)
 		initPlayer();
 		
 		pointerImg = document.getElementById("pointerImg");
-		jQuery('#ex1').slider('setValue',sliderPos);
-		jQuery('#ex1').slider({
+	//	jQuery('#ex1').slider('setValue',sliderPos);
+		/*jQuery('#ex1').slider({
 			formater: function(value) {
 			}
-		});
+		});*/
 
 		jQuery("#ex1").on('slide', function(slideEvt) {
 			sliderPos = slideEvt.value;
@@ -225,33 +294,72 @@
 
 
 
-		canvas.addEventListener("touchstart", function (evt) {
-			var touch = evt.changedTouches[0];
-			//console.log("Touch Start------------------"+touch.clientX+"::Y::"+touch.clientY);
-			evt.preventDefault();
-			dragFlag = true;
 
-			handleMouseDown(touch);
+		canvas.addEventListener("touchstart", function (evt) {
+			//console.log("Touch Start------------------"+touch.clientX+"::Y::"+touch.clientY);
+			//touchcount++;
+			evt.preventDefault();
+			if(currentObjId == 4  || currentObjId ==25 ){
+				dragFlag = true;
+				var touch = validatePoints(evt);
+				//var touch = evt.changedTouches[0];
+				if(touch != null)
+					handleMouseDown(touch);
+			}else{
+				var touch = evt.changedTouches[0];
+				if(currentObjId == 5 || currentObjId == 11){
+					 if(triEndX != null && triEndY != null){
+						  mouseX = parseInt(touch.clientX - offsetX);
+						  mouseY = parseInt(touch.clientY - offsetY);	
+						  createObject(currentObjId,startX,startY,mouseX,mouseY,triEndX,triEndY);
+						}
+				}
+				if(isTxtModeEnable && currentObjId == 16){
+					handleMouseClick(touch);
+				}
+				else{
+					dragFlag = true;
+					handleMouseDown(touch);
+				}
+			}
+			
 		}, false);
 
 		canvas.addEventListener("touchmove", function (evt) {
-			var touch = evt.changedTouches[0];
-			//console.log("Touch Move------------------"+touch.clientX+"::Y::"+touch.clientY);
 			evt.preventDefault();
-			handleMouseMove(touch);
+			if(currentObjId == 4  || currentObjId ==25 ){
+				var touch = validatePoints(evt);
+				//var touch = evt.changedTouches[0];
+				if(touch != null)
+					handleMouseMove(touch);
+			}else{
+				var touch = evt.changedTouches[0];
+				//console.log("Touch Move------------------"+touch.clientX+"::Y::"+touch.clientY);
+				handleMouseMove(touch);
+			}
 		}, false);
 
 		canvas.addEventListener("touchend", function (evt) {
 			//console.log("Touch End------------------");
-			var touch = evt.changedTouches[0];
+			
 			evt.preventDefault();
-			dragFlag = false;
 			strechableObj[0] = null;
 			strechableObj[1] = null;
 			strechableObj[2] = null;
-			handleMouseUp(touch);
+			dragFlag = false;
+			if(currentObjId == 4  || currentObjId ==25 ){
+				var touch = validatePoints(evt);
+				//var touch = evt.changedTouches[0];
+				if(touch != null)
+					handleMouseUp(touch);
+			}else{
+				var touch = evt.changedTouches[0];
+				handleMouseUp(touch);
+			}
+		
 		}, false);
-
+		
+		
 				
 		canvas.addEventListener("dragenter", function (evt) {
 			//console.log("Drag Enter------------------");
@@ -456,6 +564,18 @@
 		 $(document).keyup(function(evt){
 			isControlPressed = false;
 		});
+		/*$(document).click(function(e){
+				//alert("doucument mouse click")
+				e.preventDefault();
+		});
+		$(document).on('tap', function (e) {
+			//alert("doucument tap")
+			e.preventDefault();
+		});
+		$(document).on('dblclick', function (e) {
+			alert("doucument dblclick")
+			e.preventDefault();
+		});*/
 		$("#canvas").on('mousedown', function (e) {
 			e.preventDefault();
 			dragFlag = true;
@@ -501,17 +621,152 @@
 				if(graphicsObject.ref != null && ((graphicsObject).ref).trim().length > 0){
 					OpenInNewTab(objectTable.get(objArr[0]).ref);
 				}
-				else if(graphicsObject.attachment != null && ((graphicsObject).attachment).trim().length > 0){
+				else {
+					var mediaObj = graphicsObject.media;
+					if(mediaObj != null && mediaObj.url != null && mediaObj.url.trim().length > 0){
+						if(mediaObj.mediaType == 'pin'){
+							alert("pin"+graphicsObject.sequenceNo)
+							openMeeting(graphicsObject.sequenceNo);
+						}else if(mediaObj.mediaType == 'url'){
+							openUrlinNewWindow(mediaObj.url);
+						}else{
+							openDocument(mediaObj.url);
+						}
 					//alert("attachment::"+graphicsObject.attachment);
-					OpenInNewTab(graphicsObject.attachment);
+						
+					}
 				}
 			}
 			
 		});
+	
+	function sendSaveMsg(){
+		alert("sendSaveMsg");
+		Jockey.send("toggle-fullscreen", {
+			msg:"success"
+		});
+	}
+	
+	
+	//Tinymce editor start
+	
+	 tinymce.init({
+		  selector:'#editor',
+		  resize: "both",
+		  auto_focus: "#editor",
+		  formats: {
+			  
+			  underline : {inline : 'u', exact : true}
+		  },
+		  branding: false,
+		    menubar:false,
+		    width : "572",
+		    plugins: "textcolor, lists, advlist",
+		    advlist_bullet_styles: "circle",
+		  toolbar: "sizeselect | bold italic underline| fontselect |  fontsizeselect | forecolor | numlist bullist | committext | canceltext",
+		  font_size_style_values : '8pt 10pt 12pt 14pt 18pt 24pt 36pt',
+
+			  setup: function (editor) {
+			  editor.on('init', function () {
+				   
+			        editor.focus();
+			        editor.selection.select(editor.getBody(), true);
+			       
+			    });
+			    editor.addButton('committext', {			    
+			      image : 'images/commit.png',			      
+			      onclick: function () {
+			        //editor.insertContent('&nbsp;<b>It\'s my button!</b>&nbsp;');
+			    	  alert('Commit text');
+			    	  closeEditor(true);
+			      }
+			    });
+			    editor.addButton('canceltext', {			    
+				      image : 'images/cancel1.png',				      
+				      onclick: function () {
+				        //editor.insertContent('&nbsp;<b>It\'s my button!</b>&nbsp;');
+				    	  alert('Cancel text');
+				    	  closeEditor(false);
+
+				      }
+				    });
+			    
+			  
+			    
+			   
+			  },
+		  textcolor_map: [
+		                  "000000", "Black",
+		                  "993300", "Burnt orange",
+		                  "333300", "Dark olive",
+		                  "003300", "Dark green",
+		                  "003366", "Dark azure",
+		                  "000080", "Navy Blue",
+		                  "333399", "Indigo",
+		                  "333333", "Very dark gray",
+		                  "800000", "Maroon",
+		                  "FF6600", "Orange",
+		                  "808000", "Olive",
+		                  "008000", "Green",
+		                  "008080", "Teal",
+		                  "0000FF", "Blue",
+		                  "666699", "Grayish blue",
+		                  "808080", "Gray",
+		                  "FF0000", "Red",
+		                  "FF9900", "Amber",
+		                  "99CC00", "Yellow green",
+		                  "339966", "Sea green",
+		                  "33CCCC", "Turquoise",
+		                  "3366FF", "Royal blue",
+		                  "800080", "Purple",
+		                  "999999", "Medium gray",
+		                  "FF00FF", "Magenta",
+		                  "FFCC00", "Gold",
+		                  "FFFF00", "Yellow",
+		                  "00FF00", "Lime",
+		                  "00FFFF", "Aqua",
+		                  "00CCFF", "Sky blue",
+		                  "993366", "Red violet",
+		                  "FFFFFF", "White",
+		                  "FF99CC", "Pink",
+		                  "FFCC99", "Peach",
+		                  "FFFF99", "Light yellow",
+		                  "CCFFCC", "Pale green",
+		                  "CCFFFF", "Pale cyan",
+		                  "99CCFF", "Light sky blue",
+		                  "CC99FF", "Plum"
+		                ]
+			  
+	  });
+	//Tinymce editor end
+	 defPageBg = 1;
+	 setDefaultPageBackground();
+	 setDefaultSelectedId();
+	
 	});;
 
+	$(window).load(function(){
+ 		setDefaultStrokeColor();
+		setDefaultLineWidth();
+		setDefaultFillType();
+		setDefaultGlobalAlpha();
+		setHighlighterDefaultStrokeColor();
+		setHighlighterDefaultLineWidth();
+		setHighlighterDefaultGlobalAlpha();
+		
+ 	});
+function getEditorContent() {
+	  // Get the HTML contents of the currently active editor
+	  //console.log(tinyMCE.activeEditor.getContent());
+	  //method1 getting the content of the active editor
+	 // alert(tinyMCE.activeEditor.getContent());
+	  return  tinyMCE.activeEditor.getContent();
+}	
 	
-	
+function setEditorContent(htmlContent) {
+	tinyMCE.activeEditor.setContent(htmlContent)
+ 
+}
 function selectedFile(ri){
 	//console.log("document::"+ri);
 
@@ -546,7 +801,7 @@ function getfile(){
 	//var selected_file = document.getElementById('myInput').files[0];
 	//console.log("select::1111111111111111"+selected_file);
 	//document.getElementById('myInput').accept = "audio/*";
-	
+	//alert("getfile called::"+selected_file);
 		if(selected_file != null){	
 			var file = selected_file;
 			var files = new Array();
@@ -564,6 +819,7 @@ function getfile(){
 					currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
 					dropedFileTimeTab.put(file.name,currentMiliSec);
 					//console.log("*****FileName :::"+file.name+":::Time:::"+currentMiliSec);
+					//alert("image insert time ::"+currentMiliSec);
 				 }
 			
 			if (typeof FileReader !== "undefined" && file.type.indexOf("image") != -1) {
@@ -594,11 +850,15 @@ function getfile(){
 			
 		//alert(" file.type::"+ file.type);
 		if(file.type.indexOf("video") != -1 || file.type.indexOf("audio") != -1){
+			alert("11111");
 			uploadVideo(files);
 		}else if(AttachRef){
+			alert("22222");
 			uploadAttachedRef(files);
 		}else{
+			
 			initSelectedObjState();
+			
 			uploadDropedFiles(files,isImage);
 		}
 		 document.getElementById('myInput').value = "";
@@ -711,106 +971,111 @@ function checkAndSetId(object){
 		prevSelButtonObj = obj;*/
 		//alert(document.getElementById("closedShape").className);
 }
+
 function setId(id,state){
 		//console.log("------------Setid---------------"+id);
 		//alert("setid"+selObjArray);
 		//var obj = document.getElementById("closeShapeButton")
 		//obj.className = "btn btn-default active";
+	 
 		switch(id){
 		  case 1:
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
-				obj.className = "btn btn-default active"
+				var obj = document.getElementById("rectangleTool");
+				/*if(prevSelButtonObj != null)
+					prevSelButtonObj.className = "";
+				obj.className = "active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
-				document.getElementById("closedShape").innerHTML = "Rectangle";
-				isSetIdCalled = state;
+				//document.getElementById("closedShape").innerHTML = "Rectangle";
+				isSetIdCalled = state;*/
 			break;
 		  case 2:
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+			  var obj = document.getElementById("EllipseTool");
+				/*if(prevSelButtonObj != null)
+					prevSelButtonObj.className = "";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Oval";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 			break;
 		  case 3:
 		  
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+				var obj = document.getElementById("LineTool");
+			/*	prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Line";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 		  break;
 		  case 4:
 				var obj = document.getElementById("pencilButton");
-				prevSelButtonObj.className = "btn btn-default";
-				obj.className = "btn btn-default active"
-				prevSelButtonObj = obj;
+			/*	if(prevSelButtonObj != null)
+					prevSelButtonObj.className = "";
+				obj.className = "menu_icon pencil active"
+				prevSelButtonObj = obj;*/
 				
 		  break;
 		  case 5:
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+				var obj = document.getElementById("TriangleTool");
+				/*prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Triangle(free form)";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 			break;
 		  case 6:
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+				var obj = document.getElementById("ArrowTool");
+				/*prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Arrow";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 		  break;
 		  case 7:
-				var obj = document.getElementById("selButton");
+				/*var obj = document.getElementById("selButton");
 				prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
-				prevSelButtonObj = obj;
+				prevSelButtonObj = obj;*/
 				//alert("dasfasd");
 		  break;
 		  case 11:
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+				var obj = document.getElementById("ArcTool");
+			/*	prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Arc";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 		  break;
 		  case 12:
-		 		var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+		 		var obj = document.getElementById("CircleTool");
+		 		/*prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;	
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Circle";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 				
 		  break;
 		  case 13:
 				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+				/*prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Triangle(equilateral)";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
 		  break;
 		  case 16:
 				//console.log("---------inside case 16-----");
-				var obj = document.getElementById("editorButton");
+				/*var obj = document.getElementById("editorButton");
 				prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
-				prevSelButtonObj = obj;
+				prevSelButtonObj = obj;*/
 				if(isReplaceEnable){
 					//console.log("if case::");
 						var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
@@ -828,8 +1093,9 @@ function setId(id,state){
 					//console.log("else case::"+selGroupObjArray);
 					if(selGroupObjArray != null && selGroupObjArray.length > 0){
 						if(!checkAndPopulateSelObjArray()){
-							selObjArray = null;
-							selObjArray = new Array();
+							/*selObjArray = null;
+							selObjArray = new Array();*/
+							resetSelObjArray()
 							selGroupObjArray = null;
 							selGroupObjArray = new Array();
 							ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -839,12 +1105,16 @@ function setId(id,state){
 					if(selObjArray != null && selObjArray.length >0){
 						var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
 						var graphicsObject = objectTable.get(selObjArray[0]);
-						var textData = getTextData();
+						
 						init();
 						//console.log("::::::textData::::"+textData);
 						if(graphicsObject.type == 16){
 							selectedTxtObj = graphicsObject;
+							var textData = selectedTxtObj.text.textData;
+							ctx.clearRect(0, 0, canvas.width, canvas.height);
+							restore(true);
 							createEditor(graphicsObject.pointsArray,graphicsObject.text,textData,graphicsObject.color);
+							setEditorContent(textData);
 						}
 					}else{
 						isTxtModeEnable = true;
@@ -864,24 +1134,43 @@ function setId(id,state){
 				}
 			break;
 		 case 23:
-				var obj = document.getElementById("shapeButton");
-				prevSelButtonObj.className = "btn btn-default";
+				var obj = document.getElementById("SquareTool");
+			/*	prevSelButtonObj.className = "btn btn-default";
 				obj.className = "btn btn-default active"
 				prevSelButtonObj = obj;
 				prevSelShapeId = id;
 				document.getElementById("closedShape").innerHTML = "Square";
-				isSetIdCalled = state;
+				isSetIdCalled = state;*/
+			break;
+		 case 25:
+				var obj = document.getElementById("penButton");
+			 
+				/*if(prevSelButtonObj != null)
+					prevSelButtonObj.className = "";
+				obj.className = "menu_icon pen active"
+				prevSelButtonObj = obj;*/
+				
+			break;
+		 case 26:
+				//var obj = document.getElementById("penButton");
+				/*if(prevSelButtonObj != null)
+					prevSelButtonObj.className = "";
+				obj.className = "menu_icon pen active"
+				prevSelButtonObj = obj;*/
+				
 			break;
 		 }
-		currentObjId = id;
-		document.getElementById("toolOptions1").style.display = "inline-block";
-		if(id == 3 || id ==4 || id == 6 || id == 11 ){
-			//console.log("case 1");
-			document.getElementById("fillOptions").style.display = "none";
-		}else{
-			//console.log("case 2");
-			document.getElementById("fillOptions").style.display = "inline-block";
+
+		
+		if(id != 4 && id != 25 && id != 16 && id != 7 && id != 26 && id != 8){
+			/*prevSelButtonObj = obj;
+			prevSelShapeId = id;
+			isSetIdCalled = state;
+			*/
+			selectedShape = id;
+			selectshape(obj.id);
 		}
+		currentObjId = id;
 		init();
 		/*
 		if(id == 16){
@@ -1078,6 +1367,11 @@ function setZoomType(type){
 
 function handleZoomButton(state){
 	if(state){
+		document.getElementById("zoomButtons").style.display = "block";
+	}else{
+		document.getElementById("zoomButtons").style.display = "none";
+	}
+	/*if(state){
 		//console.log("1");
 		document.getElementById("zoom").disabled = false;
 		document.getElementById("zoomIn").disabled = false;
@@ -1091,7 +1385,7 @@ function handleZoomButton(state){
 		document.getElementById("zoom").disabled = true;
 		document.getElementById("zoomIn").disabled = true;
 		document.getElementById("zoomOut").disabled = true;
-		}
+		}*/
 }
 function initPlayer(){
 
@@ -1466,7 +1760,7 @@ function getAllPages(fileName){
 		  		}});
 	 
 }
-function showAndInsertImageObject(fileName){
+function showAndInsertImageObject_old(fileName){
 		//var url = 'http://ec2-54-87-226-240.compute-1.amazonaws.com/mettingupload/'
 		var url = "http://"+window.location.host+"/mettingupload/"+fileName;
 		//alert("url::"+url);
@@ -1484,6 +1778,45 @@ function showAndInsertImageObject(fileName){
 		$('#progress-Modal').modal('hide');
 		
 }
+
+
+function showAndInsertImageObject(httpPath,fileName){
+    //var httpPath = "http://"+window.location.host+"/mettingupload/"+fileName;
+	var graphicsObj = insertImageObj(document.getElementById("pagenum").value,httpPath,false,fileName);
+	var imageObj= new Image();
+	imageObj.src = httpPath;
+	imageObj.onload = function() {
+		graphicsObj.imageLoaded = imageObj;
+		
+		var ptsArray = graphicsObj.pointsArray;
+		getImageWidthHeight(imageObj,ptsArray[2],ptsArray[3]);
+		ptsArray[2] = ptsArray[0] + imageObj.width;
+		ptsArray[3] = ptsArray[1] + imageObj.height;
+		graphicsObj.pointsArray = ptsArray;
+		createObject(graphicsObj.type,ptsArray[0],ptsArray[1],ptsArray[2],ptsArray[3],null,null,imageObj); 
+		canvas.style.cursor  = "default";
+		selectGraphicsObjAndSetSelection(graphicsObj);
+		handleZoomButton(true);
+	};
+
+}
+
+function createImageObject(imageObj,httpPath,graphicsObj){
+	imageObj.src = httpPath;
+	imageObj.onload = function() {
+		graphicsObj.imageLoaded = imageObj;
+		imgObjTable.put(graphicsObj.id,true);
+		checkAllObjImageCreated();
+		//var ptsArray = graphicsObj.pointsArray;
+		//getImageWidthHeight(imageObj,ptsArray[2],ptsArray[3]);
+		//ptsArray[2] = ptsArray[0] + imageObj.width;
+		//ptsArray[3] = ptsArray[1] + imageObj.height;
+		//graphicsObj.pointsArray = ptsArray;
+		//createObject(graphicsObj.type,ptsArray[0],ptsArray[1],ptsArray[2],ptsArray[3],null,null,imageObj); 
+		//canvas.style.cursor  = "default";
+	};
+}
+
 
 function uploadVideo(files){
 	//alert("upload called--------------------");
@@ -1528,7 +1861,7 @@ function uploadVideo(files){
 
 
 function uploadDropedFiles(files,isImage){
-	//alert("upload called--------------------"+isImage);
+	
 	 var formData =new FormData();
 	 var fileType = null;
 	 for(var i=0;i<files.length;i++){
@@ -1536,8 +1869,9 @@ function uploadDropedFiles(files,isImage){
 		 formData.append("attachment",files[i]); 
 	 }
 	  // open upload modal here and send message to upload modal window
-		showUploadModal(fileType)
 	
+	 showUploadModal(fileType)
+	 //alert("upload called---2222222222222-----------------");
 	 var uploadFileName;
 	  jQuery.ajax({
 		  	type:	"POST",
@@ -1548,8 +1882,10 @@ function uploadDropedFiles(files,isImage){
 	  		processData:false,
 	  		contentType :false,
 		  		success:function(msg) {
-		  			//alert(msg.uploadFileName);
+		  			alert(msg.uploadFileName);
 		  			uploadFileName = msg.uploadFileName;
+		  			
+		  			uploadFilePath = msg.uploadFilePath;
 		  			if(msg.actionErrors != null)
 		  			{
 		  				alert("error");
@@ -1560,9 +1896,14 @@ function uploadDropedFiles(files,isImage){
 						clearDropZone();
 						if(uploadFileName != null){
 							if(isImage){
-								showAndInsertImageObject(uploadFileName);
+								showAndInsertImageObject(uploadFilePath,uploadFileName);
 							}else{
-								getAllPages(uploadFileName);
+								//getAllPages(uploadFileName);
+								if(uploadFileName != null)
+								   var splitedFileName =  uploadFileName.split(".");
+					  			   uploadFileName = splitedFileName[0];
+								   fileType = splitedFileName[1];
+								showUploadFileIcon(uploadFileName,fileType,uploadFilePath);
 							}
 						}
 						
@@ -1572,6 +1913,63 @@ function uploadDropedFiles(files,isImage){
 		  	});
 	
 }
+
+
+
+
+function saveMediaObjectInGraphicsObject(mediaObj,x,y){
+	var pageNum = document.getElementById("pagenum").value;
+	var tempPointsArray = new Array();
+	count++;
+	tempPointsArray[tempPointsArray.length] = x ;
+	tempPointsArray[tempPointsArray.length] = y ;
+	tempPointsArray[tempPointsArray.length] = x + mediaObj.fileNameImg.width;
+	tempPointsArray[tempPointsArray.length] = y + mediaObj.fileNameImg.height ;
+	
+	graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,globalAlpha,false,null,null,1,null,null,mediaObj);
+	if(isReplaceEnable){
+		replacedObjArr[replacedObjArr.length] = count;
+	}
+	if(!isPlayingStoped ){// Inserting object while playing
+		currentMiliSec =Math.floor(myVid.currentTime * 1000);
+		var pageObject = new PageObject(document.getElementById("pagenum").value,count);
+		insertObjectInPlayingStream(currentMiliSec,pageObject);
+	}else if(startTime != 0 && isPlayingStoped){// Inserting object while recording
+			var currentTime = new Date().getTime();
+			currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
+			var pageObject = new PageObject(document.getElementById("pagenum").value,count);
+			objectTimeTable.put(count,currentMiliSec);
+			var recordedObjArr = timeRefTable.get(currentMiliSec);
+			if(recordedObjArr ==  null){
+				recordedObjArr = new Array();
+			}
+			recordedObjArr[recordedObjArr.length] = pageObject;
+			timeRefTable.put(currentMiliSec,recordedObjArr);
+	}else{ // Non recodring object
+		var nonRecordingObjArray = nonRecordinPageObjTable.get(document.getElementById("pagenum").value);
+		if(nonRecordingObjArray == null){
+			nonRecordingObjArray = new Array();
+			nonRecordinPageObjTable.put(document.getElementById("pagenum").value,nonRecordingObjArray);
+		}
+		nonRecordingObjArray[nonRecordingObjArray.length] = count;
+	}
+	var objectTable = pageObjTable.get(pageNum);
+	if(objectTable == null){
+		objectTable = new Hashtable();
+		pageObjTable.put(pageNum,objectTable);
+	}
+	objectTable.put(count, graphicsObject);
+	objectPageRefTable.put(count,pageNum);
+	
+	selectGraphicsObjAndSetSelection(graphicsObject);
+	updateViewEditWidget(graphicsObject);
+	showviewEditIcon(true);
+}
+
+
+
+
+
 
 function uploadAttachedRef(files){
 	//alert("upload called--------------------"+isImage);
@@ -1618,7 +2016,7 @@ function uploadAttachedRef(files){
 function attachRefWithObject(fileName){
 	if(fileName != null || fileName != ""){
 		if(selObjArray != null && selObjArray.length >0){
-					fileName = "http://"+window.location.host+"/Enotebook/"+ userId +"/"+meetingName +"/"+ fileName;
+					fileName = "http://"+window.location.host+"/Enotebook/"+ user_Id +"/"+meetingName +"/"+ fileName;
 					//alert("fileName::"+fileName);
 					var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
 					for(var i=0;i<selObjArray.length;i++){
@@ -1629,8 +2027,9 @@ function attachRefWithObject(fileName){
 					}
 		}
 	}
-	selObjArray = null;
-	selObjArray = new Array();
+	/*selObjArray = null;
+	selObjArray = new Array();*/
+	resetSelObjArray()
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	restore();
 }
@@ -1638,11 +2037,11 @@ function attachRefWithObject(fileName){
 function showUploadModal(fileType){
 	//console.log("hiii"+fileType);
 	$('#progress-Modal').modal('show');
-	document.getElementById("fileType").innerHTML= '<strong>'+ fileType +'</strong>';
+	//document.getElementById("fileType").innerHTML= '<strong>'+ fileType +'</strong>';
 	if(fileType == 'Video'){
-		document.getElementById("uploadMsg").innerHTML=  "File uploading..Audio will be extracted if the file is a video." ;
+		//document.getElementById("uploadMsg").innerHTML=  "File uploading..Audio will be extracted if the file is a video." ;
 	}else{
-		document.getElementById("uploadMsg").innerHTML=  'Please Wait while the file is being uploaded.' ;
+		//document.getElementById("uploadMsg").innerHTML=  'Please Wait while the file is being uploaded.' ;
 	}
 		
 }
@@ -1651,7 +2050,10 @@ function showSaveModal(fileType){
 	if(fileType == 'error'){
 		document.getElementById("saveMsg").innerHTML =  "Error occured while saving." ;
 	}else if (fileType == 'success'){
+		sendSaveMsg();
 		document.getElementById("saveMsg").innerHTML =  "Your Lecture has been saved." ;
+		
+		
 	}
 	setTimeout('hideSaveModal()',1000);	
 }
@@ -1674,13 +2076,41 @@ function handleMouseUp(e) {
 	var objectTable = pageObjTable.get(pageNum);
 	var mouseX = parseInt(e.clientX - offsetX);
 	var mouseY = parseInt(e.clientY - offsetY);
-	console.log("handleMouseUp:::"+currentObjId);
+	//console.log("handleMouseUp:::"+currentObjId);
 	if(isDrawing){
 		var tempPointsArray = new Array();
-		if(currentObjId == 4){
+		if(currentObjId == 4 || currentObjId == 25){
+			/*var appPoint = exSmooth(mouseX,mouseY,startX,startY); 
+			freeHandQdArr[freeHandQdArr.length] = (appPoint.x).toFixed(2);
+			freeHandQdArr[freeHandQdArr.length] = (appPoint.y).toFixed(2);
+			createObject(currentObjId,startX,startY,appPoint.x,appPoint.y,triEndX,triEndY);*/
+			
+			path.simplify(10);
+			path.fullySelected = false;
+			drawSmoothCurve(path,currentObjId);
+		/*	
 			freeHandQdArr[freeHandQdArr.length] = mouseX;
 			freeHandQdArr[freeHandQdArr.length] = mouseY;
-			createObject(currentObjId,startX,startY,mouseX,mouseY,triEndX,triEndY);
+			createObject(currentObjId,startX,startY,mouseX,mouseY,triEndX,triEndY)
+			 
+			 */
+			 /* var appPoint = exSmooth(mouseX,mouseY,startX,startY); 
+			 freeHandQdArr[freeHandQdArr.length] = appPoint.x;
+			 freeHandQdArr[freeHandQdArr.length] = appPoint.y;
+			  var point = new paper.Point(mouseX,mouseY);
+			  path.add(point);
+			  createObject(currentObjId,startX,startY,appPoint.x,appPoint.y,triEndX,triEndY);*/
+			
+		/*	freeHandQdArr[freeHandQdArr.length] = mouseX;
+			freeHandQdArr[freeHandQdArr.length] = mouseY;
+			
+			var segmentCount = path.segments.length;
+            // When the mouse is released, simplify it:
+            path.simplify(10);
+            // Select the path, so we can see its segments:
+            path.fullySelected = false;*/
+            
+			//createObject(currentObjId,startX,startY,mouseX,mouseY,triEndX,triEndY);
 			tempPointsArray = freeHandQdArr;
 			freeHandQdArr = null;
 		}else if(currentObjId == 5 || currentObjId == 11){
@@ -1749,12 +2179,22 @@ function handleMouseUp(e) {
 			if(fillColor != null){
 				isFilled = true;
 			}
-			if(currentObjId == 3 || currentObjId ==4 || currentObjId == 6 || currentObjId == 11 ){
+			if(currentObjId == 3 || currentObjId ==4 || currentObjId ==25 || currentObjId == 6 || currentObjId == 11 ){
 				isFilled = false;
 			}
 			if(currentObjId != 16){
 				//console.log("tempPointsArray:222222222::"+tempPointsArray);
-				var graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,styleColor,null,isFilled,fillColor,globalAlpha,false,null,null);
+				var graphicsObject;
+				if(currentObjId == 4 ){
+					//var pointsArray = getPointsArray(path);
+					graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,styleColor,null,isFilled,fillColor,globalAlpha,false,null,null,1,null,path);
+				}else if(currentObjId == 25){
+					//var pointsArray = getPointsArray(path);
+					graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,highlighterLineWidth,heighlighterColor,null,isFilled,fillColor,heighlighterOpacity,false,null,null,1,null,path);
+				}else{
+					graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,styleColor,null,isFilled,fillColor,globalAlpha,false,null,null,1,null);
+				}
+				
 				if(objectTable == null){
 					objectTable = new Hashtable();
 					pageObjTable.put(pageNum,objectTable);
@@ -1773,7 +2213,7 @@ function handleMouseUp(e) {
 			//console.log("################################");
 			isDrawing = false;
 			canvas.style.cursor = "default";
-			rectangleSelObject = new GraphicsObject(-1,currentObjId,tempPointsArray,lineWidth,styleColor,null,false,null,null,false,null,null);
+			rectangleSelObject = new GraphicsObject(-1,currentObjId,tempPointsArray,lineWidth,styleColor,null,false,null,null,false,null,null,null,null);
 			if(objectTable != null && startX != null && startY != null){
 				//console.log("startX::;"+startX+":::startY::"+startY);
 				checkObject(objectTable,startX,startY,mouseX,mouseY);
@@ -1833,8 +2273,12 @@ function handleMouseUp(e) {
 			tempPointsArray[tempPointsArray.length] = mouseX;
 			tempPointsArray[tempPointsArray.length] = mouseY;
 			canvas.style.cursor = "default";
-			rectangleSelObject = new GraphicsObject(-1,currentObjId,tempPointsArray,lineWidth,styleColor,null,false,null,null,false,null,null);
-			if(objectTable != null && startX != null && startY != null && startX != mouseX && startY != mouseY){
+			rectangleSelObject = new GraphicsObject(-1,currentObjId,tempPointsArray,lineWidth,styleColor,null,false,null,null,false,null,null,null,null);
+			if(objectTable ==  null){
+				rectangleSelObject = null;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+			}else if(objectTable != null && startX != null && startY != null && startX != mouseX && startY != mouseY){
 				//console.log("checkGroupObject objjjjjjjjjjjjjj before"+selGroupObjArray);
 				checkGroupObject(startX,startY,mouseX,mouseY);
 				if(selGroupObjArray != null && selGroupObjArray.length > 0){
@@ -1878,8 +2322,9 @@ function handleMouseUp(e) {
 								dupSelObjArray[dupSelObjArray.length] = selObjArray[i];
 							}
 							//console.log("dupSelObjArray:::before::::::"+dupSelObjArray);
-							selObjArray = null;
-							selObjArray = new Array();
+							/*selObjArray = null;
+							selObjArray = new Array();*/
+							resetSelObjArray()
 							var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
 							ctx.clearRect(0, 0, canvas.width, canvas.height);
 							restore();
@@ -1892,6 +2337,28 @@ function handleMouseUp(e) {
 							selObjArray = dupSelObjArray;
 							//console.log("dupSelObjArray:::::::::"+dupSelObjArray);
 						}else{
+							rectangleSelObject = null;
+							ctx.clearRect(0, 0, canvas.width, canvas.height);
+							restore();
+							var selObj = checkSelectedObjectType();
+							if(selObj != null){
+								
+								 var selObjType = selObj.type
+								if(selObjType == 1 || selObjType == 23 || selObjType == 5 || selObjType == 12 || selObjType == 2 || selObjType == 11 || selObjType == 6 || selObjType == 3){
+									showShutterIcon('shape_shutter');
+									setAttributePanelState(selObj);
+								}
+								if(selObjType == 4 ){
+									showShutterIcon('pencil_shutter');
+									setAttributePanelState(selObj);
+								}
+								if(selObjType == 25){
+									showShutterIcon('pen_shutter');
+									setHighLighterAttributePanelState(selObj);
+								}
+								
+							}
+							
 							for(var i=0;i<selObjArray.length;i++){
 								var graphicsObject = objectTable.get(selObjArray[i]);
 								if(!(graphicsObject.type == 8 || graphicsObject.type == 12 || graphicsObject.type == 16)){
@@ -1901,11 +2368,27 @@ function handleMouseUp(e) {
 								}
 								
 								showSelectedObject(graphicsObject);
+								console.log("mouse up selction")
 							}
 						}
 						
 						//console.log("4444444"+selObjRotatable);
 						enableDisableRelationOptions(true);
+						if(selObjArray.length > 0){
+							showCopyIcon(true);
+							var graphicsObject = objectTable.get(selObjArray[0]);
+							if(graphicsObject.type == 26){
+								updateViewEditWidget(graphicsObject);
+								showviewEditIcon(true);
+							}
+						}
+						if(selObjArray.length > 1)
+							showGroupAndAlignWidget(true);
+							
+					}else{
+						rectangleSelObject = null;
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						restore();
 					}
 				}
 			}else{
@@ -1934,7 +2417,7 @@ function handleMouseUp(e) {
 						showGroupSelection(selGroupObj.refObjectList,objectTable);
 					}*/
 					showGroupAndObjectSelection();
-					
+					showUnGroupWidget(true);
 				}
 			}
 			startX = null;
@@ -1945,21 +2428,64 @@ function handleMouseUp(e) {
 }
 
 function handleMouseMove(e) {
-//console.log("isDrawing:::::"+isDrawing);
+//console.log("isDrawing:::::"+isDrawing+e.point);
+	var mouseX = parseInt(e.clientX - offsetX);
+	var mouseY = parseInt(e.clientY - offsetY);	
+	//console.log("mouseX::"+mouseX+"::::mouseY::"+mouseY+":canvasWidth::"+canvasWidth+"::canvasHeight:"+canvasHeight);
+	if(!checkXYinCanvas(mouseX,mouseY)){
+		return;
+	}
+	
 	if (isDrawing) {
-		var mouseX = parseInt(e.clientX - offsetX);
-		var mouseY = parseInt(e.clientY - offsetY);		
-		if(currentObjId == 4){
-				  var appPoint = exSmooth(mouseX,mouseY,startX,startY); 
-				  freeHandQdArr[freeHandQdArr.length] = appPoint.x;
-				  freeHandQdArr[freeHandQdArr.length] = appPoint.y;
+		console.log("mouseX::"+mouseX+"::::mouseY::"+mouseY);
+		if(currentObjId == 4 || currentObjId ==25 ){
+			  var delX = Math.abs(mouseX - startX);
+			  var delY = Math.abs(mouseY - startY);
+			  if(delX > 175 || delY > 175){
+				
+			  }else{
+				  var appPoint = exSmooth(mouseX,mouseY,startX,startY);
+				
+				  freeHandQdArr[freeHandQdArr.length] = mouseX;
+				  freeHandQdArr[freeHandQdArr.length] = mouseY;
 				  createObject(currentObjId,startX,startY,appPoint.x,appPoint.y,triEndX,triEndY);
 				  startX = appPoint.x;
 				  startY = appPoint.y;
+				  
+				  var point = new paper.Point(mouseX,mouseY);
+				  path.add(point);
+			  }
+			
+				/*if(startX == mouseX && startY == mouseY){
+					
+				}else{
+					  freeHandQdArr[freeHandQdArr.length] = mouseX;
+					  freeHandQdArr[freeHandQdArr.length] = mouseY;
+					  createObject(currentObjId,startX,startY,mouseX,mouseY,triEndX,triEndY);
+					  startX = mouseX;
+					  startY = mouseY;
+				}*/
+			
+			
+				
+			
+				 /* var appPointArray = exSmooth(mouseX,mouseY,startX,startY);
+				  var appPoint;
+				  for(var i=0;i<appPointArray.length;i++){
+					  appPoint = appPointArray[i]; 
+					  freeHandQdArr[freeHandQdArr.length] = appPoint.x;
+					  freeHandQdArr[freeHandQdArr.length] = appPoint.y;
+					  createObject(currentObjId,startX,startY,appPoint.x,appPoint.y,triEndX,triEndY);
+					  startX = appPoint.x;
+					  startY = appPoint.y;
+				  }*/
+				  
+				 /* var point = new paper.Point(ratio*mouseX,ratio*mouseY);
+				  path.add(point);*/
+				 
 		}else if(currentObjId == 16){
 			// text
 		}else{
-			
 			createObject(currentObjId,startX,startY,mouseX,mouseY,triEndX,triEndY);
 			if(!isPlayingStoped ){// Inserting object while playing
 				var currentMiliSec =Math.floor(myVid.currentTime * 1000);
@@ -1968,12 +2494,10 @@ function handleMouseMove(e) {
 		}
 	}else{
 		if(currentObjId == 7){
-			var mouseX = parseInt(e.clientX - offsetX);
-			var mouseY = parseInt(e.clientY - offsetY);
 			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
 			//checkOpenObjectForSelection(objectTable,mouseX,mouseY);
 			if(dragFlag){
-				//console.log("mouse move::"+strechableObj);
+				;
 				if(strechableObj.length >0 && strechableObj[0] != null && dragFlag){
 					if(isRotaionEnable){
 					    removeNonRotationalObjectFromSel();
@@ -1982,6 +2506,7 @@ function handleMouseMove(e) {
 						startX = mouseX;
 						startY = mouseY;
 					}else{
+						console.log("stretchSelectedObject::"+mouseX+"::"+mouseY)
 						stretchSelectedObject(strechableObj,mouseX,mouseY);
 					}
 				}else if(selObjArray != null && selObjArray.length>0){
@@ -1999,6 +2524,8 @@ function handleMouseMove(e) {
 					startY = mouseY;
 				}else{
 						//Create rubberband rectangle
+					//console.log("*************"+ctx.setLineDash)
+					if(ctx.setLineDash != null)
 						ctx.setLineDash([5]);
 						createObject(7,startX,startY,mouseX,mouseY,null,null,null)
 				}
@@ -2033,6 +2560,7 @@ function handleMouseMove(e) {
 }	
 	
 function handleMouseDown(e){
+	
 	if(triEndX == null){
 		startX = parseInt(e.clientX - offsetX);
 		startY = parseInt(e.clientY - offsetY);
@@ -2129,7 +2657,7 @@ function handleMouseDown(e){
 					var graphicsObject = objectTable.get(objArr[0]);
 					showSelectedObject(graphicsObject);
 					return;
-			   }else if(startTime != 0 && isPlayingStoped){// Inserting object while recording
+				}else if(startTime != 0 && isPlayingStoped){// Inserting object while recording
 					var currentTime = new Date().getTime();
 					currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
 					//console.log("mouse up::pagenumber:"+document.getElementById("pagenum").value);
@@ -2143,9 +2671,9 @@ function handleMouseDown(e){
 					timeRefTable.put(currentMiliSec,recordedObjArr);
 					var graphicsObject = objectTable.get(objArr[0]);
 					showSelectedObject(graphicsObject);
-					
+
 					var nonRecordingObjArray = nonRecordinPageObjTable.get(document.getElementById("pagenum").value);
-						//console.log("Non recorded object"+nonRecordingObjArray);
+					//console.log("Non recorded object"+nonRecordingObjArray);
 					if(nonRecordingObjArray != null){
 						//console.log("if case -----"+objId);
 						var pos = checkObjInSelList(nonRecordingObjArray,objArr[0]);
@@ -2160,7 +2688,7 @@ function handleMouseDown(e){
 						}
 						//console.log("nonRecordingObjArray:::"+nonRecordingObjArray);
 					}
-					
+
 					//console.log("timeRefTable::;"+timeRefTable);
 				}else{
 					var pos = checkObjInSelList(selObjArray,objArr[0]);
@@ -2203,7 +2731,7 @@ function handleMouseDown(e){
 								handleZoomButton(false);
 							}
 						}*/
-						
+
 					}else{
 						if(!isControlPressed){
 							if(strechableObj.length !=0 && strechableObj[1] == null){
@@ -2225,7 +2753,7 @@ function handleMouseDown(e){
 							// disable Zoom Button
 							handleZoomButton(false);
 						}
-							
+
 						var groupObj = checkObjectInGroup(objArr[0]);
 						//console.log("groupObj::"+groupObj);
 						if(groupObj!= null && groupObj.refObjectList != null){
@@ -2233,7 +2761,7 @@ function handleMouseDown(e){
 								selGroupObjArray = null;
 								selGroupObjArray = new Array();
 							}
-							
+
 							if(selGroupObjArray.indexOf(groupObj.id) == -1){
 								var refList = groupObj.refObjectList;							
 								selGroupObjArray[selGroupObjArray.length] = groupObj.id;
@@ -2248,8 +2776,27 @@ function handleMouseDown(e){
 							//console.log("hiiii");
 							selObjArray[selObjArray.length] = objArr[0];
 							//Set Object Attribute in dropdown menu
-							setObjectAttributeMenuOption(graphicsObject);
+							// code commented because of new UI
+							//setObjectAttributeMenuOption(graphicsObject);
 							//}
+							var selObj = checkSelectedObjectType();
+							if(selObj != null){
+								
+								 var selObjType = selObj.type
+								if(selObjType == 1 || selObjType == 23 || selObjType == 5 || selObjType == 12 || selObjType == 2 || selObjType == 11 || selObjType == 6 || selObjType == 3){
+									showShutterIcon('shape_shutter');
+									setAttributePanelState(selObj);
+								}
+								if(selObjType == 4 ){
+									showShutterIcon('pencil_shutter');
+									setAttributePanelState(selObj);
+								}
+								if(selObjType == 25){
+									showShutterIcon('pen_shutter');
+									setHighLighterAttributePanelState(selObj);
+								}
+								
+							}
 							showGroupAndObjectSelection();
 							/*
 							var retVal = getShowableSelObject();
@@ -2269,7 +2816,7 @@ function handleMouseDown(e){
 										showSelectedObject(graphicsObject);
 									}
 							}*/
-							//handleSelectedObject(objectTable);
+							handleSelectedObject(objectTable);
 							//alert("done::");
 						}
 					}
@@ -2311,18 +2858,52 @@ function handleMouseDown(e){
 				selGroupObjArray= new Array();*/
 			}
 		}
+		if(selObjArray !=null ){
+			if(selObjArray.length>0){
+				showCopyIcon(true);
+				var graphicsObject = objectTable.get(selObjArray[0]);
+				if(graphicsObject.type == 26){
+					updateViewEditWidget(graphicsObject);
+					showviewEditIcon(true);
+				}
+			}
+				
+			if(selObjArray.length>1)
+				showGroupAndAlignWidget(true);
+		}
 				
 	}else{
 		canvas.style.cursor = "crosshair";		
 		isDrawing = true
-		if(currentObjId == 4){
+		if(currentObjId == 4  || currentObjId ==25 ){
 			if(freeHandQdArr == null){
 				freeHandQdArr = new Array();
 			}
-			for(var i = 0; i < smoothLength+1; ++i) {
-				freeHandQdArr[freeHandQdArr.length] = startX;
-				freeHandQdArr[freeHandQdArr.length] = startY;
-			}
+			//for(var i = 0; i < smoothLength+1; ++i) {
+			freeHandQdArr[freeHandQdArr.length] = startX;
+			freeHandQdArr[freeHandQdArr.length] = startY;
+			//}
+		   /*  var point = new paper.Point(ratio*startX,ratio*startY);
+			 console.log("point::::"+point);
+			 path = new paper.Path({
+	                segments: [point],
+	                strokeColor: 'black',
+	                // Select the path, so we can see its segment points:
+	                fullySelected: false
+	        });*/
+			if (path) {
+                path.selected = false;
+            }
+		
+			// Create a new path and set its stroke color to black:
+			point = new paper.Point(startX,startY);
+			path = new paper.Path({
+				segments: [point],
+				strokeColor: 'black',
+				// Select the path, so we can see its segment points:
+				fullySelected: false
+			});
+	
 		}
 	}
 	//console.log("down done");
@@ -2337,7 +2918,7 @@ function handleSelectedObject(objectTable){
 					//console.log("selObjRotatable::3333:::"+selObjRotatable);
 				}
 				showSelectedObject(graphicsObject);
-				
+				//console.log("mouse down selction")
 			}
 			//console.log("33333333");
 			enableDisableRelationOptions(true);
@@ -2359,7 +2940,14 @@ function initSelectedObjState(){
 	restore();
 	//console.log("####");
 	enableDisableRelationOptions(false);
-	setZoomEnableDisable(false);
+	//setZoomEnableDisable(false);
+	handleZoomButton(false);
+	showGroupAndAlignWidget(false);
+	showCopyIcon(false);
+	showviewEditIcon(false);
+	hideShutterIcon();
+	reSetAttributePanelState();
+	reSetHighLighterAttributePanelState();
 }
 
 
@@ -2371,8 +2959,9 @@ function editRecordedObjectTime(objArr){
 	if(time == null){
 		alert("Selected object is not recorded object");
 	}else{
-		selObjArray = null;
-		selObjArray = new Array();
+		/*selObjArray = null;
+		selObjArray = new Array();*/
+		resetSelObjArray()
 		selObjRotatable = true;
 		selObjArray[selObjArray.length] = objArr[0];
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2510,13 +3099,20 @@ function insertObjectInPlayingStream(currentMiliSec,pageObject){
 
 
 	
-function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
+function createObject(id,startx,starty,mouseX,mouseY,endX,endY,textorMediaObj){
+	// multiply by 2 because of devicePixelRatio
+	/*
+	startx = 2*startx;
+	starty = 2*starty;
+	mouseX = 2*mouseX;
+	mouseY = 2*mouseY;*/
 	//console.log("createObject---------------id----"+id+"startx:"+startx+"::starty::"+starty+"::mouseX::"+mouseX+"::mouseY:;"+mouseY);
 	ctx.save();
 	ctx.restore();
-	//console.log("createObject:::"+globalAlpha);
-	ctx.globalAlpha = 1.0;
-	ctx.setLineDash([0]);
+	//console.log("createObject::styleColor:"+styleColor+"::fillColor::"+fillColor+":id::"+id);
+	ctx.globalAlpha = globalAlpha;
+	ctx.setLineDash([])
+
 	switch(id){
 		case 1:
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2541,7 +3137,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			tempCirclePointsArray[7] = dy;
 			
 			
-			createRectangleNew(startx, starty, cx, cy, mouseX , mouseY , dx, dy);
+			createRectangleNew(ratio*startx, ratio*starty, ratio*cx, ratio*cy, ratio*mouseX , ratio*mouseY , ratio*dx, ratio*dy);
 			if(fillColor != null){
 				ctx.fillStyle = fillColor;
 				ctx.fill();
@@ -2574,7 +3170,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			tempCirclePointsArray[7] = dy;
 			
 			
-			createOvalNew(startx, starty, cx, cy, mouseX , mouseY , dx, dy);
+			createOvalNew(ratio*startx, ratio*starty, ratio*cx, ratio*cy, ratio*mouseX , ratio*mouseY , ratio*dx, ratio*dy);
 			if(fillColor != null){
 				ctx.fillStyle = fillColor;
 				ctx.fill();
@@ -2593,7 +3189,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.strokeStyle = styleColor;
 			ctx.lineWidth= lineWidth;
 			ctx.globalAlpha = globalAlpha;
-			createLine(startx, starty, mouseX , mouseY );
+			createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			//points_is_onLine(startx, starty, mouseX , mouseY );
 			//ctx.closePath();
 			ctx.stroke();
@@ -2611,7 +3207,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.lineWidth= lineWidth;
 			ctx.globalAlpha = globalAlpha;
 			//drawFreeHandLine(freeHandQdArr);
-			createLine(startx, starty, mouseX , mouseY );
+			createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			//restore();
 			//console.log("actual Points::"+startx+","+starty+","+mouseX+","+mouseY);
 			//ctx.globalAlpha= 0.8;
@@ -2630,10 +3226,10 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.globalAlpha = globalAlpha;
 			if(endX != null && endY != null){
 				//console.log("---createTriangle----"+globalAlpha);
-					createTriangle(startx,starty,mouseX,mouseY,endX,endY);
+					createTriangle(ratio*startx,ratio*starty,ratio*mouseX,ratio*mouseY,ratio*endX,ratio*endY);
 					
 			}else{
-				createLine(startx, starty, mouseX , mouseY );
+				createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			}
 			if(fillColor != null){
 				ctx.fillStyle = fillColor;
@@ -2651,7 +3247,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.strokeStyle = styleColor;
 			ctx.lineWidth= lineWidth;
 			ctx.globalAlpha = globalAlpha;
-			createArrow(startx, starty, mouseX , mouseY );
+			createArrow(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			ctx.closePath();
 			ctx.stroke();
 			break;
@@ -2665,17 +3261,19 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.strokeStyle = "#000000";
 			ctx.lineWidth= 2;
 			ctx.globalAlpha = globalAlpha;
-			ctx.setLineDash([3]);
-			createRectangle(startx, starty, mouseX , mouseY );
+			//console.log("ctx.setLineDash:::"+ctx.setLineDash);
+			if(ctx.setLineDash != null)
+				ctx.setLineDash([3]);
+			createRectangle(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			ctx.closePath();
 			ctx.stroke();
 			ctx.restore();
 			break;
 		case 8:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
+			/*ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();*/
 			ctx.beginPath();
-			drawImage(startx, starty, mouseX , mouseY );
+			drawImage(startx, starty, mouseX , mouseY,textorMediaObj);
 			ctx.closePath();
 			ctx.stroke();
 			break;
@@ -2686,7 +3284,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.strokeStyle = styleColor;
 			ctx.lineWidth= lineWidth;
 			ctx.globalAlpha = globalAlpha;
-			createLine(startx, starty, mouseX , mouseY );
+			createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			//points_is_onLine(startx, starty, mouseX , mouseY );
 			ctx.closePath();
 			ctx.stroke();
@@ -2699,7 +3297,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.strokeStyle = "#000000";
 			ctx.lineWidth= 2;
 			ctx.setLineDash([3]);
-			createRectangle(startx, starty, mouseX , mouseY );
+			createRectangle(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			ctx.closePath();
 			ctx.stroke();
 			ctx.restore();
@@ -2716,9 +3314,9 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.lineWidth= lineWidth;
 			ctx.globalAlpha = globalAlpha;
 			if(endX != null && endY != null){
-				createArc(startx,starty,mouseX,mouseY,endX,endY);
+				createArc(ratio*startx,ratio*starty,ratio*mouseX,ratio*mouseY,ratio*endX,ratio*endY);
 		          }else{
-						createLine(startx, starty, mouseX , mouseY );
+						createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 					}
 			//ctx.closePath();
 			ctx.stroke();
@@ -2727,7 +3325,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			
 		case 12:
 			
-			if(checkCircleBoundryInCanvas(startx, starty, mouseX , mouseY)){
+			if(checkCircleBoundryInCanvas(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY)){
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				restore();
 				tempCirclePointsArray[0] = startX;
@@ -2741,7 +3339,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 				ctx.strokeStyle = styleColor;
 				ctx.lineWidth= lineWidth;
 				ctx.globalAlpha = globalAlpha;
-				createCircle(startx, starty, mouseX , mouseY);
+				createCircle(ratio*startx, ratio*starty, ratio*mouseX ,ratio* mouseY);
 				if(fillColor != null){
 					ctx.fillStyle = fillColor;
 					ctx.fill();
@@ -2755,8 +3353,8 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			break;
 		case 13:
 		
-				var thirdPoint = getEquilateralTriangletThirdPoint(startx, starty, mouseX , mouseY);
-				if(checkEqTriangleBoundryInCanvas(startx, starty, mouseX , mouseY,thirdPoint.x3,thirdPoint.y3)){
+				var thirdPoint = getEquilateralTriangletThirdPoint(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY);
+				if(checkEqTriangleBoundryInCanvas(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY,thirdPoint.x3,thirdPoint.y3)){
 					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					restore();
 					ctx.beginPath();
@@ -2765,7 +3363,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 					ctx.strokeStyle = styleColor;
 					ctx.lineWidth= lineWidth;
 					ctx.globalAlpha = globalAlpha;
-					createTriangle(startx, starty, mouseX , mouseY,thirdPoint.x3,thirdPoint.y3);
+					createTriangle(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY,thirdPoint.x3,thirdPoint.y3);
 					tempCirclePointsArray[0] = startx;
 					tempCirclePointsArray[1] = starty;
 					tempCirclePointsArray[2] = mouseX;
@@ -2788,9 +3386,11 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 					//ctx.save();
 					ctx.beginPath();
 					ctx.strokeStyle = textStyleColor;
-					ctx.globalAlpha = globalAlpha;
+					ctx.globalAlpha = 1.0;
 					//console.log("1111111111111111111111111111");
-					createText(text,startx,starty,textStyleColor);
+					createText(textorMediaObj,startx,starty);
+					
+					
 					/*
 					ctx.save();
 					ctx.beginPath();
@@ -2822,7 +3422,7 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.lineWidth= lineWidth;
 			ctx.globalAlpha = globalAlpha;
 			//drawFreeHandLine(freeHandQdArr);
-			createLine(startx, starty, mouseX , mouseY );
+			createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
 			//restore();
 			//console.log("actual Points::"+startx+","+starty+","+mouseX+","+mouseY);
 			//ctx.globalAlpha= 0.8;
@@ -2832,15 +3432,15 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			ctx.stroke(); 
 			break;
 		case 23:
-			var r = distanceBetween(startx, starty, mouseX, mouseY);
-			var x1= startx - r;
-			var y1 = starty - r;
-			var x2 = startx + r;
-			var y2 = starty - r;
-			var x3 = startx + r;
-			var y3 = starty + r;
-			var x4 = startx - r;
-			var y4 = starty + r; 
+			var r = distanceBetween(ratio*startx, ratio*starty, ratio*mouseX, ratio*mouseY);
+			var x1= ratio*startx - r;
+			var y1 = ratio*starty - r;
+			var x2 = ratio*startx + r;
+			var y2 = ratio*starty - r;
+			var x3 = ratio*startx + r;
+			var y3 = ratio*starty + r;
+			var x4 = ratio*startx - r;
+			var y4 = ratio*starty + r; 
 			if(checkSquareBoundryInCanvas(x1,y1,x2,y2,x3,y3,x4,y4)){
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				restore();
@@ -2850,18 +3450,18 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 				ctx.strokeStyle = styleColor;
 				ctx.lineWidth= lineWidth;
 				ctx.globalAlpha = globalAlpha;
-				
-				tempCirclePointsArray[0] = x1;
-				tempCirclePointsArray[1] = y1;
-				tempCirclePointsArray[2] = x2;
-				tempCirclePointsArray[3] = y2;
-				tempCirclePointsArray[4] = x3;
-				tempCirclePointsArray[5] = y3;
-				tempCirclePointsArray[6] = x4;
-				tempCirclePointsArray[7] = y4;
-				
 				isSquareCreated  = true;
-				createSquare(tempCirclePointsArray[0], tempCirclePointsArray[1], tempCirclePointsArray[2], tempCirclePointsArray[3], tempCirclePointsArray[4] , tempCirclePointsArray[5] , tempCirclePointsArray[6], tempCirclePointsArray[7]);
+				createSquare(x1,y1,x2,y2,x3,y3,x4,y4);
+				
+				tempCirclePointsArray[0] = (x1/ratio).toFixed(2);
+				tempCirclePointsArray[1] = (y1/ratio).toFixed(2);
+				tempCirclePointsArray[2] = (x2/ratio).toFixed(2);
+				tempCirclePointsArray[3] = (y2/ratio).toFixed(2);
+				tempCirclePointsArray[4] = (x3/ratio).toFixed(2);
+				tempCirclePointsArray[5] = (y3/ratio).toFixed(2);
+				tempCirclePointsArray[6] = (x4/ratio).toFixed(2);
+				tempCirclePointsArray[7] = (y4/ratio).toFixed(2);
+				
 				if(fillColor != null){
 					ctx.fillStyle = fillColor;
 					ctx.fill();
@@ -2873,6 +3473,43 @@ function createObject(id,startx,starty,mouseX,mouseY,endX,endY,text){
 			isSquareCreated  = false;
 		}
 		break;
+		case 25:
+			//ctx.clearRect(0, 0, canvas.width, canvas.height);
+		/* 	pencilPath.strokeWidth = 2;
+			pencilPath.smooth(); */
+			/*ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();*/
+			ctx.beginPath();
+			ctx.lineCap = 'round';
+			ctx.lineJoin = 'round';
+			ctx.strokeStyle = heighlighterColor ;
+			ctx.lineWidth= highlighterLineWidth;
+			ctx.globalAlpha = heighlighterOpacity;
+			//drawFreeHandLine(freeHandQdArr);
+			createLine(ratio*startx, ratio*starty, ratio*mouseX , ratio*mouseY );
+			//restore();
+			//console.log("actual Points::"+startx+","+starty+","+mouseX+","+mouseY);
+			//ctx.globalAlpha= 0.8;
+			
+			//createLine(startx, starty, mouseX , mouseY );
+			ctx.stroke(); 
+			break;
+		case 26:
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			ctx.beginPath();
+			createMediaIcon(textorMediaObj,startx,starty);
+			ctx.closePath();
+			ctx.stroke();
+			break;
+		case 27:
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			ctx.beginPath();
+			createPinObject(textorMediaObj,startx,starty);
+			ctx.closePath();
+			ctx.stroke();
+			break;
 	}
 }
 
@@ -2934,7 +3571,7 @@ function checkSquareBoundryInCanvas(x1,y1,x2,y2,x3,y3,x4,y4){
 	return (chk1 && chk2 && chk3 && chk4 )
 }
 
-function restore(){
+function restore(isTextEdited){
 	if(!isPlayingStoped){
 	//console.log("44444444444444444444444");
 		drawNonRecordingObject(document.getElementById("pagenum").value);
@@ -2982,7 +3619,13 @@ function restore(){
 			}else{
 				while(objectTable.next()){
 				 var isObjInSelList = false;
-				 drawObject(objectTable,objectTable.getKey(),false);
+				 if(isTextEdited != null){
+					 if(objectTable.getKey() != selectedTxtObj.id)
+						 drawObject(objectTable,objectTable.getKey(),false);
+				 }else{
+					 drawObject(objectTable,objectTable.getKey(),false);
+				 }
+				
 				 /*
 				 if(selObjArray != null){
 				   for(var i=0;i<selObjArray.length;i++){
@@ -3003,7 +3646,7 @@ function restore(){
 	}
 }
 function restoreSelectedObject(){
-	//console.log("restore selected Object");
+	console.log("restore selected Object");
 	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
 	//console.log("restore----------------------Page Number----------------------------------"+document.getElementById("pagenum").value);
 	//console.log("restore--------------------------------------------------------"+objectTable);
@@ -3045,12 +3688,12 @@ function changeTextAreaFontType(obj){
 	//console.log("Font type::"+obj.value);
 	textFontType = obj.value;
 	//var text = document.getElementById("area1").value;
-	document.getElementById("area1").style.fontFamily=obj.value;
+	document.getElementById("editor").style.fontFamily=obj.value;
 }
 function changeTextAreaFontSize(obj){
 	//console.log("Font type::"+obj.value);
 	textFontSize = obj.value;
-	document.getElementById("area1").style.fontSize=obj.value+"px";
+	document.getElementById("editor").style.fontSize=obj.value+"px";
 	
 }
 
@@ -3118,7 +3761,7 @@ function restoreUnstrechableObject(selObjId){
 }
 
 function drawObject(objectTable,id,highlight){
-	//console.log("drawObject:::id:;"+id+"::objectTable::"+objectTable);
+	//console.log("drawObject:::id:;"+id);
 	/*
 	if(myVid != null){
 		myVid.currentTime = 2.564;
@@ -3137,9 +3780,9 @@ function drawObject(objectTable,id,highlight){
 	}else if(highlight){
 		ctx.strokeStyle='#FF0000';
 		ctx.lineWidth=5;
-		ctx.setLineDash([0]);
+		//ctx.setLineDash([0]);
 	}else{
-	   //console.log("drawObject:;"+graphicsObject.color+"::line width:::"+graphicsObject.lineWidth);
+	    // console.log("drawObject:;"+graphicsObject.opacity);
 		ctx.strokeStyle = graphicsObject.color;
 		ctx.lineWidth = graphicsObject.lineWidth;
 		if(graphicsObject.opacity != null){
@@ -3147,7 +3790,8 @@ function drawObject(objectTable,id,highlight){
 		}else{
 			ctx.globalAlpha = 1.0;
 		}
-		ctx.setLineDash([0]);
+		if(ctx.setLineDash != null)
+			ctx.setLineDash([]);
 	}
 	ctx.save();
 	ctx.restore();
@@ -3176,12 +3820,9 @@ function drawObject(objectTable,id,highlight){
 					
 			
 					//console.log("points::"+pointsArr[0]+","+pointsArr[1]+","+pointsArr[2]+","+pointsArr[3]+","+pointsArr[4]+","+pointsArr[5]+","+pointsArr[6]+","+pointsArr[7]);
-					createRectangleNew(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3], pointsArr[4], pointsArr[5], pointsArr[6], pointsArr[7]);
+					createRectangleNew(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2],ratio*pointsArr[3], ratio*pointsArr[4], ratio*pointsArr[5], ratio*pointsArr[6], ratio*pointsArr[7]);
 					if(graphicsObject.isFilled == true){
-					
 						ctx.fillStyle = graphicsObject.fillColor;
-			      				
-					
 						ctx.fill();
 						ctx.save();
 						
@@ -3194,7 +3835,7 @@ function drawObject(objectTable,id,highlight){
 				case 2:
 					//ctx.beginPath();
 					var pointsArr = graphicsObject.pointsArray;
-					createOvalNew(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3], pointsArr[4], pointsArr[5], pointsArr[6], pointsArr[7]);
+					createOvalNew(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3], ratio*pointsArr[4], ratio*pointsArr[5], ratio*pointsArr[6], ratio*pointsArr[7]);
 					if(graphicsObject.isFilled == true){
 						ctx.fillStyle = graphicsObject.fillColor;
 						ctx.fill();
@@ -3207,17 +3848,26 @@ function drawObject(objectTable,id,highlight){
 				case 3:
 					//ctx.beginPath();
 					var pointsArr = graphicsObject.pointsArray;
-					createLine(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3]);
+					createLine(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3]);
 					//ctx.closePath() ;
 					//ctx.stroke() ;
 					break;
 				case 4:
 					//alert("hiiii");
-					var points = graphicsObject.pointsArray;
-					//console.log("Draw Pencil points Array::"+points);
+					var pathObj = graphicsObject.path;
+					drawSegments(pathObj);
+					
+					
+					
+					
+					
+					
+					
+					/*var points = graphicsObject.pointsArray;
+					console.log("Draw Pencil points Array::"+points);
 					//drawPoints(points);
 					//drawAndSimplyfyPath(points);
-					drawFreeHandLine(points);
+					drawFreeHandLine(points);*/
 					//drawCurve(ctx, points);
 					//drawCurve(ctx,points, 1, false, 16, true);
 					/*
@@ -3248,7 +3898,7 @@ function drawObject(objectTable,id,highlight){
 					//ctx.beginPath();
 					var pointsArr = graphicsObject.pointsArray;
 					//console.log("Triangle:::"+graphicsObject.isFilled);
-					createTriangle(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3], pointsArr[4], pointsArr[5]);
+					createTriangle(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3], ratio*pointsArr[4], ratio*pointsArr[5]);
 					if(graphicsObject.isFilled == true){
 						ctx.fillStyle = graphicsObject.fillColor;
 						ctx.fill();
@@ -3261,30 +3911,20 @@ function drawObject(objectTable,id,highlight){
 				case 6:
 					//ctx.beginPath();
 					var pointsArr = graphicsObject.pointsArray;
-					createArrow(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3]);
+					createArrow(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3]);
 					//ctx.closePath() ;
 					//ctx.stroke() ;
 					break;
 				case 8:
 					//ctx.beginPath();
-					
+					/*
 					if(currentObjId != 15)
 						canvas.style.cursor  = "wait";
+					*/
 					
-					
-					tempArray = graphicsObject.pointsArray;
-
-					//console.log("Image-----Id ::::"+graphicsObject.id+"::::imageLoaded:::"+graphicsObject.imageLoaded+"page nume::"+document.getElementById("pagenum").value);
-					isImageLoaded = false;
+					var pointsArr  = graphicsObject.pointsArray;
 					if(graphicsObject.imageLoaded){
-						imageObj = null;
-						imageObj= new Image();
-						imageObj.src = graphicsObject.src;
-						loadAndDrawImage();
-					}else{
-						//console.log("image loaded true:"+document.getElementById("pagenum").value+"::Id::"+graphicsObject.id)
-						loadImage(graphicsObject.src,graphicsObject.id);
-					
+						drawImage(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3],graphicsObject.imageLoaded);
 					}
 					
 					//drawImage(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3],graphicsObject.src);
@@ -3297,7 +3937,7 @@ function drawObject(objectTable,id,highlight){
 					//ctx.beginPath();
 					ctx.globalAlpha = 0.3;
 					var pointsArr = graphicsObject.pointsArray;
-					createLine(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3]);
+					createLine(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3]);
 					//ctx.closePath() ;
 					//ctx.stroke() ;
 					break;
@@ -3307,12 +3947,12 @@ function drawObject(objectTable,id,highlight){
 					
 				case 11:
 					var pointsArr = graphicsObject.pointsArray;
-					createArc(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3], pointsArr[4], pointsArr[5]);
+					createArc(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3], ratio*pointsArr[4], ratio*pointsArr[5]);
 					break;
 					
 				case 12:
 					var pointsArr = graphicsObject.pointsArray;
-					createOval(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3]);
+					createOval(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3]);
 					//createCircle(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3]);
 					if(graphicsObject.isFilled == true){
 						ctx.fillStyle = graphicsObject.fillColor;
@@ -3324,7 +3964,7 @@ function drawObject(objectTable,id,highlight){
 				
 				case 13:
 					var pointsArr = graphicsObject.pointsArray;
-					createTriangle(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3], pointsArr[4], pointsArr[5]);
+					createTriangle(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3], ratio*pointsArr[4], ratio*pointsArr[5]);
 					if(graphicsObject.isFilled == true){
 						ctx.fillStyle = graphicsObject.fillColor;
 						ctx.fill();
@@ -3335,14 +3975,14 @@ function drawObject(objectTable,id,highlight){
 				
 				case 16:
 					
-					var pointsArr = graphicsObject.pointsArray;
+					/*var pointsArr = graphicsObject.pointsArray;
 					//ctx.save();
 					//console.log("222222222222222222222"+graphicsObject.text);
-					createText(graphicsObject.text,pointsArr[0],pointsArr[3],graphicsObject.color);
+					createText(graphicsObject.text,ratio*pointsArr[0],ratio*pointsArr[3],graphicsObject.color);
 					var metrics = ctx.measureText(graphicsObject.text.textData);
 					pointsArr[2] = pointsArr[0] +  metrics.width;
 					//createRectangle(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3]);
-					/*
+					
 					ctx.save();
 					ctx.beginPath();
 					ctx.strokeStyle = styleColor;
@@ -3356,14 +3996,16 @@ function drawObject(objectTable,id,highlight){
 					ctx.closePath();
 					ctx.stroke();
 					ctx.restore();
-					*/
+					
 					ctx.closePath() ;
-					ctx.stroke() ;
+					ctx.stroke() */;
+					var pointsArr = graphicsObject.pointsArray;
+					createText(graphicsObject.text,pointsArr[0],pointsArr[1]);
 				
 				break;
 				case 23:
 					var pointsArr = graphicsObject.pointsArray;
-					createSquare(pointsArr[0], pointsArr[1], pointsArr[2], pointsArr[3], pointsArr[4], pointsArr[5], pointsArr[6], pointsArr[7]);
+					createSquare(ratio*pointsArr[0], ratio*pointsArr[1], ratio*pointsArr[2], ratio*pointsArr[3], ratio*pointsArr[4], ratio*pointsArr[5], ratio*pointsArr[6], ratio*pointsArr[7]);
 					//console.log("pointsArr[0]::"+pointsArr[0]+"pointsArr[1]::"+pointsArr[1]+"pointsArr[2]::"+pointsArr[2]+"pointsArr[3]::"+pointsArr[3]);
 					if(graphicsObject.isFilled == true){
 						ctx.fillStyle = graphicsObject.fillColor;
@@ -3371,12 +4013,62 @@ function drawObject(objectTable,id,highlight){
 						ctx.save();
 					}
 					break;
-				}
+					
+				case 25:
+					//alert("hiiii");
+					var pathObj = graphicsObject.path;
+					drawSegments(pathObj);
+					
+					
+					
+					
+					
+				/*	var points = graphicsObject.pointsArray;
+					console.log("Draw Pencil points Array::"+points);
+					//drawPoints(points);
+					//drawAndSimplyfyPath(points);
+					drawFreeHandLine(points);*/
+					
+					//drawCurve(ctx, points);
+					//drawCurve(ctx,points, 1, false, 16, true);
+					/*
+					ctx.moveTo(points[0], points[1]);
+				    for (i = 2; i < points.length - 6; i = i+2){
+					  var xc = (points[i] + points[i + 2]) / 2;
+					  var yc = (points[i+1] + points[i + 3]) / 2;
+					  ctx.quadraticCurveTo(points[i], points[i+1], xc, yc);
+				    }
+					 // curve through the last two points
+					 ctx.quadraticCurveTo(points[i], points[i+1], points[i+2],points[i+3]);
+
+					*/
+					/*
+					var pointsArr = graphicsObject.pointsArray;
+					//console.log("Length::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"+pointsArr.length);
+					for(i=0;(i+3)<pointsArr.length;i = i+2){
+						//ctx.beginPath();
+						//console.log("Restore Points::"+pointsArr[i+0]+","+pointsArr[i+1]+","+pointsArr[i+2]+","+ pointsArr[i+3]);
+						createLine(pointsArr[i+0], pointsArr[i+1], pointsArr[i+2], pointsArr[i+3]);
+						//ctx.closePath() ;
+						//ctx.stroke() ;
+					}
+					*/
+					//console.log("Done----------------------------------------------------------------------------------------------");
+					break;
+					
+				case 26:
+					var pointsArr = graphicsObject.pointsArray;
+					createMediaIcon(graphicsObject.media,pointsArr[0],pointsArr[1]);
+				break;
+				case 27:
 				
-				
-				
-		//console.log("Draw Object:::close path::::");
-			if(graphicsObject.type!=3 && graphicsObject.type!=4 && graphicsObject.type!= 11)
+					var pointsArr = graphicsObject.pointsArray;
+					createPinObject(graphicsObject.media,pointsArr[0],pointsArr[1]);
+					
+					break;
+			}
+		
+			if(graphicsObject.type!=3 && graphicsObject.type!=4 && graphicsObject.type!=25 && graphicsObject.type!= 11)
 				ctx.closePath() ;
 				ctx.stroke() ;
 			if(graphicsObject.isFilled){
@@ -3550,7 +4242,7 @@ function drawPoints(points) {
 	
 }
 
-function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillColor,opacity,imageLoaded,textObj,ref,usersObjectIdentifierId, sequenceNo){
+function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillColor,opacity,imageLoaded,textObj,ref,isDraft, sequenceNo,path,media){
 	this.id = id;
 	this.type = type;
 	this.pointsArray = pointsArray;
@@ -3564,10 +4256,12 @@ function GraphicsObject(id,type,pointsArray,lnWidth,lnColor,src,isFilled,fillCol
 	this.text = textObj;
 	this.ref = ref;
 	this.attachment = null;
-	this.usersObjectIdentifierId = usersObjectIdentifierId;
+	this.isDraft = isDraft;
 	this.sequenceNo = sequenceNo;
+	this.path = path;
+	this.media = media;
 }
-function Text(text,fontType,fontSize,isBold,isUnderLine,isItalic){
+/*function Text(text,fontType,fontSize,isBold,isUnderLine,isItalic){
 	this.textData = text;
 	this.fontType = fontType;
 	this.fontSize = fontSize;
@@ -3575,7 +4269,23 @@ function Text(text,fontType,fontSize,isBold,isUnderLine,isItalic){
 	this.isUnderLine = isUnderLine;
 	this.isItalic = isItalic;
 	
+}*/
+
+function Media(mediaType,mediaIconObj,url,fileName,fileNameImg){
+	this.mediaType = mediaType;
+	this.mediaIconObj = mediaIconObj;
+	this.url = url;
+	this.fileName = fileName;
+	this.fileNameImg = fileNameImg;
 }
+
+
+
+function Text(text,imageObject){
+	this.textData = text;
+	this.imageObject = imageObject;
+}
+
 function PageObject(num,objectId){
 	this.num = num;
 	this.objectId = objectId;
@@ -3589,12 +4299,13 @@ function GroupObject(id,objectList,isActive){
 function clock(){
 	//alert("clock"+recCount);
 	startTime = new Date().getTime();
-	//Set Page Move Event when recording will start to move on that page.
+	//Set Page M ove Event when recording will start to move on that page.
 	var pageNumber = document.getElementById("pagenum").value;
 	//console.log("clock  startTime: storePageChangeEvent::"+startTime);
-	if(recCount == 1){
-		storePageChangeEvent(pageNumber);
-	}
+	//if(recCount == 1){
+	pinPageNum = pageNumber;
+	storePageChangeEvent(pageNumber);
+	//}
 		//console.log("clock  startTime:::"+startTime);
 	//timer = setTimeout('clock()',10);
 	//currentMiliSec = currentMiliSec + 10;
@@ -3985,6 +4696,7 @@ function pausePlaying(){
 	if(isPaused == false){
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		document.getElementById("pagenum").value = 1;
+		document.getElementById("pagenumdiv").innerHTML = "Page 1";
 		canvas.style.cursor  = "wait";
 		playingFrom = 1;
 		sliderPos = 0;
@@ -4102,7 +4814,7 @@ function restoreAndPlayObject(key){
 
 function checkPageAndDrawObj(key){
 	playCount++;
-	//console.log("checkPageAndDrawObj:::"+key);
+	console.log("checkPageAndDrawObj:::"+key);
 	var recordedObjArr = timeRefTable.get(key);
 	//console.log("timeRefTable:::"+timeRefTable);
 	var pageObj = recordedObjArr[0];
@@ -4114,8 +4826,9 @@ function checkPageAndDrawObj(key){
 		for(var i=0;i<recordedObjArr.length;i++){
 			pageObj = recordedObjArr[i];
 			var graphicsObject = objectTable.get(pageObj.objectId);
-			console.log("recSequenceNo11 :: "+recSequenceNo);
-			if(graphicsObject.sequenceNo == recSequenceNo){
+			//console.log("recSequenceNo11 :: "+recSequenceNo);
+			//console.log("graphicsObject.sequenceNo :: "+graphicsObject.sequenceNo);
+		//	if(graphicsObject.sequenceNo == recSequenceNo){
 				if(i == 0){
 						//console.log("graphicsObject::::"+graphicsObject);
 						var pointsArray = graphicsObject.pointsArray;
@@ -4131,12 +4844,13 @@ function checkPageAndDrawObj(key){
 				}
 				//console.log("-777777777777777777");
 				drawObject(objectTable,pageObj.objectId,false);
-			}
+			//}
 		}
 		restoreInsertedObjectInStream(pageObj.num);
 	}else{
 		//console.log("*********************************************");
 		document.getElementById("pagenum").value = pageObj.num;
+		document.getElementById("pagenumdiv").innerHTML = "Page" +pageObj.num;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		//console.log("8888888888888888888888888888888");
 		drawNonRecordingObject(pageObj.num);
@@ -4226,13 +4940,15 @@ function restoreRecordedObjWithSeq(pageNum,sequenceNum){
 }
 
 function drawNonRecordingObject(pageNum){
-	
-	var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+	 var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+	 bgType = pageBgTable.get(pageNum);
+	 setPageBackgroundAttrib(pageNum,bgType);
 	//console.log("------------Draw Non Recording Objects---------------------"+nonRecordingObjArray)
 	if(nonRecordingObjArray != null){
 		//console.log("------------Draw Non Recording Objects---------------------"+nonRecordingObjArray.length);
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		var objectTable = pageObjTable.get(pageNum);
+		//alert("drawNonRecordingObject---"+nonRecordingObjArray.length);
 		for(ctr = 0;ctr<nonRecordingObjArray.length;ctr++){
 		//console.log("-$$$$$$$$$$$$$$$$$$$$$$$$$");
 			drawObject(objectTable,nonRecordingObjArray[ctr],false);
@@ -4343,7 +5059,7 @@ function checkObject(objectTable,startX,startY,mouseX,mouseY){
 					  }
 					break;
 				case 4:
-					var pointsArr = graphicsObject.pointsArray;
+					var pointsArr= graphicsObject.pointsArray;
 					for(i=0;i<pointsArr.length;i=i+2){
 							if(point_in_rectagnle(pointsArr[i], pointsArr[i+1],startX,startY,mouseX,mouseY)){
 								selObjArray[selObjArray.length] = objectTable.getKey();
@@ -4463,25 +5179,65 @@ function checkObject(objectTable,startX,startY,mouseX,mouseY){
 					  }
 					}
 					break;
-				
+				case 25:
+					var pointsArr = graphicsObject.pointsArray;
+					for(i=0;i<pointsArr.length;i=i+2){
+							if(point_in_rectagnle(pointsArr[i], pointsArr[i+1],startX,startY,mouseX,mouseY)){
+								selObjArray[selObjArray.length] = objectTable.getKey();
+								//console.log("selObjArray:::"+selObjArray);
+								break;
+							}
+							
+					}
+					//console.log("Done----------------------------------------------------------------------------------------------");
+					break;
+				case 26:
+					var pointsArr = graphicsObject.pointsArray;
+					for(i=0;i<pointsArr.length;i=i+2){
+							if(point_in_rectagnle(pointsArr[i], pointsArr[i+1],startX,startY,mouseX,mouseY)){
+								selObjArray[selObjArray.length] = objectTable.getKey();
+								//console.log("selObjArray:::"+selObjArray);
+								break;
+							}
+							
+					}
+					//console.log("Done----------------------------------------------------------------------------------------------");
+					break;
 			}
 	}
 }
 
-function closeEditor(isSave){
+function closeEditor(isSave) {
+	
+	// alert( $( "#editor_ifr" ).contents().find("body").height());
+	$("#editor_ifr" ).contents().find("body").css({
+		'display':'inline-block',
+		'min-height':'18px'
+			
+	});
+	 
+	
+	var textWidth = $( "#editor_ifr" ).contents().find("body").width();
+	var textHeight = $( "#editor_ifr" ).contents().find("body").height();
+	
+	alert("textWidth"+textWidth+":textHeight:"+textHeight);
 	//myEditor.saveHTML();	
-	var text = document.getElementById("area1").value;
+	 
+	var text = getEditorContent();
+	
+ 
+	
 	//console.log("close Editor::"+document.getElementById("area1").value);
-	var div_elm = document.getElementById("meetingDiv");
+	//var div_elm = document.getElementById("meetingDiv");
 	//div_elm.innerHTML = '';
-	document.getElementById("meetingDiv").style.display = "none";
+	//document.getElementById("meetingDiv").style.display = "none";
 	var pageNum = document.getElementById("pagenum").value;
 	var objectTable = pageObjTable.get(pageNum);
 	//var ret = getSelectedObjectMinMax(objectTable);
 	//console.log("startX"+startX+"::startY::"+startY);
 	//replaceSelctedObjectWithText(text,ret.minX,ret.minY,objectTable);
 	//The var html will now have the contents of the textarea
-  /*  var html = myEditor.get('element').value;
+   /*var html = myEditor.get('element').value;
 	//console.log("html::"+myEditor.cleanHTML(html));
 	while(html.indexOf("&nbsp;")!= -1){
 		html = html.replace('&nbsp;',' ');
@@ -4497,13 +5253,23 @@ function closeEditor(isSave){
 	*/
 	//var text = html;
 	//console.log("inside close Editor:::"+text.trim().length);
-	
+	textWidth = parseInt(textWidth);
 	if(text.trim().length != 0 && isSave){
 		
-		saveTextAsGraphicsObject(text);
-	
+		 generateImage(text,textWidth,textHeight)
+		//saveTextAsGraphicsObject(text);
+		 
 	}
-	setId(7,true);
+	setEditorContent("");
+	document.getElementById("editor").value = "";
+/*	document.getElementById("checkImg").style.left = -50 +"px";
+	document.getElementById("checkImg").style.top =  -50  +"px";
+	document.getElementById("cancelImg").style.left = -50 + "px";
+	document.getElementById("cancelImg").style.top = -50 + "px";*/
+	$('#editor').off('keyup');
+	$(".editor_parent").addClass("inactive");
+	 
+	//setId(7,true);
 	
 	/*
 	//ctx.save();
@@ -4522,6 +5288,8 @@ function closeEditor(isSave){
 
 	
 }
+
+
 function saveTextAsGraphicsObject(text){
 		//console.log("saveTextAsGraphicsObject::"+text);
 		var graphicsObject;
@@ -4549,7 +5317,7 @@ function saveTextAsGraphicsObject(text){
 			for(var ctr=0;ctr < text.length ;ctr++){
 				var textChar = text.charAt(ctr);
 				if(ctr != 0){
-					x = x + textWidth + 1;
+					x = x + textWidth;
 				}
 				var tempPointsArray = new Array();
 				count++;
@@ -4558,7 +5326,7 @@ function saveTextAsGraphicsObject(text){
 				tempPointsArray[tempPointsArray.length] = x;
 				tempPointsArray[tempPointsArray.length] = y +50;
 				var textObj = new Text(textChar,textFontType,textFontSize,isBold,isUnderLine,isItalic);
-				graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,globalAlpha,false,textObj,null);
+				graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,1.0,false,textObj,null,1,null);
 				createObject(currentObjId,x,y,null,null,null,null,textObj);
 				grpObjectRefArray[grpObjectRefArray.length] = count;
 				graphicsObject.pointsArray[2] = graphicsObject.pointsArray[2] + textWidth;
@@ -4593,14 +5361,18 @@ function saveTextAsGraphicsObject(text){
 			// modify entry in group with latest id
 			var grpObjTable = pageGrpObjTable.get(pageNum);
 			var groupObject = checkObjectInGroup(selectedTxtObj.id);
-			var prevRefObjectIds = new Array();
+			/*var prevRefObjectIds = new Array();
+			console.log(selObjArray);
 			for(var ctr=0;ctr<groupObject.refObjectList.length;ctr++){
 				prevRefObjectIds[prevRefObjectIds.length] = groupObject.refObjectList[ctr];
+			}*/
+			for(var ctr=0;ctr<groupObject.refObjectList.length;ctr++){
+				selObjArray[selObjArray.length] = groupObject.refObjectList[ctr];
 			}
 			groupObject.refObjectList = grpObjectRefArray;	
 			//console.log("objectTable::::Before:::::"+objectTable);
 			// remove all object of selected text
-			deleteSelectedObject(objectTable,pageNum,prevRefObjectIds);
+			deleteSelectedObject(objectTable,pageNum);
 			//console.log("objectTable::::After:::::"+objectTable);
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			restore();
@@ -4611,7 +5383,7 @@ function saveTextAsGraphicsObject(text){
 			*/
 			var lineStartPos = startX;
 			var x = startX ;
-			var y = startY + 50;
+			var y = startY + 8;
 			var pageNum = document.getElementById("pagenum").value;
 			var grpObjectRefArray = new Array();
 			for(var ctr=0;ctr < text.length ;ctr++){
@@ -4624,7 +5396,7 @@ function saveTextAsGraphicsObject(text){
 					textWidth = 0;
 				}else{
 					if(ctr != 0){
-						x = x + textWidth + 1;
+						x = x + textWidth ;
 						//console.log("textWidth::"+textWidth);
 					}
 				}
@@ -4636,7 +5408,7 @@ function saveTextAsGraphicsObject(text){
 				tempPointsArray[tempPointsArray.length] = x;
 				tempPointsArray[tempPointsArray.length] = y ;
 				var textObj = new Text(textChar,textFontType,textFontSize,isBold,isUnderLine,isItalic);
-				graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,globalAlpha,false,textObj,null);
+				graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,1.0,false,textObj,null,1,null);
 				createObject(currentObjId,x,y,null,null,null,null,textObj);
 				grpObjectRefArray[grpObjectRefArray.length] = count;
 				graphicsObject.pointsArray[2] = graphicsObject.pointsArray[2] + textWidth;
@@ -4702,7 +5474,152 @@ function saveTextAsGraphicsObject(text){
 		selectedTxtObj = null;
 }
 
+function saveTextAsImageInGraphicsObject(textObj){
+	//console.log("saveTextAsGraphicsObject::"+text);
+	var graphicsObject;
+	if(selectedTxtObj != null){
+		
+		//console.log("saveTextAsGraphicsObject:iffff:");
+		var tempArray = selectedTxtObj.pointsArray;
+		var prevTime = objectTimeTable.get(selectedTxtObj.id);
+		var pageNum = document.getElementById("pagenum").value;
+		var objectTable = pageObjTable.get(pageNum);
+		//var textObj = selectedTxtObj.text;	
+		//textObj.textData = text;
+		//textObj.fontSize = textFontSize;
+		//textObj.fontType = textFontType;
+		//alert("textStyleColor:;"+textStyleColor);
+		//createText(text,tempPointsArray[0],tempPointsArray[3],fontStyle,selectedTxtObj.color);
+		//createObject(selectedTxtObj.type,tempPointsArray[0],tempPointsArray[1],null,null,null,null,textObj);
+		//tempPointsArray[2] = tempPointsArray[0] + textWidth;
+		selectedTxtObj.text = textObj;
+		//selectedTxtObj.color = textStyleColor;
+		// Create new object all edited text character
+		var x = tempArray[0] ;
+		var y = tempArray[1] ;
+		
+		var grpObjectRefArray = new Array();
+		//for(var ctr=0;ctr < text.length ;ctr++){
+			
+			var tempPointsArray = new Array();
+			count++;
+			tempPointsArray[tempPointsArray.length] = x ;
+			tempPointsArray[tempPointsArray.length] = y ;
+			tempPointsArray[tempPointsArray.length] = x + textObj.imageObject.width;
+			tempPointsArray[tempPointsArray.length] = y + textObj.imageObject.height ;
+			//var textObj = new Text(textChar,textFontType,textFontSize,isBold,isUnderLine,isItalic);
+			graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,1.0,false,textObj,null,1,null);
+			/*createObject(currentObjId,x,y,null,null,null,null,textObj);
+			grpObjectRefArray[grpObjectRefArray.length] = count;
+			graphicsObject.pointsArray[2] = graphicsObject.pointsArray[2] + textWidth;*/
+			if(prevTime != null){
+				var pageObject = new PageObject(pageNum,count);
+				objectTimeTable.put(count,prevTime);
+				var recordedObjArr = timeRefTable.get(prevTime);
+				if(recordedObjArr ==  null){
+					recordedObjArr = new Array();
+				}
+				recordedObjArr[recordedObjArr.length] = pageObject;
+				timeRefTable.put(prevTime,recordedObjArr);
+			}else{
+				var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+				if(nonRecordingObjArray == null){
+					nonRecordingObjArray = new Array();
+					nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+				}
+				nonRecordingObjArray[nonRecordingObjArray.length] = count;
+			}
+			
+			
+			//console.log("saveTextAsGraphicsObject::objectTable11111111:::"+objectTable);
+			if(objectTable == null){
+				objectTable = new Hashtable();
+				pageObjTable.put(pageNum,objectTable);
+			}
+			objectTable.put(count, graphicsObject);
+			objectPageRefTable.put(count,pageNum);
+	//	}	
+		
+		/*// modify entry in group with latest id
+		var grpObjTable = pageGrpObjTable.get(pageNum);
+		var groupObject = checkObjectInGroup(selectedTxtObj.id);
+		var prevRefObjectIds = new Array();
+		console.log(selObjArray);
+		for(var ctr=0;ctr<groupObject.refObjectList.length;ctr++){
+			prevRefObjectIds[prevRefObjectIds.length] = groupObject.refObjectList[ctr];
+		}
+		for(var ctr=0;ctr<groupObject.refObjectList.length;ctr++){
+			selObjArray[selObjArray.length] = groupObject.refObjectList[ctr];
+		}
+		groupObject.refObjectList = grpObjectRefArray;	*/
+		//console.log("objectTable::::Before:::::"+objectTable);
+		// remove all object of selected text
+		selObjArray[selObjArray.length] = 	selectedTxtObj.id
+		deleteSelectedObject(objectTable,pageNum);
+		//console.log("objectTable::::After:::::"+objectTable);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		restore();
+		
+		
+	}
+	else{
+		var lineStartPos = startX;
+		var x = startX ;
+		var y = startY ;
+		var pageNum = document.getElementById("pagenum").value;
 
+			var tempPointsArray = new Array();
+			count++;
+			tempPointsArray[tempPointsArray.length] = x ;
+			tempPointsArray[tempPointsArray.length] = y ;
+			tempPointsArray[tempPointsArray.length] = x + textObj.imageObject.width;
+			tempPointsArray[tempPointsArray.length] = y + textObj.imageObject.height ;
+		
+			graphicsObject = new GraphicsObject(count,currentObjId,tempPointsArray,lineWidth,textStyleColor,null,false,fillColor,1.0,false,textObj,null,1,null);
+			//createObject(currentObjId,x,y,null,null,null,null,textObj);
+			//grpObjectRefArray[grpObjectRefArray.length] = count;
+			//graphicsObject.pointsArray[2] = graphicsObject.pointsArray[2] + textWidth;
+			if(isReplaceEnable){
+				replacedObjArr[replacedObjArr.length] = count;
+			}
+			if(!isPlayingStoped ){// Inserting object while playing
+				currentMiliSec =Math.floor(myVid.currentTime * 1000);
+				var pageObject = new PageObject(document.getElementById("pagenum").value,count);
+				insertObjectInPlayingStream(currentMiliSec,pageObject);
+			}else if(startTime != 0 && isPlayingStoped){// Inserting object while recording
+					var currentTime = new Date().getTime();
+					currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
+					//console.log("mouse up::pagenumber:"+document.getElementById("pagenum").value);
+					var pageObject = new PageObject(document.getElementById("pagenum").value,count);
+					objectTimeTable.put(count,currentMiliSec);
+					var recordedObjArr = timeRefTable.get(currentMiliSec);
+					if(recordedObjArr ==  null){
+						recordedObjArr = new Array();
+					}
+					recordedObjArr[recordedObjArr.length] = pageObject;
+					timeRefTable.put(currentMiliSec,recordedObjArr);
+					//console.log("timeRefTable::;"+timeRefTable);
+			}else{ // Non recodring object
+				var nonRecordingObjArray = nonRecordinPageObjTable.get(document.getElementById("pagenum").value);
+				if(nonRecordingObjArray == null){
+					nonRecordingObjArray = new Array();
+					nonRecordinPageObjTable.put(document.getElementById("pagenum").value,nonRecordingObjArray);
+				}
+				nonRecordingObjArray[nonRecordingObjArray.length] = count;
+			}
+			
+			var objectTable = pageObjTable.get(pageNum);
+			//console.log("saveTextAsGraphicsObject::objectTable11111111:::"+objectTable);
+			if(objectTable == null){
+				objectTable = new Hashtable();
+				pageObjTable.put(pageNum,objectTable);
+			}
+			objectTable.put(count, graphicsObject);
+			objectPageRefTable.put(count,pageNum);
+		grpObjCount++;
+	}
+	selectedTxtObj = null;
+}
 
 
 function replaceSelctedObjectWithText(text,startX,startY,objectTable){
@@ -4714,7 +5631,7 @@ function replaceSelctedObjectWithText(text,startX,startY,objectTable){
 			  ptsArr[1] = startY;
 			  for(var i=0;i<selObjArray.length;i++){
 				   var graphicsObject = objectTable.get(selObjArray[i]);
-				   if(graphicsObject.type != 4){
+				   if(graphicsObject.type != 4 || graphicsObject.type != 25){
 				   		break;
 				   }
 				   if(i==0){
@@ -4740,8 +5657,8 @@ function replaceSelctedObjectWithText(text,startX,startY,objectTable){
 	}
 }
 
-function createText(textObj,startX,startY,color){
-	//console.log("createText text::"+textObj.textData+":::styleColor::"+color+ "textObj.fontSize::"+textObj.fontSize+"::textObj.fontType::"+textObj.fontType);
+function createText(textObj,startX,startY){
+	/*//console.log("createText text::"+textObj.textData+":::styleColor::"+color+ "textObj.fontSize::"+textObj.fontSize+"::textObj.fontType::"+textObj.fontType);
 	//console.log("createText::color::"+color);
 	ctx.fillStyle = color;
 	var decoration = "";
@@ -4751,7 +5668,7 @@ function createText(textObj,startX,startY,color){
 	if(textObj.isBold){
 		decoration = decoration + "bold ";
 	}
-	ctx.font = decoration + textObj.fontSize +"px "+textObj.fontType;
+	ctx.font = decoration + ratio*textObj.fontSize +"px "+textObj.fontType;
 	ctx.fillText(textObj.textData,startX,startY);
 	var code = textObj.textData.charCodeAt(0);
 	//console.log("createText::"+code);
@@ -4761,11 +5678,34 @@ function createText(textObj,startX,startY,color){
 		textWidth = 0;
 	}else{
 		var metrics = ctx.measureText(textObj.textData);
-		textWidth = metrics.width;
+		textWidth = metrics.width/ratio;
 		//console.log("else case::"+textWidth);
+	}*/
+	ctx.drawImage(textObj.imageObject,ratio*startX,ratio*startY,ratio*textObj.imageObject.width,ratio*textObj.imageObject.height);
+	
+}
+
+function createMediaIcon(mediaObj,startX,startY){
+	if(mediaObj.mediaType == "url"){
+		ctx.drawImage(mediaObj.mediaIconObj,ratio*startX,ratio*startY,ratio*mediaObj.mediaIconObj.width,ratio*mediaObj.mediaIconObj.height);
+		ctx.drawImage(mediaObj.fileNameImg,ratio*startX-ratio*37,ratio*startY + ratio*mediaObj.mediaIconObj.height ,ratio*mediaObj.fileNameImg.width,ratio*mediaObj.fileNameImg.height);
+		ctx.drawImage(webLinkImg,ratio*startX-50,ratio*startY-50 ,ratio*webLinkImg.width,ratio*webLinkImg.height);
+		
+	}else{
+		ctx.drawImage(mediaObj.fileNameImg,ratio*startX,ratio*startY,ratio*mediaObj.fileNameImg.width,ratio*mediaObj.fileNameImg.height);
+		ctx.drawImage(mediaObj.mediaIconObj,ratio*startX+20,ratio*startY+5,ratio*mediaObj.mediaIconObj.width,ratio*mediaObj.mediaIconObj.height);
+		
 	}
 	
 }
+
+function createPinObject(pinObj,startX,startY){
+	ctx.drawImage(pinObj.fileNameImg,ratio*startX,ratio*startY,ratio*pinObj.fileNameImg.width,ratio*pinObj.fileNameImg.height);
+	//ctx.drawImage(pinObj.mediaIconObj,ratio*startX,ratio*startY,ratio*pinObj.mediaIconObj.width,ratio*pinObj.mediaIconObj.height);
+	//ctx.drawImage(webLinkImg,ratio*startX-50,ratio*startY-50 ,ratio*webLinkImg.width,ratio*webLinkImg.height);
+	
+}
+
 
 function getSelectedObjectMinMax(objectTable){
 	//console.log("selObjArray::::"+selObjArray);
@@ -4792,358 +5732,403 @@ function getSelectedObjectMinMax(objectTable){
 		ponitYarr = ponitYarr.sort(function(a, b){return a-b});
 		
 		return{minX:ponitXarr[0],minY:ponitYarr[0],maxX:ponitXarr[ponitXarr.length -1],maxY:ponitYarr[ponitYarr.lenght -1]};
-		
-
 
 }
-
-
 function between(min, p, max){
-  result = false;
-  if ( min < max ){
-    if ( p > min && p < max ){
-      result = true;
-    }
-  }
-  if ( min > max ){
-    if ( p > max && p < min){
-      result = true
-    }
-  }
-  if ( p == min || p == max ){
-    result = true;
-  }
-  return result;
-}
-
-function point_in_rectagnle(x,y,left, top, right, bottom){
-  //console.log("Dotted Rectangle points::"+left+":"+top+":"+right+":"+bottom);
-  result = false;
-  if ( between(left,x,right) && between(top,y,bottom ) ){
-    result = true;
-  }
-  return result;
-}
-function eraseSelectedObject(){
-	var pageNum = document.getElementById("pagenum").value;
-	var objectTable = pageObjTable.get(pageNum);
-	deleteSelectedObject(objectTable,pageNum,selObjArray);
-}
-function deleteSelectedObject(objectTable,pageNum,selObjArray){
-//console.log("objectTable::"+objectTable+"pageNum::"+pageNum);
- for(var ctr = 0;ctr<selObjArray.length;ctr++){
-	//console.log("selObjArray.length::"+selObjArray.length);
-	var key = selObjArray[ctr];
-	objectTable.remove(key);
-	if(objectTable.size() == 0){
-		pageObjTable.remove(pageNum);
+	  result = false;
+	  if ( min < max ){
+	    if ( p > min && p < max ){
+	      result = true;
+	    }
+	  }
+	  if ( min > max ){
+	    if ( p > max && p < min){
+	      result = true
+	    }
+	  }
+	  if ( p == min || p == max ){
+	    result = true;
+	  }
+	  return result;
 	}
-	var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
-	var index = nonRecordingObjArray.indexOf(key);
-	if(index != -1){
-	// remove from non recording object aray
-		nonRecordingObjArray.splice(index ,1);
-	}else{
-		var pos = objectTimeTable.get(key);
-		//console.log("pos::"+pos);
-		var recordObjArr = timeRefTable.get(pos);
-		//console.log("recordObjArr::"+recordObjArr);
-		if(recordObjArr != null){
-			for(var i=0;i<recordObjArr.length;i++){
-			//console.log("timeRefTable::"+timeRefTable);
-				var pageObj = recordObjArr[i];
-				//console.log("pageObj::"+pageObj);
-				//console.log("pageObj ::"+pageObj.objectId+"num::"+pageObj.num);
-				if(pageObj.objectId == key){
-				//console.log("object deleted::"+key);
-					recordObjArr.splice(i ,1);
-					break;
+
+	function point_in_rectagnle(x,y,left, top, right, bottom){
+	  //console.log("Dotted Rectangle points::"+left+":"+top+":"+right+":"+bottom);
+	  result = false;
+	  if ( between(left,x,right) && between(top,y,bottom ) ){
+	    result = true;
+	  }
+	  return result;
+	}
+	function eraseSelectedObject(){
+		var pageNum = document.getElementById("pagenum").value;
+		var objectTable = pageObjTable.get(pageNum);
+		deleteSelectedObject(objectTable,pageNum);
+	}
+	function deleteSelectedObject(objectTable,pageNum){
+	//console.log("objectTable::"+objectTable+"pageNum::"+pageNum);
+	 for(var ctr = 0;ctr<selObjArray.length;ctr++){
+		//console.log("selObjArray.length::"+selObjArray.length);
+		var key = selObjArray[ctr];
+		objectTable.remove(key);
+		if(objectTable.size() == 0){
+			pageObjTable.remove(pageNum);
+		}
+		var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+		var index = nonRecordingObjArray.indexOf(key);
+		if(index != -1){
+		// remove from non recording object aray
+			nonRecordingObjArray.splice(index ,1);
+		}else{
+			var pos = objectTimeTable.get(key);
+			//console.log("pos::"+pos);
+			var recordObjArr = timeRefTable.get(pos);
+			//console.log("recordObjArr::"+recordObjArr);
+			if(recordObjArr != null){
+				for(var i=0;i<recordObjArr.length;i++){
+				//console.log("timeRefTable::"+timeRefTable);
+					var pageObj = recordObjArr[i];
+					//console.log("pageObj::"+pageObj);
+					//console.log("pageObj ::"+pageObj.objectId+"num::"+pageObj.num);
+					if(pageObj.objectId == key){
+					//console.log("object deleted::"+key);
+						recordObjArr.splice(i ,1);
+						break;
+				}
 			}
 		}
-	}
-	
-	objectTimeTable.remove(key);
-	}
-	objectPageRefTable.remove(key);
- }
- 
- var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
- ctx.clearRect(0, 0, canvas.width, canvas.height);
- rectangleSelObject = null;
- //console.log("---- selObjArray =  null--6666666666666");
- selObjArray =  null;
- selObjArray = new Array();
- selObjRotatable = true;
- restore();
- //console.log("%%%%");
- enableDisableRelationOptions(false);
- handleZoomButton(false);
-}
-
-function selectAllObject(objectTable){
-//console.log("objectTable::"+selObjRotatable);
- 
-  selObjArray =  null;
-  selObjArray = new Array();
-  selObjRotatable = false;
-  if(objectTable != null){
-   objectTable.moveFirst();
-   while(objectTable.next()){
-   //console.log("Type::;"+objectTable.getValue().type);
-		var graphicsObject = objectTable.getValue();
-		if(graphicsObject.type != 10){
-			selObjArray[selObjArray.length] = objectTable.getKey();
-			showSelectedObject(graphicsObject);
+		
+		objectTimeTable.remove(key);
 		}
-   }
-  }
- 
-}
+		objectPageRefTable.remove(key);
+	 }
+	 
+	 var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+	 ctx.clearRect(0, 0, canvas.width, canvas.height);
+	 rectangleSelObject = null;
+	 //console.log("---- selObjArray =  null--6666666666666");
+	 selObjArray =  null;
+	 selObjArray = new Array();
+	 selObjRotatable = true;
+	 restore();
+	 //console.log("%%%%");
+	 enableDisableRelationOptions(false);
+	 handleZoomButton(false);
+	}
 
-function stretchSelectedObject(object,mouseX,mouseY){
-	//ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//restoreUnstrechableObject(object.id);
-	//console.log("Stretch Object---"+selObjArray);
-	var graphicsObject = object[0];
-	if(graphicsObject.type == 3){
-		//console.log("-----------stretchSelectedObject------------"+graphicsObject.type + " pt1:;"+object[1]+":;pt2::"+object[2]);
-		editObject(graphicsObject,object[1],object[2],mouseX,mouseY,null,null,null);
-		
-		graphicsObject.pointsArray[0] = object[1];
-		graphicsObject.pointsArray[1] = object[2];
-		graphicsObject.pointsArray[2] = mouseX;
-		graphicsObject.pointsArray[3] = mouseY;
-		showSelectedObject(graphicsObject);
-	}else if(graphicsObject.type == 5 || graphicsObject.type ==11 ){
-		//console.log("Stretch Object---Triangle");
-		if(object[1] == 0 && object[2] == 1){
-			editObject(graphicsObject,mouseX,mouseY,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],graphicsObject.pointsArray[4],graphicsObject.pointsArray[5],null);
-			graphicsObject.pointsArray[0] = mouseX;
-			graphicsObject.pointsArray[1] = mouseY;
-		}else if(object[1] == 2 && object[2] == 3){
-			editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY,graphicsObject.pointsArray[4],graphicsObject.pointsArray[5],null);
-			graphicsObject.pointsArray[2] = mouseX;
-			graphicsObject.pointsArray[3] = mouseY;
-		}else if(object[1] == 4 && object[2] == 5){
-			editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY,null);
-			graphicsObject.pointsArray[4] = mouseX;
-			graphicsObject.pointsArray[5] = mouseY;
-		
-		}
-			
-		showSelectedObject(graphicsObject);
-	}else if(graphicsObject.type == 6){
-		   //console.log("object[3]:::;"+object[3]);
-			if(object[3] != null && object[3] == true){
-				editObject(graphicsObject,mouseX,mouseY,object[1],object[2],null,null,null);
-				graphicsObject.pointsArray[0] = mouseX;
-				graphicsObject.pointsArray[1] = mouseY;
-				graphicsObject.pointsArray[2] = object[1];
-				graphicsObject.pointsArray[3] = object[2];
-			}else{
-				 editObject(graphicsObject,object[1],object[2],mouseX,mouseY,null,null,null);
-				 graphicsObject.pointsArray[0] = object[1];
-				 graphicsObject.pointsArray[1] = object[2];
-				 graphicsObject.pointsArray[2] = mouseX;
-				 graphicsObject.pointsArray[3] = mouseY;
-			}
-			showSelectedObject(graphicsObject);
-			
-	}else if(graphicsObject.type ==13){
-		
-		if(object[1] == 0 && object[2] == 1){
-			//console.log("1st call");
-			var lastPoint = getEquilateralTriangletThirdPoint(mouseX,mouseY,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3]);
-			editObject(graphicsObject,mouseX,mouseY,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],lastPoint.x3,lastPoint.y3,null);
-			if(isEqTriangleCreated){
-				graphicsObject.pointsArray[0] = mouseX;
-				graphicsObject.pointsArray[1] = mouseY;
-				graphicsObject.pointsArray[4] = lastPoint.x3;
-				graphicsObject.pointsArray[5] = lastPoint.y3;
+	function selectAllObject(objectTable){
+	//console.log("objectTable::"+selObjRotatable);
+	 
+	  selObjArray =  null;
+	  selObjArray = new Array();
+	  selObjRotatable = false;
+	  if(objectTable != null){
+	   objectTable.moveFirst();
+	   while(objectTable.next()){
+	   //console.log("Type::;"+objectTable.getValue().type);
+			var graphicsObject = objectTable.getValue();
+			if(graphicsObject.type != 10){
+				selObjArray[selObjArray.length] = objectTable.getKey();
 				showSelectedObject(graphicsObject);
 			}
-		}else if(object[1] == 2 && object[2] == 3){
-			//console.log("2nd call");
-			var lastPoint = getEquilateralTriangletThirdPoint(graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY);
-			editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY,lastPoint.x3,lastPoint.y3,null);
-			if(isEqTriangleCreated){
+	   }
+	  }
+	 
+	}
+
+	function stretchSelectedObject(object,mouseX,mouseY){
+		//ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//restoreUnstrechableObject(object.id);
+		//console.log("Stretch Object---"+selObjArray);
+		var graphicsObject = object[0];
+		if(graphicsObject.type == 3){
+			//console.log("-----------stretchSelectedObject------------"+graphicsObject.type + " pt1:;"+object[1]+":;pt2::"+object[2]);
+			editObject(graphicsObject,object[1],object[2],mouseX,mouseY,null,null,null);
+			
+			graphicsObject.pointsArray[0] = object[1];
+			graphicsObject.pointsArray[1] = object[2];
+			graphicsObject.pointsArray[2] = mouseX;
+			graphicsObject.pointsArray[3] = mouseY;
+			showSelectedObject(graphicsObject);
+		}else if(graphicsObject.type == 5 || graphicsObject.type ==11 ){
+			//console.log("Stretch Object---Triangle");
+			if(object[1] == 0 && object[2] == 1){
+				editObject(graphicsObject,mouseX,mouseY,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],graphicsObject.pointsArray[4],graphicsObject.pointsArray[5],null);
+				graphicsObject.pointsArray[0] = mouseX;
+				graphicsObject.pointsArray[1] = mouseY;
+			}else if(object[1] == 2 && object[2] == 3){
+				editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY,graphicsObject.pointsArray[4],graphicsObject.pointsArray[5],null);
 				graphicsObject.pointsArray[2] = mouseX;
 				graphicsObject.pointsArray[3] = mouseY;
-				graphicsObject.pointsArray[4] = lastPoint.x3;
-				graphicsObject.pointsArray[5] = lastPoint.y3;
-				showSelectedObject(graphicsObject);
-			}
-		}else if(object[1] == 4 && object[2] == 5){
-			//console.log("3rd call");
-			var lastPoint = getEquilateralTriangletThirdPoint(graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY);
-			editObject(graphicsObject,lastPoint.x3,lastPoint.y3,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY,null);
-			if(isEqTriangleCreated){
+			}else if(object[1] == 4 && object[2] == 5){
+				editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY,null);
 				graphicsObject.pointsArray[4] = mouseX;
 				graphicsObject.pointsArray[5] = mouseY;
-				graphicsObject.pointsArray[0] = lastPoint.x3;
-				graphicsObject.pointsArray[1] = lastPoint.y3;
+			
+			}
+				
+			showSelectedObject(graphicsObject);
+		}else if(graphicsObject.type == 6){
+			   //console.log("object[3]:::;"+object[3]);
+				if(object[3] != null && object[3] == true){
+					editObject(graphicsObject,mouseX,mouseY,object[1],object[2],null,null,null);
+					graphicsObject.pointsArray[0] = mouseX;
+					graphicsObject.pointsArray[1] = mouseY;
+					graphicsObject.pointsArray[2] = object[1];
+					graphicsObject.pointsArray[3] = object[2];
+				}else{
+					 editObject(graphicsObject,object[1],object[2],mouseX,mouseY,null,null,null);
+					 graphicsObject.pointsArray[0] = object[1];
+					 graphicsObject.pointsArray[1] = object[2];
+					 graphicsObject.pointsArray[2] = mouseX;
+					 graphicsObject.pointsArray[3] = mouseY;
+				}
 				showSelectedObject(graphicsObject);
+				
+		}else if(graphicsObject.type ==13){
+			
+			if(object[1] == 0 && object[2] == 1){
+				//console.log("1st call");
+				var lastPoint = getEquilateralTriangletThirdPoint(mouseX,mouseY,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3]);
+				editObject(graphicsObject,mouseX,mouseY,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],lastPoint.x3,lastPoint.y3,null);
+				if(isEqTriangleCreated){
+					graphicsObject.pointsArray[0] = mouseX;
+					graphicsObject.pointsArray[1] = mouseY;
+					graphicsObject.pointsArray[4] = lastPoint.x3;
+					graphicsObject.pointsArray[5] = lastPoint.y3;
+					showSelectedObject(graphicsObject);
+				}
+			}else if(object[1] == 2 && object[2] == 3){
+				//console.log("2nd call");
+				var lastPoint = getEquilateralTriangletThirdPoint(graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY);
+				editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY,lastPoint.x3,lastPoint.y3,null);
+				if(isEqTriangleCreated){
+					graphicsObject.pointsArray[2] = mouseX;
+					graphicsObject.pointsArray[3] = mouseY;
+					graphicsObject.pointsArray[4] = lastPoint.x3;
+					graphicsObject.pointsArray[5] = lastPoint.y3;
+					showSelectedObject(graphicsObject);
+				}
+			}else if(object[1] == 4 && object[2] == 5){
+				//console.log("3rd call");
+				var lastPoint = getEquilateralTriangletThirdPoint(graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY);
+				editObject(graphicsObject,lastPoint.x3,lastPoint.y3,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY,null);
+				if(isEqTriangleCreated){
+					graphicsObject.pointsArray[4] = mouseX;
+					graphicsObject.pointsArray[5] = mouseY;
+					graphicsObject.pointsArray[0] = lastPoint.x3;
+					graphicsObject.pointsArray[1] = lastPoint.y3;
+					showSelectedObject(graphicsObject);
+				}
+			
 			}
+			
+		}else if(graphicsObject.type == 12){
+				var x1 = graphicsObject.pointsArray[0];
+				var y1 = graphicsObject.pointsArray[1];
+				var x2 = graphicsObject.pointsArray[2];
+				var y2 = graphicsObject.pointsArray[3];
+				
+				var cx = ((x1+x2)/2);
+				var cy = ((y1+y2)/2);
+				var r = 0;
+				if(cx > x1){
+				   r = cx - x1;
+				  }else{
+				   r = x1 - cx;
+				  }
+				  
+				var r1 = distanceBetween(cx, cy, startX, startY);
+				var r2 = distanceBetween(cx, cy, mouseX, mouseY);
+				var dx = (r2 - r1);
+				r = r + dx;
+				if(r>3){
+					x1 = cx - r;
+					y1 = cy - r;
+					x2 = cx + r;
+					y2 = cy + r;
+				}
+				
+						
+				editObject(graphicsObject,x1,y1,x2,y2,null,null);
+				if(isCircleCreated){
+					graphicsObject.pointsArray[0] = x1;
+					graphicsObject.pointsArray[1] = y1;
+					graphicsObject.pointsArray[2] = x2;
+					graphicsObject.pointsArray[3] = y2;
+					showSelectedObject(graphicsObject);
+				}
+				
+				startX = mouseX;
+				startY = mouseY;			
+		}else if(graphicsObject.type == 1 || graphicsObject.type == 2){
 		
+			if(object[1] == 0 && object[2] == 1){
+				//console.log("1111111:::"+object[1]+","+object[2]);
+				//console.log("1::"+graphicsObject.pointsArray[0]+"::2::"+graphicsObject.pointsArray[1]+"::3::"+graphicsObject.pointsArray[2]+"::4::"+graphicsObject.pointsArray[3]+"::5::"+graphicsObject.pointsArray[4]+"::6::"+graphicsObject.pointsArray[5]+"::7::"+graphicsObject.pointsArray[6]+"::8::"+graphicsObject.pointsArray[7]);
+				editObject(graphicsObject,mouseX,mouseY,graphicsObject.pointsArray[4],graphicsObject.pointsArray[5],null,null,null);
+				graphicsObject.pointsArray[0] = mouseX;
+				graphicsObject.pointsArray[1] = mouseY;
+				graphicsObject.pointsArray[2] = mouseX;
+				graphicsObject.pointsArray[3] = graphicsObject.pointsArray[5];
+				graphicsObject.pointsArray[4] = graphicsObject.pointsArray[4];
+				graphicsObject.pointsArray[5] = graphicsObject.pointsArray[5];
+				graphicsObject.pointsArray[6] = graphicsObject.pointsArray[4];
+				graphicsObject.pointsArray[7] = mouseY;			
+			}else if(object[1] == 2 && object[2] == 3){
+				//console.log("22222222");
+				editObject(graphicsObject,graphicsObject.pointsArray[6],graphicsObject.pointsArray[7],mouseX,mouseY,null,null,null);
+				graphicsObject.pointsArray[2] = mouseX;
+				graphicsObject.pointsArray[3] = mouseY;
+				graphicsObject.pointsArray[0] = graphicsObject.pointsArray[6];
+				graphicsObject.pointsArray[1] = mouseY;
+				graphicsObject.pointsArray[4] = mouseX;
+				graphicsObject.pointsArray[5] = graphicsObject.pointsArray[7];
+				graphicsObject.pointsArray[6] = graphicsObject.pointsArray[6];
+				graphicsObject.pointsArray[7] = graphicsObject.pointsArray[7];			
+			}else if(object[1] == 4 && object[2] == 5){
+				//console.log("33333333");
+				editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY,null,null,null);
+				graphicsObject.pointsArray[4] = mouseX;
+				graphicsObject.pointsArray[5] = mouseY;
+				graphicsObject.pointsArray[0] = graphicsObject.pointsArray[0];
+				graphicsObject.pointsArray[1] = graphicsObject.pointsArray[1];
+				graphicsObject.pointsArray[2] = graphicsObject.pointsArray[0];
+				graphicsObject.pointsArray[3] = mouseY;
+				graphicsObject.pointsArray[6] = mouseX;
+				graphicsObject.pointsArray[7] = graphicsObject.pointsArray[1];
+			}else if(object[1] == 6 && object[2] == 7){
+				//console.log("44444444");
+				editObject(graphicsObject,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY,null,null,null);
+				graphicsObject.pointsArray[6] = mouseX;
+				graphicsObject.pointsArray[7] = mouseY;
+				graphicsObject.pointsArray[2] = graphicsObject.pointsArray[2];
+				graphicsObject.pointsArray[3] = graphicsObject.pointsArray[3];
+				graphicsObject.pointsArray[4] = graphicsObject.pointsArray[2];
+				graphicsObject.pointsArray[5] = mouseY;
+				graphicsObject.pointsArray[0] = mouseX;
+				graphicsObject.pointsArray[1] = graphicsObject.pointsArray[3]; 
+			}
+			
+			showSelectedObject(graphicsObject);
+		}else if(graphicsObject.type == 23){
+			editObject(graphicsObject,null,null,mouseX,mouseY,null,null,null);
+			showSelectedObject(graphicsObject);
+			
+			
 		}
-		
-	}else if(graphicsObject.type == 12){
-			var x1 = graphicsObject.pointsArray[0];
-			var y1 = graphicsObject.pointsArray[1];
-			var x2 = graphicsObject.pointsArray[2];
-			var y2 = graphicsObject.pointsArray[3];
-			
-			var cx = ((x1+x2)/2);
-			var cy = ((y1+y2)/2);
-			var r = 0;
-			if(cx > x1){
-			   r = cx - x1;
-			  }else{
-			   r = x1 - cx;
-			  }
-			  
-			var r1 = distanceBetween(cx, cy, startX, startY);
-			var r2 = distanceBetween(cx, cy, mouseX, mouseY);
-			var dx = (r2 - r1);
-			r = r + dx;
-			if(r>3){
-				x1 = cx - r;
-				y1 = cy - r;
-				x2 = cx + r;
-				y2 = cy + r;
-			}
-			
-					
-			editObject(graphicsObject,x1,y1,x2,y2,null,null);
-			if(isCircleCreated){
-				graphicsObject.pointsArray[0] = x1;
-				graphicsObject.pointsArray[1] = y1;
-				graphicsObject.pointsArray[2] = x2;
-				graphicsObject.pointsArray[3] = y2;
-				showSelectedObject(graphicsObject);
-			}
-			
-			startX = mouseX;
-			startY = mouseY;			
-	}else if(graphicsObject.type == 1 || graphicsObject.type == 2){
-	
-		if(object[1] == 0 && object[2] == 1){
-			//console.log("1111111:::"+object[1]+","+object[2]);
-			//console.log("1::"+graphicsObject.pointsArray[0]+"::2::"+graphicsObject.pointsArray[1]+"::3::"+graphicsObject.pointsArray[2]+"::4::"+graphicsObject.pointsArray[3]+"::5::"+graphicsObject.pointsArray[4]+"::6::"+graphicsObject.pointsArray[5]+"::7::"+graphicsObject.pointsArray[6]+"::8::"+graphicsObject.pointsArray[7]);
-			editObject(graphicsObject,mouseX,mouseY,graphicsObject.pointsArray[4],graphicsObject.pointsArray[5],null,null,null);
-			graphicsObject.pointsArray[0] = mouseX;
-			graphicsObject.pointsArray[1] = mouseY;
-			graphicsObject.pointsArray[2] = mouseX;
-			graphicsObject.pointsArray[3] = graphicsObject.pointsArray[5];
-			graphicsObject.pointsArray[4] = graphicsObject.pointsArray[4];
-			graphicsObject.pointsArray[5] = graphicsObject.pointsArray[5];
-			graphicsObject.pointsArray[6] = graphicsObject.pointsArray[4];
-			graphicsObject.pointsArray[7] = mouseY;			
-		}else if(object[1] == 2 && object[2] == 3){
-			//console.log("22222222");
-			editObject(graphicsObject,graphicsObject.pointsArray[6],graphicsObject.pointsArray[7],mouseX,mouseY,null,null,null);
-			graphicsObject.pointsArray[2] = mouseX;
-			graphicsObject.pointsArray[3] = mouseY;
-			graphicsObject.pointsArray[0] = graphicsObject.pointsArray[6];
-			graphicsObject.pointsArray[1] = mouseY;
-			graphicsObject.pointsArray[4] = mouseX;
-			graphicsObject.pointsArray[5] = graphicsObject.pointsArray[7];
-			graphicsObject.pointsArray[6] = graphicsObject.pointsArray[6];
-			graphicsObject.pointsArray[7] = graphicsObject.pointsArray[7];			
-		}else if(object[1] == 4 && object[2] == 5){
-			//console.log("33333333");
-			editObject(graphicsObject,graphicsObject.pointsArray[0],graphicsObject.pointsArray[1],mouseX,mouseY,null,null,null);
-			graphicsObject.pointsArray[4] = mouseX;
-			graphicsObject.pointsArray[5] = mouseY;
-			graphicsObject.pointsArray[0] = graphicsObject.pointsArray[0];
-			graphicsObject.pointsArray[1] = graphicsObject.pointsArray[1];
-			graphicsObject.pointsArray[2] = graphicsObject.pointsArray[0];
-			graphicsObject.pointsArray[3] = mouseY;
-			graphicsObject.pointsArray[6] = mouseX;
-			graphicsObject.pointsArray[7] = graphicsObject.pointsArray[1];
-		}else if(object[1] == 6 && object[2] == 7){
-			//console.log("44444444");
-			editObject(graphicsObject,graphicsObject.pointsArray[2],graphicsObject.pointsArray[3],mouseX,mouseY,null,null,null);
-			graphicsObject.pointsArray[6] = mouseX;
-			graphicsObject.pointsArray[7] = mouseY;
-			graphicsObject.pointsArray[2] = graphicsObject.pointsArray[2];
-			graphicsObject.pointsArray[3] = graphicsObject.pointsArray[3];
-			graphicsObject.pointsArray[4] = graphicsObject.pointsArray[2];
-			graphicsObject.pointsArray[5] = mouseY;
-			graphicsObject.pointsArray[0] = mouseX;
-			graphicsObject.pointsArray[1] = graphicsObject.pointsArray[3]; 
-		}
-		
-		showSelectedObject(graphicsObject);
-	}else if(graphicsObject.type == 23){
-		editObject(graphicsObject,null,null,mouseX,mouseY,null,null,null);
-		showSelectedObject(graphicsObject);
 		
 		
 	}
-	
-	
-}
 
-function translateSelectedObject(objectTable,x,y){
-//console.log("translateSelectedObject");
-	var dx = x -  startX;
-	var dy = y -  startY;
-	shiftSelectedObject(objectTable,dx,dy)
-}
+	function translateSelectedObject(objectTable,x,y){
+	//console.log("translateSelectedObject");
+		var dx = x -  startX;
+		var dy = y -  startY;
+		shiftSelectedObject(objectTable,dx,dy)
+	}
 
-function shiftSelectedObject(objectTable,dx,dy){
-	//console.log("-----------------shiftSelectedObject:::"+selObjArray);
-	//console.log("rectangleSelObject.pointsArray:::"+rectangleSelObject.pointsArray);
-	/*
-	  transPointsArray[0] = pointsArray[0] + dx;
-	  transPointsArray[1] = pointsArray[1] + dy;
-	  transPointsArray[2] = pointsArray[2] + dx;
-	  transPointsArray[3] = pointsArray[3] + dy;
-	*/
-		if(rectangleSelObject != null){
-			var pointsArray = rectangleSelObject.pointsArray;
-				  pointsArray[0] = pointsArray[0] + dx;
-				  pointsArray[1] = pointsArray[1] + dy;
-				  pointsArray[2] = pointsArray[2] + dx;
-				  pointsArray[3] = pointsArray[3] + dy;
+	function shiftSelectedObject(objectTable,dx,dy){
+		//console.log("-----------------shiftSelectedObject:::"+selObjArray);
+		//console.log("rectangleSelObject.pointsArray:::"+rectangleSelObject.pointsArray);
+		/*
+		  transPointsArray[0] = pointsArray[0] + dx;
+		  transPointsArray[1] = pointsArray[1] + dy;
+		  transPointsArray[2] = pointsArray[2] + dx;
+		  transPointsArray[3] = pointsArray[3] + dy;
+		*/
+			if(rectangleSelObject != null){
+				  var pointsArray = rectangleSelObject.pointsArray;
+				  pointsArray[0] = parseFloat(pointsArray[0]) + parseFloat(dx);
+				  pointsArray[1] = parseFloat(pointsArray[1]) + parseFloat(dy);
+				  pointsArray[2] = parseFloat(pointsArray[2]) + parseFloat(dx);
+				  pointsArray[3] = parseFloat(pointsArray[3]) + parseFloat(dy);
 				  rectangleSelObject.pointsArray = pointsArray;
 				  createObject(rectangleSelObject.type,pointsArray[0],pointsArray[1],pointsArray[2],pointsArray[3],triEndX,triEndY);
-		}else{
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-		}
-		if(selObjArray!= null){
-		  for(var i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			//console.log("shifted object------"+graphicsObject.id+"type::"+graphicsObject.type);
-			var pointsArr = graphicsObject.pointsArray;
-				for(var j=0;j<pointsArr.length;j++){
-					if(j%2 != 0){
-						tempTranslatePointsArr[j] = pointsArr[j] + dy;
-					}else{
-						tempTranslatePointsArr[j] = pointsArr[j] + dx;
-					}
-				}
-				var status = checkAllPointsInCanvas(tempTranslatePointsArr);
-				if(!status){
-					restoreSelectedObject();
-					/*
-					drawObject(objectTable,selObjArray[i],false);
+			}else{
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+			}
+			var status = true;
+			if(selObjArray!= null){
+				  for(var i=0;i<selObjArray.length;i++){
 					var graphicsObject = objectTable.get(selObjArray[i]);
-					showSelectedObject(graphicsObject);
-					*/
-					break;
-					
-				}else{
+					//console.log("shifted object------PointsArrray:(before):"+graphicsObject.pointsArray+":::type::"+graphicsObject.type);
+					//console.log("dx::"+dx+"::dy::"+dy);
+					var pointsArr = graphicsObject.pointsArray;
 					for(var j=0;j<pointsArr.length;j++){
-						graphicsObject.pointsArray[j] = tempTranslatePointsArr[j];
-					}
-				}
-				
-				//console.log("status:::"+status+"::graphicsObject.pointsArray::"+graphicsObject.pointsArray);
-				//drawObject(objectTable,selObjArray[i],false);
-				//console.log("selGroupObjArray::::"+selGroupObjArray);
+							if(j%2 != 0){
+								tempTranslatePointsArr[j] = parseFloat(pointsArr[j]) + parseFloat(dy);
+							}else{
+								tempTranslatePointsArr[j] = parseFloat(pointsArr[j]) + parseFloat(dx);
+							}
+						}
+					    status = checkAllPointsInCanvas(tempTranslatePointsArr);
+						//console.log("shifted object------PointsArrray:(after):"+tempTranslatePointsArr+":::type::"+graphicsObject.type);
+						if(!status){
+							break;
+						}
+						/*if(!status){
+							restoreSelectedObject();
+							
+							drawObject(objectTable,selObjArray[i],false);
+							var graphicsObject = objectTable.get(selObjArray[i]);
+							showSelectedObject(graphicsObject);
+							
+							break;
+							
+						}else{
+							for(var j=0;j<pointsArr.length;j++){
+								graphicsObject.pointsArray[j] = tempTranslatePointsArr[j];
+							}
+							if(graphicsObject.type == 4 || graphicsObject.type == 25){
+								graphicsObject.path = null;
+								var currentPathObj = convertPointIntoPath(graphicsObject.pointsArray);
+								graphicsObject.path = currentPathObj; 
+							}
+							
+						}*/
+						
+				  }
+				  if(status){
+					  for(var i=0;i<selObjArray.length;i++){
+							var graphicsObject = objectTable.get(selObjArray[i]);
+							var pointsArr = graphicsObject.pointsArray;
+							for(var j=0;j<pointsArr.length;j++){
+									if(j%2 != 0){
+										tempTranslatePointsArr[j] = parseFloat(pointsArr[j]) + parseFloat(dy);
+									}else{
+										tempTranslatePointsArr[j] = parseFloat(pointsArr[j]) + parseFloat(dx);
+									}
+								}
+								for(var j=0;j<pointsArr.length;j++){
+									graphicsObject.pointsArray[j] = tempTranslatePointsArr[j];
+								}
+								if(graphicsObject.type == 4 || graphicsObject.type == 25){
+									graphicsObject.path = null;
+									var currentPathObj = convertPointIntoPath(graphicsObject.pointsArray);
+									graphicsObject.path = currentPathObj; 
+								}
+						  }
+					  
+				  }
+				  
+					//console.log("status:::"+status+"::graphicsObject.pointsArray::"+graphicsObject.pointsArray);
+					//drawObject(objectTable,selObjArray[i],false);
+					//console.log("selGroupObjArray::::"+selGroupObjArray);
+				  
+				 if(rectangleSelObject != null){
+					  var pointsArray = rectangleSelObject.pointsArray;
+					  pointsArray[0] = parseFloat(pointsArray[0]) + parseFloat(dx);
+					  pointsArray[1] = parseFloat(pointsArray[1]) + parseFloat(dy);
+					  pointsArray[2] = parseFloat(pointsArray[2]) + parseFloat(dx);
+					  pointsArray[3] = parseFloat(pointsArray[3]) + parseFloat(dy);
+					  rectangleSelObject.pointsArray = pointsArray;
+					  createObject(rectangleSelObject.type,pointsArray[0],pointsArray[1],pointsArray[2],pointsArray[3],triEndX,triEndY);
+				}else{
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					restore();
+				}  
 				if(selGroupObjArray!= null && selGroupObjArray.length > 0){
 					/*
 					var refList = selGroupObj.refObjectList;
@@ -5153,64 +6138,1209 @@ function shiftSelectedObject(objectTable,dx,dy){
 					showGroupSelection(refList,objectTable);
 				*/
 				}else{
-					var graphicsObject = objectTable.get(selObjArray[i]);
-					showSelectedObject(graphicsObject);
+					for(var i=0;i<selObjArray.length;i++){
+						var graphicsObject = objectTable.get(selObjArray[i]);
+						showSelectedObject(graphicsObject);
+					}
+					//console.log("shift")
 				}
-				
+					
+			}
+	}
+
+	function convertPointIntoPath(pointList){
+		var pathObj = new paper.Path();
+		for(i=0;i<pointList.length;i=i+2){
+			var point = new paper.Point(pointList[i],pointList[i+1]);
+			pathObj.add(point);
+		}
+		pathObj.simplify(10);
+		pathObj.fullySelected = false;
+		return pathObj;
+	}
+		
+		function checkAllPointsInCanvas(pointsArr){
+			var status = true;
+			//console.log("canvasBoundedRectanglePoints::"+canvasBoundedRectanglePoints)
+			for(var ctr=0;ctr<pointsArr.length;ctr = ctr+2){
+						var status = point_in_rectagnle(pointsArr[ctr],pointsArr[ctr+1],canvasBoundedRectanglePoints[0],canvasBoundedRectanglePoints[1],canvasBoundedRectanglePoints[2]/ratio,canvasBoundedRectanglePoints[3]/ratio);
+						//console.log("status::"+status+":X:"+pointsArr[ctr]+":Y:"+pointsArr[ctr+1]);
+						if(!status){
+								break;
+							}
+			}
+			return status;
+		}
+	/*
+	function checkPointsInObject(objectTable,isSingleRequire){
+		var returnOnlySingle = false;
+		if(objectTable != null){
+			objectTable.moveLast();
+			objectTable.next();
+			//console.log("ObjectTable:::"+objectTable);
+			while(objectTable.prev()){
+			
+			  if(returnOnlySingle && isSingleRequire){
+				  break;
+			  }
+			  
+			  var graphicsObject = objectTable.get(objectTable.getKey());
+			  if(graphicsObject != null){
+			  //console.log("graphicsObject:::"+graphicsObject);
+			   switch(graphicsObject.type){
+						case 1:
+							//console.log("Rectangle");
+							var pointsArr = graphicsObject.pointsArray;
+							if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+								if(checkObjInSelList(objectTable.getKey())){
+									selObjArray[selObjArray.length] = objectTable.getKey();
+								}
+								returnOnlySingle = true;
+							}
+
+							break;
+						case 2:
+							ctx.beginPath();
+							//console.log("oval");
+							var pointsArr = graphicsObject.pointsArray;
+							if(is_in_ellipse(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+								if(checkObjInSelList(objectTable.getKey())){
+									selObjArray[selObjArray.length] = objectTable.getKey();
+								}
+								returnOnlySingle = true;
+							}
+							
+							break;
+						case 3:
+							var pointsArr = graphicsObject.pointsArray;
+							//console.log("points is::::"+points_is_onLine(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3]));						
+							break;
+						case 4:
+							var pointsArray = graphicsObject.pointsArray;
+							break;
+						case 5:
+							var pointsArr = graphicsObject.pointsArray;
+							//console.log("Triangle");
+							if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+								if(checkObjInSelList(objectTable.getKey())){
+									selObjArray[selObjArray.length] = objectTable.getKey();
+								}
+								returnOnlySingle = true;
+							}
+							break;
+						case 6:
+							var pointsArr = graphicsObject.pointsArray;
+							break;
+							
+						case 12:
+							ctx.beginPath();
+							//console.log("Circle");
+							var pointsArr = graphicsObject.pointsArray;
+							if(is_in_ellipse(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+								if(checkObjInSelList(objectTable.getKey())){
+									selObjArray[selObjArray.length] = objectTable.getKey();
+								}
+								returnOnlySingle = true;
+							}
+							
+							break;	
+						}
+			  		}
+				}
+		}
+	}*/
+
+	function isPointInPoly(poly, pt){
+		for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
+			((poly[i].y <= pt.y && pt.y < poly[j].y) || (poly[j].y <= pt.y && pt.y < poly[i].y))
+			&& (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
+			&& (c = !c);
+		return c;
+	}
+	function points(x,y){
+	  this.x = x;
+	  this.y = y;
+	}
+
+	function checkPointsInObject(objectTable,isSingleRequire){
+		var returnOnlySingle = false;
+		var returnObjArr = new Array();
+		if(objectTable != null){
+			objectTable.moveLast();
+			objectTable.next();
+			//console.log("ObjectTable:::"+objectTable);
+			while(objectTable.prev()){
+			  var graphicsObject = objectTable.get(objectTable.getKey());
+			  	if(returnOnlySingle && isSingleRequire){
+					break;
+				}
+
+			  if(graphicsObject != null){
+			  //console.log("graphicsObject:::"+graphicsObject);
+				   switch(graphicsObject.type){
+							case 1:
+								var pointsArr = graphicsObject.pointsArray;
+								
+								var polyArr = new Array();
+								var pt1 = new points(pointsArr[0],pointsArr[1]);
+								var pt2 = new points(pointsArr[2],pointsArr[3]);
+								var pt3 = new points(pointsArr[4],pointsArr[5]);
+								var pt4 = new points(pointsArr[6],pointsArr[7]);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var pt = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,pt)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								break;
+							case 2:
+								var pointsArr = graphicsObject.pointsArray;
+								
+								var polyArr = new Array();
+								var pt1 = new points(pointsArr[0],pointsArr[1]);
+								var pt2 = new points(pointsArr[2],pointsArr[3]);
+								var pt3 = new points(pointsArr[4],pointsArr[5]);
+								var pt4 = new points(pointsArr[6],pointsArr[7]);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var pt = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,pt)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								break;
+							case 3:
+								var pointsArray = graphicsObject.pointsArray;
+								var pt = getMinMax(pointsArray);
+								var polyArr = new Array();
+								var pt1 = new points(pt.minX,pt.minY);
+								var pt2 = new points(pt.maxX,pt.minY);
+								var pt3 = new points(pt.maxX,pt.maxY);
+								var pt4 = new points(pt.minX,pt.maxY);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var point = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,point)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								/*if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 4:
+								var pointsArray = graphicsObject.pointsArray;
+								
+								var pt = getMinMax(pointsArray);
+								var polyArr = new Array();
+								var pt1 = new points(pt.minX,pt.minY);
+								var pt2 = new points(pt.maxX,pt.minY);
+								var pt3 = new points(pt.maxX,pt.maxY);
+								var pt4 = new points(pt.minX,pt.maxY);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var point = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,point)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								/*if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 5:
+								var pointsArr = graphicsObject.pointsArray;
+								//console.log("Triangle");
+								if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									/*
+									if(checkObjInSelList(objectTable.getKey())){
+										selObjArray[selObjArray.length] = objectTable.getKey();
+									}*/
+									returnOnlySingle = true;
+								}
+								break;
+							case 6:
+								var pointsArray = graphicsObject.pointsArray;
+								var pt = getMinMax(pointsArray);
+								var polyArr = new Array();
+								var pt1 = new points(pt.minX,pt.minY);
+								var pt2 = new points(pt.maxX,pt.minY);
+								var pt3 = new points(pt.maxX,pt.maxY);
+								var pt4 = new points(pt.minX,pt.maxY);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var point = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,point)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								/*
+								if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 8:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									//console.log("pointsArr[0]::"+pointsArr[0]+"pointsArr[1]::"+pointsArr[1]+"pointsArr[2]::"+pointsArr[2]+"pointsArr[3]::"+pointsArr[3]);
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								break;
+								
+							case 11:
+								var pointsArr = graphicsObject.pointsArray;
+								//console.log("Arc");
+								if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									/*if(checkObjInSelList(objectTable.getKey())){
+										selObjArray[selObjArray.length] = objectTable.getKey();
+										}*/
+								returnOnlySingle = true;
+								}
+								break;	
+							
+							case 12:
+								ctx.beginPath();
+								//console.log("Circle");
+								var ptsArr = graphicsObject.pointsArray;
+								//var ptsArr = getCircleBoundedSquare(pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3]);
+								if(is_in_ellipse(startX,startY,ptsArr[0],ptsArr[1],ptsArr[2],ptsArr[3])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									/*if(checkObjInSelList(objectTable.getKey())){
+										selObjArray[selObjArray.length] = objectTable.getKey();
+									}*/
+									returnOnlySingle = true;
+								}
+							
+							break;
+							case 13:
+								var pointsArr = graphicsObject.pointsArray;
+								//console.log("Triangle");
+								if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									/*
+									if(checkObjInSelList(objectTable.getKey())){
+										selObjArray[selObjArray.length] = objectTable.getKey();
+									}*/
+									returnOnlySingle = true;
+								}
+								break;
+							case 16:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								break;
+							case 23:
+								var pointsArr = graphicsObject.pointsArray;
+								
+								var polyArr = new Array();
+								var pt1 = new points(pointsArr[0],pointsArr[1]);
+								var pt2 = new points(pointsArr[2],pointsArr[3]);
+								var pt3 = new points(pointsArr[4],pointsArr[5]);
+								var pt4 = new points(pointsArr[6],pointsArr[7]);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var pt = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,pt)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								break;	
+							case 25:
+								var pointsArray = graphicsObject.pointsArray;
+								
+								var pt = getMinMax(pointsArray);
+								var polyArr = new Array();
+								var pt1 = new points(pt.minX,pt.minY);
+								var pt2 = new points(pt.maxX,pt.minY);
+								var pt3 = new points(pt.maxX,pt.maxY);
+								var pt4 = new points(pt.minX,pt.maxY);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var point = new points(startX,startY);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,point)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								/*if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 26:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								break;
+							case 27:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									
+									returnOnlySingle = true;
+								}
+								
+								break;
+							}
+					}
+				}
+		}
+		return returnObjArr;
+		
+	}
+	/*
+	function checkPointsInAllGroups(){
+		var returnObjArr = new Array();
+		var pageNum = document.getElementById("pagenum").value;
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		var grpObjTable = pageGrpObjTable.get(pageNum);
+		//console.log("grpObjTable::new ::"+grpObjTable);
+		if(grpObjTable != null && grpObjTable.size() > 0 ){
+			grpObjTable.moveFirst();
+			
+			//grpObjTable.next();
+			while(grpObjTable.next()){
+				var groupObj = grpObjTable.get(grpObjTable.getKey());
+				if(groupObj.active && groupObj.refObjectList != null){
+					var refList = groupObj.refObjectList;
+					var ptsArray = new Array();
+					for(var i=0;i<refList.length;i++){
+						var graphicsObject = objectTable.get(refList[i]);
+						var pointsArray = graphicsObject.pointsArray;
+						for(var ctr=0;ctr<pointsArray.length;ctr++){
+							ptsArray[ptsArray.length] = pointsArray[ctr];
+						}
+					}
+					var pt = getMinMax(ptsArray);
+					
+					var polyArr = new Array();
+					var pt1 = new points(pt.minX,pt.minY);
+					var pt2 = new points(pt.maxX,pt.minY);
+					var pt3 = new points(pt.maxX,pt.maxY);
+					var pt4 = new points(pt.minX,pt.maxY);
+					polyArr[0] = pt1;
+					polyArr[1] = pt2;
+					polyArr[2] = pt3;
+					polyArr[3] = pt4;
+				  	var pt = new points(startX,startY);
+					if(isPointInPoly(polyArr,pt)){
+						returnObjArr[returnObjArr.length] = groupObj;
+						break;
+					}
+				  
+				}
 			}
 		}
-			
+		return returnObjArr;
+	}
+	*/
+	function checkPointsInAllGroups(x,y){
+		var returnObjArr = new Array();
+		var pageNum = document.getElementById("pagenum").value;
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		var grpObjTable = pageGrpObjTable.get(pageNum);
+		//console.log("checkPointsInAllGroups :x:"+x+"::y::"+y);
+		if(grpObjTable != null && grpObjTable.size() > 0 ){
+			grpObjTable.moveLast();
+			//console.log("grpObjTable:::"+grpObjTable);
+			do{
+				//console.log("grpObjTable.getValue():::"+grpObjTable.getValue());
+				var groupObj = grpObjTable.getValue();
+				if(groupObj!=null &&  groupObj.active && groupObj.refObjectList != null){
+					var refList = groupObj.refObjectList;
+					var ptsArray = new Array();
+					for(var i=0;i<refList.length;i++){
+						var graphicsObject = objectTable.get(refList[i]);
+						var pointsArray = graphicsObject.pointsArray;
+						for(var ctr=0;ctr<pointsArray.length;ctr++){
+							ptsArray[ptsArray.length] = pointsArray[ctr];
+						}
+					}
+					var pt = getMinMax(ptsArray);
+					
+					var polyArr = new Array();
+					var pt1 = new points(pt.minX,pt.minY);
+					var pt2 = new points(pt.maxX,pt.minY);
+					var pt3 = new points(pt.maxX,pt.maxY);
+					var pt4 = new points(pt.minX,pt.maxY);
+					polyArr[0] = pt1;
+					polyArr[1] = pt2;
+					polyArr[2] = pt3;
+					polyArr[3] = pt4;
+				  	var pt = new points(x,y);
+					if(isPointInPoly(polyArr,pt)){
+						returnObjArr[returnObjArr.length] = groupObj;
+						break;
+					}
+				  
+				}
+			}while(grpObjTable.prev());
+		}
+		//console.log("return Id:::"+returnObjArr[0].id);
+		return returnObjArr;
+	}
+
+	function getCircleBoundedSquare(x1, y1, x2, y2){
+		var r = distanceBetween(x1, y1, x2, y2);
+		var boundedSqrPointsArr =  new Array();
+			boundedSqrPointsArr[0] = x1-r;
+			boundedSqrPointsArr[1] = y1-r;
+			boundedSqrPointsArr[2] = x1+r;
+			boundedSqrPointsArr[3] = y1+r;
+		return boundedSqrPointsArr;
 			
 	}
-	
-	function checkAllPointsInCanvas(pointsArr){
-		var status = true;
-		for(var ctr=0;ctr<pointsArr.length;ctr = ctr+2){
-					var status = point_in_rectagnle(pointsArr[ctr],pointsArr[ctr+1],canvasBoundedRectanglePoints[0],canvasBoundedRectanglePoints[1],canvasBoundedRectanglePoints[2],canvasBoundedRectanglePoints[3]);
-					//console.log("status::"+status+":X:"+pointsArr[ctr]+":Y:"+pointsArr[ctr+1]);
-					if(!status){
+
+	function checkOpenObjectForSelection(objectTable,x,y){
+		if(objectTable != null){
+		//	//console.log("-------checkOpenObjectForSelection  called------------------"+objectTable.size());
+			objectTable.moveFirst();
+			while(objectTable.next()){
+				var graphicsObject = objectTable.get(objectTable.getKey());
+				var arr = graphicsObject.pointsArray;
+				if(graphicsObject.type ==3 ||graphicsObject.type ==4 || graphicsObject.type ==25|| graphicsObject.type ==6){
+						if (is_in_path(x, y,arr,graphicsObject.lineWidth)){
 							break;
 						}
+				}
+			}
 		}
-		return status;
 	}
-/*
-function checkPointsInObject(objectTable,isSingleRequire){
-	var returnOnlySingle = false;
-	if(objectTable != null){
-		objectTable.moveLast();
-		objectTable.next();
-		//console.log("ObjectTable:::"+objectTable);
-		while(objectTable.prev()){
+	function checkClosedObjectForSelection(objectTable,x,y){
+		var retVal = false;
+		if(objectTable != null){
+			//console.log("-------checkOpenObjectForSelection  objectTable------------------"+x+":;y::"+y);
+			objectTable.moveFirst();
+			while(objectTable.next()){
+				//console.log("-------checkOpenObjectForSelection  called--Key----------------"+objectTable.getKey());
+				var graphicsObject = objectTable.getValue();
+				if(graphicsObject != null){
+						if(retVal){
+							//console.log("condition meet---");
+						}
+					var arr = graphicsObject.pointsArray;
+					  switch(graphicsObject.type){
+							case 1:
+								var pointsArr = graphicsObject.pointsArray;
+								var polyArr = new Array();
+								var pt1 = new points(pointsArr[0],pointsArr[1]);
+								var pt2 = new points(pointsArr[2],pointsArr[3]);
+								var pt3 = new points(pointsArr[4],pointsArr[5]);
+								var pt4 = new points(pointsArr[6],pointsArr[7]);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var pt = new points(x,y);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								if(isPointInPoly(polyArr,pt)){
+									//returnObjArr[returnObjArr.length] = objectTable.getKey();
+									retVal = true;
+								}
+								break;
+							case 2:
+								var pointsArr = graphicsObject.pointsArray;
+								
+								var polyArr = new Array();
+								var pt1 = new points(pointsArr[0],pointsArr[1]);
+								var pt2 = new points(pointsArr[2],pointsArr[3]);
+								var pt3 = new points(pointsArr[4],pointsArr[5]);
+								var pt4 = new points(pointsArr[6],pointsArr[7]);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var pt = new points(x,y);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								if(isPointInPoly(polyArr,pt)){
+									//returnObjArr[returnObjArr.length] = objectTable.getKey();
+									retVal = true;
+								}
+								break;
+								
+								break;
+							case 3:
+								/*
+								var pointsArray = graphicsObject.pointsArray;
+								if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 4:
+							/*
+								var pointsArray = graphicsObject.pointsArray;
+								if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 5:
+								var pointsArr = graphicsObject.pointsArray;
+								//console.log("Triangle");
+								if(is_in_triangle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+									retVal = true;
+								}
+								break;
+							case 6:
+								/*
+								var pointsArray = graphicsObject.pointsArray;
+								if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
+									returnObjArr[returnObjArr.length] = objectTable.getKey();
+									//console.log("Return Object Array::"+returnObjArr);
+									isFreeHandSelected = true;
+									returnOnlySingle = true;
+								}*/
+								break;
+							case 8:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									//console.log("pointsArr[0]::"+pointsArr[0]+"pointsArr[1]::"+pointsArr[1]+"pointsArr[2]::"+pointsArr[2]+"pointsArr[3]::"+pointsArr[3]);
+									retVal = true;
+								}
+								break;
+								
+							case 11:
+								var pointsArr = graphicsObject.pointsArray;
+								//console.log("Arc");
+								if(is_in_triangle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+										retVal = true;
+								}
+								break;	
+							
+							case 12:
+								ctx.beginPath();
+								//console.log("Circle");
+								var ptsArr = graphicsObject.pointsArray;
+								//var ptsArr = getCircleBoundedSquare(pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3]);
+								if(is_in_ellipse(x,y,ptsArr[0],ptsArr[1],ptsArr[2],ptsArr[3])){
+									retVal = true;
+								}
+							
+							break;
+							case 13:
+								var pointsArr = graphicsObject.pointsArray;
+								//console.log("Triangle");
+								if(is_in_triangle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+									retVal = true;
+								}
+								break;
+							case 16:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									retVal = true;
+								}
+								
+								break;
+							case 23:
+								var pointsArr = graphicsObject.pointsArray;
+								
+								var polyArr = new Array();
+								var pt1 = new points(pointsArr[0],pointsArr[1]);
+								var pt2 = new points(pointsArr[2],pointsArr[3]);
+								var pt3 = new points(pointsArr[4],pointsArr[5]);
+								var pt4 = new points(pointsArr[6],pointsArr[7]);
+								polyArr[0] = pt1;
+								polyArr[1] = pt2;
+								polyArr[2] = pt3;
+								polyArr[3] = pt4;
+								
+								var pt = new points(x,y);
+								//console.log("Check points::::"+isPointInPoly(polyArr,pt));
+								
+								
+								if(isPointInPoly(polyArr,pt)){
+									retVal = true;
+								}
+								
+								break;	
+							 case 26:
+								var pointsArr = graphicsObject.pointsArray;
+								if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+									retVal = true;
+								}
+								
+								break;
+							 case 27:
+									var pointsArr = graphicsObject.pointsArray;
+									if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+										retVal = true;
+									}
+									
+									break;
+							}
+					}
+				}
+			}
+		return retVal;
+	}
+
+	function checkGroupObjectForSelection(x,y){
+		var retVal = false;
+		var pageNum = document.getElementById("pagenum").value;
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		var grpObjTable = pageGrpObjTable.get(pageNum);
+		//console.log("grpObjTable::new ::"+grpObjTable);
+		if(grpObjTable != null && grpObjTable.size() > 0 ){
+			grpObjTable.moveLast();
+			//console.log("grpObjTable:::"+grpObjTable);
+			do{
+				//console.log("grpObjTable.getValue():::"+grpObjTable.getValue());
+				var groupObj = grpObjTable.getValue();
+				if(groupObj!=null &&  groupObj.active && groupObj.refObjectList != null){
+					var refList = groupObj.refObjectList;
+					var ptsArray = new Array();
+					for(var i=0;i<refList.length;i++){
+						var graphicsObject = objectTable.get(refList[i]);
+						var pointsArray = graphicsObject.pointsArray;
+						for(var ctr=0;ctr<pointsArray.length;ctr++){
+							ptsArray[ptsArray.length] = pointsArray[ctr];
+						}
+					}
+					var pt = getMinMax(ptsArray);
+					
+					var polyArr = new Array();
+					var pt1 = new points(pt.minX,pt.minY);
+					var pt2 = new points(pt.maxX,pt.minY);
+					var pt3 = new points(pt.maxX,pt.maxY);
+					var pt4 = new points(pt.minX,pt.maxY);
+					polyArr[0] = pt1;
+					polyArr[1] = pt2;
+					polyArr[2] = pt3;
+					polyArr[3] = pt4;
+				  	var pt = new points(x,y);
+					if(isPointInPoly(polyArr,pt)){
+						retVal = true;
+						break;
+					}
+				  
+				}
+			}while(grpObjTable.prev());
+		}
+		//console.log("return Id:::"+returnObjArr[0].id);
+		return retVal;
+	}
+
+	function checkSelectedObjectZoomableState(objectTable,x,y){
+		 for(var i=0;i<selObjArray.length;i++){	
+			var graphicsObject = objectTable.get(selObjArray[i]);
+			var pointsArr = graphicsObject.pointsArray;
+			if(graphicsObject.type ==8){
+				if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
+					zoomableObj = graphicsObject;
+					setZoomType(zoomType);
+				}else{
+					canvas.style.cursor  = "default";
+					zoomableObj = null; 
+				}
+			}else{
+				canvas.style.cursor  = "default";
+				zoomableObj = null; 
+				continue;
+			}
+		}
+	}
+
+
+	function checkSelectedObjectStrechableState(objectTable,x,y){
+	     //console.log("----------------checkSelectedObjectStrechableState-------------"+selObjArray+":::objectTable::"+objectTable);
+		 for(var i=0;i<selObjArray.length;i++){	
+			var graphicsObject = objectTable.get(selObjArray[i]);
+			var arr = graphicsObject.pointsArray;
+			
+			if(graphicsObject.type ==5 || graphicsObject.type == 11 || graphicsObject.type == 13){
+				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 0;
+						strechableObj[2] = 1;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 2;
+						strechableObj[2] = 3;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 4;
+						strechableObj[2] = 5;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else{
+						canvas.style.cursor  = "default";
+						strechableObj[0] = null;
+						strechableObj[1] = null;
+						strechableObj[2] = null;
+						
+					}
+			
+			}else if(graphicsObject.type == 4){
+					var pt = getMinMax(arr);
+					arr = null;
+					arr =  new Array();
+					arr[0] = pt.minX;
+					arr[1] = pt.minY;
+					arr[2] = pt.maxX;
+					arr[3] = pt.maxY;
+				
+				
+					if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection 1st"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject;
+						strechableObj[1] = 0;
+						strechableObj[2] = 1;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}
+						
+						break;
+					}else if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection 2nd"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject;
+						strechableObj[1] = 0;
+						strechableObj[2] = 3;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection 3rd"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject;
+						strechableObj[1] = 2;
+						strechableObj[2] = 3;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection 4th"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 2;
+						strechableObj[2] = 3;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}
+						break;
+					}else{
+						canvas.style.cursor  = "default";
+						strechableObj[0] = null;
+						strechableObj[1] = null;
+						strechableObj[2] = null;
+						
+					}
+					
+			}else if(graphicsObject.type == 3){
+				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = arr[2];
+						strechableObj[2] = arr[3];
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						//console.log("inside Selection"+canvas.style.cursor);
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = arr[0];
+						strechableObj[2] = arr[1];
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						//console.log("inside Selection"+canvas.style.cursor);
+						break;
+					}else{
+						canvas.style.cursor  = "default";
+						strechableObj[0] = null;
+						strechableObj[1] = null;
+						strechableObj[2] = null;
+						
+					}
+			
+			}else if(graphicsObject.type == 6){
+				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = arr[2];
+						strechableObj[2] = arr[3];
+						strechableObj[3] = true;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						//console.log("inside Selection"+canvas.style.cursor);
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = arr[0];
+						strechableObj[2] = arr[1];
+						strechableObj[3] = false;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						//console.log("inside Selection"+canvas.style.cursor);
+						break;
+					}else{
+						canvas.style.cursor  = "default";
+						strechableObj[0] = null;
+						strechableObj[1] = null;
+						strechableObj[2] = null;
+						
+					}
+			
+			}else if(graphicsObject.type == 12 && !isRotaionEnable){
+					//console.log("a1::"+arr[0]+"::a2::"+arr[1]+"::b1::"+arr[2]+"::b2::"+arr[3]);
+					if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection of point 1"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 0;
+						strechableObj[2] = 1;
+						strechableObj[3] = 1;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "default";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						
+						break;
+					}else if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection of point 2"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 0;
+						strechableObj[2] = 3;
+						strechableObj[3] = 2;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "default";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection of point 3"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 2;
+						strechableObj[2] = 1;
+						strechableObj[3] = 3;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "default";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection of point 4"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 2;
+						strechableObj[2] = 3;
+						strechableObj[3] = 4;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "default";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else{
+					//console.log("555555555555555555555555555555");
+						canvas.style.cursor  = "default";
+						strechableObj[0] = null;
+						strechableObj[1] = null;
+						strechableObj[2] = null;
+						
+					}
+				}else if(graphicsObject.type == 1 || graphicsObject.type == 2 || graphicsObject.type == 23){
+					if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection1"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 0;
+						strechableObj[2] = 1;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						
+						break;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection2"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 2;
+						strechableObj[2] = 3;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
+						//console.log("inside Selection3"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 4;
+						strechableObj[2] = 5;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else if(is_in_ellipse(x,y,arr[6]-selCircleRedius,arr[7]-selCircleRedius,arr[6]+selCircleRedius,arr[7]+selCircleRedius)){
+						//console.log("inside Selection4"+canvas.style.cursor);
+						strechableObj[0] = graphicsObject
+						strechableObj[1] = 6;
+						strechableObj[2] = 7;
+						if(isRotaionEnable){
+							canvas.style.cursor  = "pointer";
+						}else{
+							canvas.style.cursor  = "move";
+						}
+						break;
+					}else{
+						canvas.style.cursor  = "default";
+						strechableObj[0] = null;
+						strechableObj[1] = null;
+						strechableObj[2] = null;
+						
+					}
+				}
+		}
+	}
+
+
+
+	function checkPointsInSelectionState(graphicsObject,x,y){
+
+		//console.log("----------------checkPointsInSelectionState-------------"+graphicsObject);
 		
-		  if(returnOnlySingle && isSingleRequire){
-			  break;
-		  }
-		  
+			var arr = graphicsObject.pointsArray;
+			if(graphicsObject.type == 8 || graphicsObject.type == 12 ){
+			
+					if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+						
+					}else if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+						
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+					
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+						
+					}else{
+						//console.log("555555555555555555555555555555");
+						 return false;
+					}
+					
+			}else if(graphicsObject.type ==1 || graphicsObject.type == 2 || graphicsObject.type ==23){
+					if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+						
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+						
+					}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+					
+					}else if(is_in_ellipse(x,y,arr[6]-selCircleRedius,arr[7]-selCircleRedius,arr[6]+selCircleRedius,arr[7]+selCircleRedius)){
+						//console.log("inside Selection"+canvas.style.cursor);
+						 return true;
+						
+					}else{
+						//console.log("555555555555555555555555555555");
+						 return false;
+					}
+			
+			}else if(graphicsObject.type ==5 || graphicsObject.type == 11 || graphicsObject.type ==13){
+				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						return true;
+						
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						return true;
+						
+					}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
+						return true;
+						
+					}else{
+						 return false;
+					}
+			
+			}else if(graphicsObject.type == 3 || graphicsObject.type == 6){
+					if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
+						 return true;
+					}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
+						 return true;
+					}else{
+						 return false;
+					}
+			}
+	}
+
+
+
+
+
+
+
+
+
+	function checkObjInSelList(selectedObjArray,key){
+		var pos = -1
+		for(i=0;i<selectedObjArray.length;i++){
+			if(selectedObjArray[i] == key){
+				/*selectedObjArray[i] = null;
+				selObjArray.splice(i ,1);*/
+				pos = i;
+			}
+		}
+		return pos;
+	}
+
+	function highlightObject(objectTable){
+		objectTable.moveFirst();
+		//console.log("ObjectTable:::"+objectTable);
+		while(objectTable.next()){
 		  var graphicsObject = objectTable.get(objectTable.getKey());
-		  if(graphicsObject != null){
-		  //console.log("graphicsObject:::"+graphicsObject);
 		   switch(graphicsObject.type){
 					case 1:
-						//console.log("Rectangle");
 						var pointsArr = graphicsObject.pointsArray;
+						
 						if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-							if(checkObjInSelList(objectTable.getKey())){
-								selObjArray[selObjArray.length] = objectTable.getKey();
+							if(highlightedObj != null){
+							   if(highlightedObj.id < graphicsObject.id){
+									highlightedObj = graphicsObject;
+							   }
+							}else{
+								highlightedObj = graphicsObject;
 							}
-							returnOnlySingle = true;
 						}
 
 						break;
 					case 2:
 						ctx.beginPath();
-						//console.log("oval");
 						var pointsArr = graphicsObject.pointsArray;
 						if(is_in_ellipse(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-							if(checkObjInSelList(objectTable.getKey())){
-								selObjArray[selObjArray.length] = objectTable.getKey();
+							if(highlightedObj != null){
+							   if(highlightedObj.id < graphicsObject.id){
+									highlightedObj = graphicsObject;
+							   }
+							}else{
+								highlightedObj = graphicsObject;
 							}
-							returnOnlySingle = true;
 						}
 						
 						break;
@@ -5223,3208 +7353,2574 @@ function checkPointsInObject(objectTable,isSingleRequire){
 						break;
 					case 5:
 						var pointsArr = graphicsObject.pointsArray;
-						//console.log("Triangle");
+						//console.log("startX:::;"+startX+"::startY:::"+startY);
 						if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-							if(checkObjInSelList(objectTable.getKey())){
-								selObjArray[selObjArray.length] = objectTable.getKey();
+							if(highlightedObj != null){
+							   if(highlightedObj.id < graphicsObject.id){
+									highlightedObj = graphicsObject;
+							   }
+							}else{
+								highlightedObj = graphicsObject;
 							}
-							returnOnlySingle = true;
 						}
 						break;
 					case 6:
 						var pointsArr = graphicsObject.pointsArray;
 						break;
 						
+					case 11:
+						var pointsArr = graphicsObject.pointsArray;
+						//console.log("startX:::;"+startX+"::startY:::"+startY);
+						if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+							if(highlightedObj != null){
+							   if(highlightedObj.id < graphicsObject.id){
+									highlightedObj = graphicsObject;
+							   }
+							}else{
+								highlightedObj = graphicsObject;
+							}
+						}
+						break;	
+						
 					case 12:
 						ctx.beginPath();
-						//console.log("Circle");
 						var pointsArr = graphicsObject.pointsArray;
 						if(is_in_ellipse(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-							if(checkObjInSelList(objectTable.getKey())){
-								selObjArray[selObjArray.length] = objectTable.getKey();
+							if(highlightedObj != null){
+							   if(highlightedObj.id < graphicsObject.id){
+									highlightedObj = graphicsObject;
+							   }
+							}else{
+								highlightedObj = graphicsObject;
 							}
-							returnOnlySingle = true;
 						}
-						
-						break;	
-					}
-		  		}
-			}
-	}
-}*/
-
-function isPointInPoly(poly, pt){
-	for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
-		((poly[i].y <= pt.y && pt.y < poly[j].y) || (poly[j].y <= pt.y && pt.y < poly[i].y))
-		&& (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
-		&& (c = !c);
-	return c;
-}
-function points(x,y){
-  this.x = x;
-  this.y = y;
-}
-
-function checkPointsInObject(objectTable,isSingleRequire){
-	var returnOnlySingle = false;
-	var returnObjArr = new Array();
-	if(objectTable != null){
-		objectTable.moveLast();
-		objectTable.next();
-		//console.log("ObjectTable:::"+objectTable);
-		while(objectTable.prev()){
-		  var graphicsObject = objectTable.get(objectTable.getKey());
-		  	if(returnOnlySingle && isSingleRequire){
-				break;
-			}
-
-		  if(graphicsObject != null){
-		  //console.log("graphicsObject:::"+graphicsObject);
-			   switch(graphicsObject.type){
-						case 1:
-							var pointsArr = graphicsObject.pointsArray;
-							
-							var polyArr = new Array();
-							var pt1 = new points(pointsArr[0],pointsArr[1]);
-							var pt2 = new points(pointsArr[2],pointsArr[3]);
-							var pt3 = new points(pointsArr[4],pointsArr[5]);
-							var pt4 = new points(pointsArr[6],pointsArr[7]);
-							polyArr[0] = pt1;
-							polyArr[1] = pt2;
-							polyArr[2] = pt3;
-							polyArr[3] = pt4;
-							
-							var pt = new points(startX,startY);
-							//console.log("Check points::::"+isPointInPoly(polyArr,pt));
-							
-							
-							if(isPointInPoly(polyArr,pt)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								
-								returnOnlySingle = true;
-							}
-							break;
-						case 2:
-							var pointsArr = graphicsObject.pointsArray;
-							
-							var polyArr = new Array();
-							var pt1 = new points(pointsArr[0],pointsArr[1]);
-							var pt2 = new points(pointsArr[2],pointsArr[3]);
-							var pt3 = new points(pointsArr[4],pointsArr[5]);
-							var pt4 = new points(pointsArr[6],pointsArr[7]);
-							polyArr[0] = pt1;
-							polyArr[1] = pt2;
-							polyArr[2] = pt3;
-							polyArr[3] = pt4;
-							
-							var pt = new points(startX,startY);
-							//console.log("Check points::::"+isPointInPoly(polyArr,pt));
-							
-							
-							if(isPointInPoly(polyArr,pt)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								
-								returnOnlySingle = true;
-							}
-							
-							break;
-						case 3:
-							var pointsArray = graphicsObject.pointsArray;
-							if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								//console.log("Return Object Array::"+returnObjArr);
-								isFreeHandSelected = true;
-								returnOnlySingle = true;
-							}
-							break;
-						case 4:
-							var pointsArray = graphicsObject.pointsArray;
-							if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								//console.log("Return Object Array::"+returnObjArr);
-								isFreeHandSelected = true;
-								returnOnlySingle = true;
-							}
-							break;
-						case 5:
-							var pointsArr = graphicsObject.pointsArray;
-							//console.log("Triangle");
-							if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								/*
-								if(checkObjInSelList(objectTable.getKey())){
-									selObjArray[selObjArray.length] = objectTable.getKey();
-								}*/
-								returnOnlySingle = true;
-							}
-							break;
-						case 6:
-							var pointsArray = graphicsObject.pointsArray;
-							if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								//console.log("Return Object Array::"+returnObjArr);
-								isFreeHandSelected = true;
-								returnOnlySingle = true;
-							}
-							break;
-						case 8:
-							var pointsArr = graphicsObject.pointsArray;
-							if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-								//console.log("pointsArr[0]::"+pointsArr[0]+"pointsArr[1]::"+pointsArr[1]+"pointsArr[2]::"+pointsArr[2]+"pointsArr[3]::"+pointsArr[3]);
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								
-								returnOnlySingle = true;
-							}
-							break;
-							
-						case 11:
-							var pointsArr = graphicsObject.pointsArray;
-							//console.log("Arc");
-							if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								/*if(checkObjInSelList(objectTable.getKey())){
-									selObjArray[selObjArray.length] = objectTable.getKey();
-									}*/
-							returnOnlySingle = true;
-							}
-							break;	
-						
-						case 12:
-							ctx.beginPath();
-							//console.log("Circle");
-							var ptsArr = graphicsObject.pointsArray;
-							//var ptsArr = getCircleBoundedSquare(pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3]);
-							if(is_in_ellipse(startX,startY,ptsArr[0],ptsArr[1],ptsArr[2],ptsArr[3])){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								/*if(checkObjInSelList(objectTable.getKey())){
-									selObjArray[selObjArray.length] = objectTable.getKey();
-								}*/
-								returnOnlySingle = true;
-							}
 						
 						break;
-						case 13:
-							var pointsArr = graphicsObject.pointsArray;
-							//console.log("Triangle");
-							if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								/*
-								if(checkObjInSelList(objectTable.getKey())){
-									selObjArray[selObjArray.length] = objectTable.getKey();
-								}*/
-								returnOnlySingle = true;
+					
+					case 13:
+					    var pointsArr = graphicsObject.pointsArray;
+						//console.log("startX:::;"+startX+"::startY:::"+startY);
+						if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
+							if(highlightedObj != null){
+							   if(highlightedObj.id < graphicsObject.id){
+									highlightedObj = graphicsObject;
+							   }
+							}else{
+								highlightedObj = graphicsObject;
 							}
-							break;
-						case 16:
-							var pointsArr = graphicsObject.pointsArray;
-							if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								
-								returnOnlySingle = true;
-							}
-							
-							break;
-						case 23:
-							var pointsArr = graphicsObject.pointsArray;
-							
-							var polyArr = new Array();
-							var pt1 = new points(pointsArr[0],pointsArr[1]);
-							var pt2 = new points(pointsArr[2],pointsArr[3]);
-							var pt3 = new points(pointsArr[4],pointsArr[5]);
-							var pt4 = new points(pointsArr[6],pointsArr[7]);
-							polyArr[0] = pt1;
-							polyArr[1] = pt2;
-							polyArr[2] = pt3;
-							polyArr[3] = pt4;
-							
-							var pt = new points(startX,startY);
-							//console.log("Check points::::"+isPointInPoly(polyArr,pt));
-							
-							
-							if(isPointInPoly(polyArr,pt)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								
-								returnOnlySingle = true;
-							}
-							
-							break;	
 						}
-				}
-			}
+					}
+		}
+		if(highlightedObj != null){ 
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			//drawObject(objectTable,highlightedObj.id,true);
+			showSelectedObject(highlightedObj);
+		}
 	}
-	return returnObjArr;
-	
-}
-/*
-function checkPointsInAllGroups(){
-	var returnObjArr = new Array();
-	var pageNum = document.getElementById("pagenum").value;
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	var grpObjTable = pageGrpObjTable.get(pageNum);
-	//console.log("grpObjTable::new ::"+grpObjTable);
-	if(grpObjTable != null && grpObjTable.size() > 0 ){
-		grpObjTable.moveFirst();
+
+	function showSelection(arr){
+
+			ctx.beginPath();
+			ctx.strokeStyle = "black";
+			ctx.lineWidth= 2;
+			
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[1]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0],ratio*arr[1]);
+			
+			// ctx.closePath() ;
+			ctx.stroke() ;
 		
-		//grpObjTable.next();
-		while(grpObjTable.next()){
-			var groupObj = grpObjTable.get(grpObjTable.getKey());
-			if(groupObj.active && groupObj.refObjectList != null){
-				var refList = groupObj.refObjectList;
-				var ptsArray = new Array();
-				for(var i=0;i<refList.length;i++){
-					var graphicsObject = objectTable.get(refList[i]);
-					var pointsArray = graphicsObject.pointsArray;
-					for(var ctr=0;ctr<pointsArray.length;ctr++){
-						ptsArray[ptsArray.length] = pointsArray[ctr];
-					}
-				}
-				var pt = getMinMax(ptsArray);
-				
-				var polyArr = new Array();
-				var pt1 = new points(pt.minX,pt.minY);
-				var pt2 = new points(pt.maxX,pt.minY);
-				var pt3 = new points(pt.maxX,pt.maxY);
-				var pt4 = new points(pt.minX,pt.maxY);
-				polyArr[0] = pt1;
-				polyArr[1] = pt2;
-				polyArr[2] = pt3;
-				polyArr[3] = pt4;
-			  	var pt = new points(startX,startY);
-				if(isPointInPoly(polyArr,pt)){
-					returnObjArr[returnObjArr.length] = groupObj;
-					break;
-				}
-			  
-			}
-		}
-	}
-	return returnObjArr;
-}
-*/
-function checkPointsInAllGroups(x,y){
-	var returnObjArr = new Array();
-	var pageNum = document.getElementById("pagenum").value;
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	var grpObjTable = pageGrpObjTable.get(pageNum);
-	//console.log("checkPointsInAllGroups :x:"+x+"::y::"+y);
-	if(grpObjTable != null && grpObjTable.size() > 0 ){
-		grpObjTable.moveLast();
-		//console.log("grpObjTable:::"+grpObjTable);
-		do{
-			//console.log("grpObjTable.getValue():::"+grpObjTable.getValue());
-			var groupObj = grpObjTable.getValue();
-			if(groupObj!=null &&  groupObj.active && groupObj.refObjectList != null){
-				var refList = groupObj.refObjectList;
-				var ptsArray = new Array();
-				for(var i=0;i<refList.length;i++){
-					var graphicsObject = objectTable.get(refList[i]);
-					var pointsArray = graphicsObject.pointsArray;
-					for(var ctr=0;ctr<pointsArray.length;ctr++){
-						ptsArray[ptsArray.length] = pointsArray[ctr];
-					}
-				}
-				var pt = getMinMax(ptsArray);
-				
-				var polyArr = new Array();
-				var pt1 = new points(pt.minX,pt.minY);
-				var pt2 = new points(pt.maxX,pt.minY);
-				var pt3 = new points(pt.maxX,pt.maxY);
-				var pt4 = new points(pt.minX,pt.maxY);
-				polyArr[0] = pt1;
-				polyArr[1] = pt2;
-				polyArr[2] = pt3;
-				polyArr[3] = pt4;
-			  	var pt = new points(x,y);
-				if(isPointInPoly(polyArr,pt)){
-					returnObjArr[returnObjArr.length] = groupObj;
-					break;
-				}
-			  
-			}
-		}while(grpObjTable.prev());
-	}
-	//console.log("return Id:::"+returnObjArr[0].id);
-	return returnObjArr;
-}
 
-function getCircleBoundedSquare(x1, y1, x2, y2){
-	var r = distanceBetween(x1, y1, x2, y2);
-	var boundedSqrPointsArr =  new Array();
-		boundedSqrPointsArr[0] = x1-r;
-		boundedSqrPointsArr[1] = y1-r;
-		boundedSqrPointsArr[2] = x1+r;
-		boundedSqrPointsArr[3] = y1+r;
-	return boundedSqrPointsArr;
-		
-}
-
-function checkOpenObjectForSelection(objectTable,x,y){
-	if(objectTable != null){
-	//	//console.log("-------checkOpenObjectForSelection  called------------------"+objectTable.size());
-		objectTable.moveFirst();
-		while(objectTable.next()){
-			var graphicsObject = objectTable.get(objectTable.getKey());
-			var arr = graphicsObject.pointsArray;
-			if(graphicsObject.type ==3 ||graphicsObject.type ==4 || graphicsObject.type ==6){
-					if (is_in_path(x, y,arr,graphicsObject.lineWidth)){
-						break;
-					}
-			}
-		}
 	}
-}
-function checkClosedObjectForSelection(objectTable,x,y){
-	var retVal = false;
-	if(objectTable != null){
-		//console.log("-------checkOpenObjectForSelection  objectTable------------------"+x+":;y::"+y);
-		objectTable.moveFirst();
-		while(objectTable.next()){
-			//console.log("-------checkOpenObjectForSelection  called--Key----------------"+objectTable.getKey());
-			var graphicsObject = objectTable.getValue();
-			if(graphicsObject != null){
-					if(retVal){
-						//console.log("condition meet---");
-					}
-				var arr = graphicsObject.pointsArray;
-				  switch(graphicsObject.type){
-						case 1:
-							var pointsArr = graphicsObject.pointsArray;
-							var polyArr = new Array();
-							var pt1 = new points(pointsArr[0],pointsArr[1]);
-							var pt2 = new points(pointsArr[2],pointsArr[3]);
-							var pt3 = new points(pointsArr[4],pointsArr[5]);
-							var pt4 = new points(pointsArr[6],pointsArr[7]);
-							polyArr[0] = pt1;
-							polyArr[1] = pt2;
-							polyArr[2] = pt3;
-							polyArr[3] = pt4;
-							
-							var pt = new points(x,y);
-							//console.log("Check points::::"+isPointInPoly(polyArr,pt));
-							if(isPointInPoly(polyArr,pt)){
-								//returnObjArr[returnObjArr.length] = objectTable.getKey();
-								retVal = true;
-							}
-							break;
-						case 2:
-							var pointsArr = graphicsObject.pointsArray;
-							
-							var polyArr = new Array();
-							var pt1 = new points(pointsArr[0],pointsArr[1]);
-							var pt2 = new points(pointsArr[2],pointsArr[3]);
-							var pt3 = new points(pointsArr[4],pointsArr[5]);
-							var pt4 = new points(pointsArr[6],pointsArr[7]);
-							polyArr[0] = pt1;
-							polyArr[1] = pt2;
-							polyArr[2] = pt3;
-							polyArr[3] = pt4;
-							
-							var pt = new points(x,y);
-							//console.log("Check points::::"+isPointInPoly(polyArr,pt));
-							if(isPointInPoly(polyArr,pt)){
-								//returnObjArr[returnObjArr.length] = objectTable.getKey();
-								retVal = true;
-							}
-							break;
-							
-							break;
-						case 3:
-							/*
-							var pointsArray = graphicsObject.pointsArray;
-							if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								//console.log("Return Object Array::"+returnObjArr);
-								isFreeHandSelected = true;
-								returnOnlySingle = true;
-							}*/
-							break;
-						case 4:
-						/*
-							var pointsArray = graphicsObject.pointsArray;
-							if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								//console.log("Return Object Array::"+returnObjArr);
-								isFreeHandSelected = true;
-								returnOnlySingle = true;
-							}*/
-							break;
-						case 5:
-							var pointsArr = graphicsObject.pointsArray;
-							//console.log("Triangle");
-							if(is_in_triangle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-								retVal = true;
-							}
-							break;
-						case 6:
-							/*
-							var pointsArray = graphicsObject.pointsArray;
-							if(is_in_path(startX, startY, pointsArray,graphicsObject.lineWidth)){
-								returnObjArr[returnObjArr.length] = objectTable.getKey();
-								//console.log("Return Object Array::"+returnObjArr);
-								isFreeHandSelected = true;
-								returnOnlySingle = true;
-							}*/
-							break;
-						case 8:
-							var pointsArr = graphicsObject.pointsArray;
-							if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-								//console.log("pointsArr[0]::"+pointsArr[0]+"pointsArr[1]::"+pointsArr[1]+"pointsArr[2]::"+pointsArr[2]+"pointsArr[3]::"+pointsArr[3]);
-								retVal = true;
-							}
-							break;
-							
-						case 11:
-							var pointsArr = graphicsObject.pointsArray;
-							//console.log("Arc");
-							if(is_in_triangle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-									retVal = true;
-							}
-							break;	
-						
-						case 12:
-							ctx.beginPath();
-							//console.log("Circle");
-							var ptsArr = graphicsObject.pointsArray;
-							//var ptsArr = getCircleBoundedSquare(pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3]);
-							if(is_in_ellipse(x,y,ptsArr[0],ptsArr[1],ptsArr[2],ptsArr[3])){
-								retVal = true;
-							}
-						
-						break;
-						case 13:
-							var pointsArr = graphicsObject.pointsArray;
-							//console.log("Triangle");
-							if(is_in_triangle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-								retVal = true;
-							}
-							break;
-						case 16:
-							var pointsArr = graphicsObject.pointsArray;
-							if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-								retVal = true;
-							}
-							
-							break;
-						case 23:
-							var pointsArr = graphicsObject.pointsArray;
-							
-							var polyArr = new Array();
-							var pt1 = new points(pointsArr[0],pointsArr[1]);
-							var pt2 = new points(pointsArr[2],pointsArr[3]);
-							var pt3 = new points(pointsArr[4],pointsArr[5]);
-							var pt4 = new points(pointsArr[6],pointsArr[7]);
-							polyArr[0] = pt1;
-							polyArr[1] = pt2;
-							polyArr[2] = pt3;
-							polyArr[3] = pt4;
-							
-							var pt = new points(x,y);
-							//console.log("Check points::::"+isPointInPoly(polyArr,pt));
-							
-							
-							if(isPointInPoly(polyArr,pt)){
-								retVal = true;
-							}
-							
-							break;	
-						}
-				}
-			}
-		}
-	return retVal;
-}
 
-function checkGroupObjectForSelection(x,y){
-	var retVal = false;
-	var pageNum = document.getElementById("pagenum").value;
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	var grpObjTable = pageGrpObjTable.get(pageNum);
-	//console.log("grpObjTable::new ::"+grpObjTable);
-	if(grpObjTable != null && grpObjTable.size() > 0 ){
-		grpObjTable.moveLast();
-		//console.log("grpObjTable:::"+grpObjTable);
-		do{
-			//console.log("grpObjTable.getValue():::"+grpObjTable.getValue());
-			var groupObj = grpObjTable.getValue();
-			if(groupObj!=null &&  groupObj.active && groupObj.refObjectList != null){
-				var refList = groupObj.refObjectList;
-				var ptsArray = new Array();
-				for(var i=0;i<refList.length;i++){
-					var graphicsObject = objectTable.get(refList[i]);
-					var pointsArray = graphicsObject.pointsArray;
-					for(var ctr=0;ctr<pointsArray.length;ctr++){
-						ptsArray[ptsArray.length] = pointsArray[ctr];
-					}
-				}
-				var pt = getMinMax(ptsArray);
-				
-				var polyArr = new Array();
-				var pt1 = new points(pt.minX,pt.minY);
-				var pt2 = new points(pt.maxX,pt.minY);
-				var pt3 = new points(pt.maxX,pt.maxY);
-				var pt4 = new points(pt.minX,pt.maxY);
-				polyArr[0] = pt1;
-				polyArr[1] = pt2;
-				polyArr[2] = pt3;
-				polyArr[3] = pt4;
-			  	var pt = new points(x,y);
-				if(isPointInPoly(polyArr,pt)){
-					retVal = true;
-					break;
-				}
-			  
-			}
-		}while(grpObjTable.prev());
-	}
-	//console.log("return Id:::"+returnObjArr[0].id);
-	return retVal;
-}
-
-function checkSelectedObjectZoomableState(objectTable,x,y){
-	 for(var i=0;i<selObjArray.length;i++){	
-		var graphicsObject = objectTable.get(selObjArray[i]);
+	function is_in_Text(tx,ty,graphicsObject){
+		var currentGAlpha = ctx.globalAlpha;
 		var pointsArr = graphicsObject.pointsArray;
-		if(graphicsObject.type ==8){
-			if(point_in_rectagnle(x,y,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-				zoomableObj = graphicsObject;
-				setZoomType(zoomType);
-			}else{
-				canvas.style.cursor  = "default";
-				zoomableObj = null; 
-			}
+				ctx.beginPath();
+				ctx.strokeStyle = "red";
+				//console.log("is_in_Text::::::");
+				ctx.globalAlpha = 100;
+				fontStyle = "30px bethhandfont";
+				createText(graphicsObject.text,pointsArr[0],pointsArr[1],graphicsObject.color);
+				ctx.stroke();
+			
+				//console.log("endTm----"+endTm);
+				//console.log("Time taken---"+(endTm-stTime));
+				
+				if (ctx.isPointInStroke(tx, ty)){
+				 //console.log("is_in_Text true");
+					canvas.style.cursor = "pointer"
+					ctx.globalAlpha = currentGAlpha;
+					return true;
+				}else {
+				  //console.log("is_in_Text false");
+					canvas.style.cursor = "default"
+					ctx.globalAlpha = currentGAlpha;
+					return false;
+				}	
+	}
+
+
+
+
+
+
+
+
+
+	function is_in_path(tx,ty,pointsArray,strokeWidth){
+		var currentGAlpha = ctx.globalAlpha;
+				ctx.beginPath();
+				var stTime =  new Date().getTime();
+				//console.log("stTime:::"+stTime); 
+				ctx.strokeStyle = "red";
+				ctx.lineWidth= parseInt(strokeWidth) + 10;
+				//console.log("ctx.lineWidth::::::"+ctx.lineWidth);
+				ctx.globalAlpha = 0;
+				drawFreeHandLine(pointsArray);
+				ctx.stroke();
+				var endTm =  new Date().getTime();
+				//console.log("endTm----"+endTm);
+				//console.log("Time taken---"+(endTm-stTime));
+				
+				if (ctx.isPointInStroke(tx, ty)){
+				  //console.log("is_in_path true");
+					canvas.style.cursor = "pointer"
+					ctx.globalAlpha = currentGAlpha;
+					return true;
+				}else {
+				   //console.log("is_in_path false");
+					canvas.style.cursor = "default"
+					ctx.globalAlpha = currentGAlpha;
+					return false;
+				}	
+	}
+
+	function showSelectedObject(objectSel){
+		//console.log("showSelectedObject:::;;"+objectSel);
+		var arr = objectSel.pointsArray;
+		//console.log("showSelectedObject:::;;"+arr);
+		/*var selectionColor = "#3D0079";
+		ctx.fillStyle = "#3D0079";
+		ctx.globalAlpha = 1;*/
+		
+		var selectionColor = "#3D0079";
+		ctx.fillStyle = "#3D0079";
+		ctx.globalAlpha = 1;
+		
+		if(isRotaionEnable && !(objectSel.type == 12 ||objectSel.type == 8||objectSel.type == 16)){
+			ctx.fillStyle = "#00FF00";
+			selectionColor = "#00FF00";
+		}
+		/*if(objectSel.type == 1){
+			showShutterIcon('shape_shutter');
+		}*/
+		/*if(objectSel.type == 12){
+			arr = getCircleBoundedSquare(arr[0],arr[1],arr[2],arr[3]);
+		}*/
+		if(objectSel.type == 12 ||objectSel.type == 8 || objectSel.type == 16 || objectSel.type == 26 || objectSel.type == 26){
+			//console.log("selected----------"+ctx.lineWidth + "::"+ctx.strokeStyle);
+			
+			ctx.beginPath();
+			ctx.strokeStyle = selectionColor;
+			ctx.lineWidth= 2;
+			
+			createOval(ratio*arr[0]- selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[1]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0],ratio*arr[1]);
+			
+			// ctx.closePath() ;
+			ctx.stroke() ;
+		}else if(objectSel.type == 5 || objectSel.type ==11 ||objectSel.type ==13){
+			//console.log("selected----------"+ctx.lineWidth + "::"+ctx.strokeStyle);
+			
+			ctx.beginPath();
+			ctx.strokeStyle = selectionColor;
+			ctx.lineWidth= 2;
+			
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			
+		//	createRectangle(arr[0]-10,arr[3]-10,arr[0]+10,arr[3]+10);
+			
+			//createRectangle(arr[2]-10,arr[1]-10,arr[2]+10,arr[1]+10);
+			
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[4]+selCircleRedius,ratio*arr[5]);
+			
+	        //createRectangle(arr[4]-10,arr[3]-10,arr[4]+10,arr[3]+10);
+			
+			createOval(ratio*arr[4]-selCircleRedius,ratio*arr[5]-selCircleRedius,ratio*arr[4]+selCircleRedius,ratio*arr[5]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2],ratio*arr[3]);
+			
+			
+			//ctx.closePath() ;
+			ctx.stroke() ;
+			
+		}else if(objectSel.type == 4 || objectSel.type == 25){
+			ctx.beginPath();
+			ctx.strokeStyle = selectionColor;
+			ctx.lineWidth= 2;
+			var pt = getMinMax(arr);
+			arr = null;
+			arr =  new Array();
+			arr[0] = pt.minX;
+			arr[1] = pt.minY;
+			arr[2] = pt.maxX;
+			arr[3] = pt.maxY;
+			createOval(ratio*arr[0]- selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[1]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0],ratio*arr[1]);
+			
+			// ctx.closePath() ;
+			ctx.stroke() ;
+			//alert("done");
+		
+		}else if(objectSel.type == 3 || objectSel.type == 6){
+		ctx.beginPath();
+			ctx.strokeStyle = selectionColor;
+			ctx.lineWidth= 2;
+			
+			createOval(ratio*arr[0]- selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0],ratio*arr[1]);
+			
+			// ctx.closePath() ;
+			ctx.stroke() ;
+		
+		}else if(objectSel.type == 2 || objectSel.type ==1 || objectSel.type == 23){
+			//console.log("objectSel.type:::"+objectSel.type);
+			ctx.beginPath();
+			ctx.strokeStyle = selectionColor;
+			ctx.lineWidth= 2;
+			//console.log("hiiii");
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[4]+selCircleRedius,ratio*arr[5]);
+			
+	        createOval(ratio*arr[4]-selCircleRedius,ratio*arr[5]-selCircleRedius,ratio*arr[4]+selCircleRedius,ratio*arr[5]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[6],ratio*arr[7]);
+			
+			createOval(ratio*arr[6]-selCircleRedius,ratio*arr[7]-selCircleRedius,ratio*arr[6]+selCircleRedius,ratio*arr[7]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0],ratio*arr[1]);
+		
+		ctx.stroke() ;
+		
+		}
+		ctx.strokeStyle = styleColor;
+		ctx.lineWidth = lineWidth;
+		ctx.globalAlpha = globalAlpha;
+		
+	}
+	function is_in_triangle (px,py,ax,ay,bx,by,cx,cy){
+		var v0 = [cx-ax,cy-ay];
+		var v1 = [bx-ax,by-ay];
+		var v2 = [px-ax,py-ay];
+		var dot00 = (v0[0]*v0[0]) + (v0[1]*v0[1]);
+		var dot01 = (v0[0]*v1[0]) + (v0[1]*v1[1]);
+		var dot02 = (v0[0]*v2[0]) + (v0[1]*v2[1]);
+		var dot11 = (v1[0]*v1[0]) + (v1[1]*v1[1]);
+		var dot12 = (v1[0]*v2[0]) + (v1[1]*v2[1]);
+		var invDenom = 1/ (dot00 * dot11 - dot01 * dot01);
+		var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+		var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+		return ((u >= 0) && (v >= 0) && (u + v < 1));
+	}
+
+	function is_in_ellipse(px,py,x1,y1,x2,y2){
+	   //console.log("px:"+px+":py::"+py+":x1:"+x1+":y1:"+y1+":x2:"+x2+"y2:"+y2);
+		var w = x2 - x1;
+		var h = y2 - y1;
+		var centerX  = x1 + w/2
+		var centerY  = y1 + h/2
+		
+		if(w<0){
+			 w = -w;
+		}
+		if(h<0){
+			h = -h;
+		}
+	   var rx = w/2;
+	   var ry = h/2;
+	   var val = (Math.pow((px-centerX),2)/Math.pow(rx,2) + Math.pow((py-centerY),2)/Math.pow(ry,2));
+		//console.log("val::::::::::::::"+val);
+		if(val<=1.2){
+			return true;
 		}else{
-			canvas.style.cursor  = "default";
-			zoomableObj = null; 
-			continue;
+			return false;
 		}
 	}
-}
 
+	function points_is_onLine(x1,y1,x2,y2){
+	 //console.log(":x1:"+x1+":y1:"+y1+":x2:"+x2+"y2:"+y2);
+	 /*
+	  var s1 = distanceBetween(x1,y1,px,py);
+	  var s2 = distanceBetween(px,py,x2,y2);
+	  var s3 = distanceBetween(x1,y1,x2,y2);
+	  var s = (s1 + s2 + s3)/2;
+	  var area = Math.sqrt(s * (s - s1) * (s - s2) * (s - s3));
+	  //console.log("Triagle area:::"+area);
+	  return area;
+	  */
+	    var angleRad = slope_In_Radian(x1,y1,x2,y2);
+		angleDeg = angleRad * 180 / Math.PI;
+		angleDeg =  angleDeg -90;
+		angleRad = angleDeg * Math.PI/180;
+		//console.log("angleDeg::;"+angleDeg);
+		 y1 = y1+20;
+		 y2 = y2+20;
+		var x1r = x1*Math.cos(angleRad)-y1*Math.sin(angleRad);
+		var y1r = x1*Math.cos(angleRad)+y1*Math.sin(angleRad);
 
-function checkSelectedObjectStrechableState(objectTable,x,y){
-     //console.log("----------------checkSelectedObjectStrechableState-------------"+selObjArray+":::objectTable::"+objectTable);
-	 for(var i=0;i<selObjArray.length;i++){	
-		var graphicsObject = objectTable.get(selObjArray[i]);
-		var arr = graphicsObject.pointsArray;
+		  var x2r = x2*Math.cos(angleRad)-y2*Math.sin(angleRad);
+		  var y2r = x2*Math.cos(angleRad)+y2*Math.sin(angleRad);
+	   //console.log(":x1r:"+x1r+":y1r:"+y1r+":x2r:"+x2r+":y2r:"+y2r);
+	   createLine(x1r,y1r,x2r,y2r);
+	 }
+
+	function distanceBetween(x1,y1,x2,y2){
+	   var xDiff = (x2-x1);
+	   var yDiff = (y2-y1);
+	   var distance = Math.sqrt(Math.pow(xDiff,2)+ Math.pow(yDiff,2));
+	   //console.log("distance:::"+distance);
+	   return distance
+	}
+
+	/*function setLineWidth(obj){
+		 lineWidth = obj.value;
+		 changeSelectedObjectLineWidth(lineWidth)
+	}
+	*/
+	
+	
+	
+
+	function setNewUILineWidth(obj){
+		 lineWidth = obj;
+		 changeSelectedObjectLineWidth(lineWidth)
+	}
+
+	function setGlobalAlpha(value){
+		 globalAlpha = value;
+		 changeSelectedObjectGlobalAlpha(globalAlpha)
+	}
+
+	function setFilledColor(selectedColor){
+		fillColor= selectedColor;
+		setFillPropOnSelctedObject(fillColor);
+	}
+
+	function setNewUIFilledColor(obj){
+		var clr = document.getElementById("hex").value;
+		clr = "#"+clr;
+		if(clr == ""){
+			fillColor = null;
+		}else{
+			fillColor= clr;
+		}
+		alert(fillColor);
+		setFillPropOnSelctedObject(fillColor);
+	}
+
+	function setTextStyleColor(obj){
+		textStyleColor= obj.value;
+		//alert("textStyleColor:;"+textStyleColor);
+		document.getElementById("editor").style.color = textStyleColor;
+	}
+
+	function setLineWidth(obj){
+		defStrokeWidth = obj.value;
+		setStrokeWidthArribute(obj.value);
+		changeSelectedObjectLineWidth(obj.value);
+	}
+	
+	
+	function setStrokeWidthArribute(value){
+		 lineWidth =value;
+		// alert(lineWidth);
+		 var txt =  value / ratio +"px solid";
+		// console.log(document.getElementById("strokeLine_pencil"));
+		// changeSelectedObjectLineWidth(lineWidth);
+		 $("#stroke-two").css("border-bottom",txt);
+		 document.getElementById('strokewidth_Sel').value = value;
+	}
+	
+	function setHighLighterLineWidth(obj){
+		defHighlighterLineWidth = obj.value;
+		setHighlighterStrokeWidthArribute(obj.value);
+		changeSelectedHighlighterObjectLineWidth(obj.value);
+	}
+	
+	function setHighlighterStrokeWidthArribute(value){
+		 highlighterLineWidth =value;
+		// alert(lineWidth);
+		 var txt =  value / ratio +"px solid";
+		// console.log(document.getElementById("strokeLine_pencil"));
+		// changeSelectedObjectLineWidth(lineWidth);
+		 $("#stroke-three").css("border-bottom",txt);
+		 document.getElementById('strokewidth_sel_pen').value = value;
+	}
+	
+	
+	
+	function setStyleColor(selectedColor){
+	   defStrokeColor = selectedColor; 
+	   setStrokeColorArribute(selectedColor);
+	   changeSelectedObjectColor(selectedColor);
+	}
+	
+	function setStrokeColorArribute(selectedColor){
+		 styleColor= selectedColor;
+		 document.getElementById('stroke_color').style.background = selectedColor;
+		 document.getElementById('strokepallete').jscolor.fromString(selectedColor);
+	}
+
+	function setHighlighterStyleColor(selectedColor){
+		   defHeighlighterColor = selectedColor; 
+		   setHighlighterStrokeColorArribute(selectedColor);
+		   changeHighlighterSelectedObjectColor(selectedColor);
+	}
 		
-		if(graphicsObject.type ==5 || graphicsObject.type == 11 || graphicsObject.type == 13){
-			if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 0;
-					strechableObj[2] = 1;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 2;
-					strechableObj[2] = 3;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 4;
-					strechableObj[2] = 5;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else{
-					canvas.style.cursor  = "default";
-					strechableObj[0] = null;
-					strechableObj[1] = null;
-					strechableObj[2] = null;
-					
-				}
-		
-		}else if(graphicsObject.type == 4){
-				var pt = getMinMax(arr);
-				arr = null;
-				arr =  new Array();
-				arr[0] = pt.minX;
-				arr[1] = pt.minY;
-				arr[2] = pt.maxX;
-				arr[3] = pt.maxY;
+	
+	function setHighlighterStrokeColorArribute(selectedColor){
+		 heighlighterColor= selectedColor;
+		 document.getElementById('stroke_color_pen').style.background = selectedColor;
+		 document.getElementById('strokepallete_pen').jscolor.fromString(selectedColor);
+	}
+	
+	
+	function setColor(selColor){
+		console.log("colorType::"+colorType)
+		if(colorType == 1){
+			selFillColor = selColor;
+			setFilledColor(selColor);
+		}else if(colorType == 2){
+			 setStyleColor(selColor);
+			 changeSelectedObjectColor(styleColor);
+		}
 			
+	}
+
+	function setColortype(val){
+		colorType = val
+	 console.log(val);
+		setTimeout(function(){
+		if(val == 2){
+			globarvr = true;
+			document.getElementById('fillpallete').jscolor.hide();
+			globarvr = false;
+			document.getElementById('strokepallete').jscolor.show();
+			 document.getElementById('strokepallete_pen').jscolor.show();
+		}
+		else if(val == 1){
+			globarvr = true;
+			document.getElementById('strokepallete').jscolor.hide();
+			globarvr = false;
+			document.getElementById('fillpallete').jscolor.show();
+		    
+		}else if(val == 3){
+			globarvr = true;
+			document.getElementById('fillpallete').jscolor.hide();
+			  document.getElementById('strokepallete').jscolor.hide();
+			  document.getElementById('strokepallete_pen').jscolor.hide();
 			
-				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection 1st"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject;
-					strechableObj[1] = 0;
-					strechableObj[2] = 1;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}
-					
-					break;
-				}else if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection 2nd"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject;
-					strechableObj[1] = 0;
-					strechableObj[2] = 3;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection 3rd"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject;
-					strechableObj[1] = 2;
-					strechableObj[2] = 3;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection 4th"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 2;
-					strechableObj[2] = 3;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}
-					break;
-				}else{
-					canvas.style.cursor  = "default";
-					strechableObj[0] = null;
-					strechableObj[1] = null;
-					strechableObj[2] = null;
-					
-				}
-				
-		}else if(graphicsObject.type == 3){
-			if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = arr[2];
-					strechableObj[2] = arr[3];
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					//console.log("inside Selection"+canvas.style.cursor);
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = arr[0];
-					strechableObj[2] = arr[1];
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					//console.log("inside Selection"+canvas.style.cursor);
-					break;
-				}else{
-					canvas.style.cursor  = "default";
-					strechableObj[0] = null;
-					strechableObj[1] = null;
-					strechableObj[2] = null;
-					
-				}
-		
-		}else if(graphicsObject.type == 6){
-			if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = arr[2];
-					strechableObj[2] = arr[3];
-					strechableObj[3] = true;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					//console.log("inside Selection"+canvas.style.cursor);
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = arr[0];
-					strechableObj[2] = arr[1];
-					strechableObj[3] = false;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					//console.log("inside Selection"+canvas.style.cursor);
-					break;
-				}else{
-					canvas.style.cursor  = "default";
-					strechableObj[0] = null;
-					strechableObj[1] = null;
-					strechableObj[2] = null;
-					
-				}
-		
-		}else if(graphicsObject.type == 12 && !isRotaionEnable){
-				//console.log("a1::"+arr[0]+"::a2::"+arr[1]+"::b1::"+arr[2]+"::b2::"+arr[3]);
-				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection of point 1"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 0;
-					strechableObj[2] = 1;
-					strechableObj[3] = 1;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "default";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					
-					break;
-				}else if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection of point 2"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 0;
-					strechableObj[2] = 3;
-					strechableObj[3] = 2;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "default";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection of point 3"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 2;
-					strechableObj[2] = 1;
-					strechableObj[3] = 3;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "default";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection of point 4"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 2;
-					strechableObj[2] = 3;
-					strechableObj[3] = 4;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "default";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else{
-				//console.log("555555555555555555555555555555");
-					canvas.style.cursor  = "default";
-					strechableObj[0] = null;
-					strechableObj[1] = null;
-					strechableObj[2] = null;
-					
-				}
-			}else if(graphicsObject.type == 1 || graphicsObject.type == 2 || graphicsObject.type == 23){
-				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection1"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 0;
-					strechableObj[2] = 1;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					
-					break;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection2"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 2;
-					strechableObj[2] = 3;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
-					//console.log("inside Selection3"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 4;
-					strechableObj[2] = 5;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else if(is_in_ellipse(x,y,arr[6]-selCircleRedius,arr[7]-selCircleRedius,arr[6]+selCircleRedius,arr[7]+selCircleRedius)){
-					//console.log("inside Selection4"+canvas.style.cursor);
-					strechableObj[0] = graphicsObject
-					strechableObj[1] = 6;
-					strechableObj[2] = 7;
-					if(isRotaionEnable){
-						canvas.style.cursor  = "pointer";
-					}else{
-						canvas.style.cursor  = "move";
-					}
-					break;
-				}else{
-					canvas.style.cursor  = "default";
-					strechableObj[0] = null;
-					strechableObj[1] = null;
-					strechableObj[2] = null;
-					
-				}
-			}
-	}
-}
-
-
-
-function checkPointsInSelectionState(graphicsObject,x,y){
-
-	//console.log("----------------checkPointsInSelectionState-------------"+graphicsObject);
-	
-		var arr = graphicsObject.pointsArray;
-		if(graphicsObject.type == 8 || graphicsObject.type == 12 ){
-		
-				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-					
-				}else if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-					
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-				
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-					
-				}else{
-					//console.log("555555555555555555555555555555");
-					 return false;
-				}
-				
-		}else if(graphicsObject.type ==1 || graphicsObject.type == 2 || graphicsObject.type ==23){
-				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-					
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-					
-				}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-				
-				}else if(is_in_ellipse(x,y,arr[6]-selCircleRedius,arr[7]-selCircleRedius,arr[6]+selCircleRedius,arr[7]+selCircleRedius)){
-					//console.log("inside Selection"+canvas.style.cursor);
-					 return true;
-					
-				}else{
-					//console.log("555555555555555555555555555555");
-					 return false;
-				}
-		
-		}else if(graphicsObject.type ==5 || graphicsObject.type == 11 || graphicsObject.type ==13){
-			if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					return true;
-					
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					return true;
-					
-				}else if(is_in_ellipse(x,y,arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius)){
-					return true;
-					
-				}else{
-					 return false;
-				}
-		
-		}else if(graphicsObject.type == 3 || graphicsObject.type == 6){
-				if(is_in_ellipse(x,y,arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius)){
-					 return true;
-				}else if(is_in_ellipse(x,y,arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius)){
-					 return true;
-				}else{
-					 return false;
-				}
 		}
-}
-
-
-
-
-
-
-
-
-
-function checkObjInSelList(selectedObjArray,key){
-	var pos = -1
-	for(i=0;i<selectedObjArray.length;i++){
-		if(selectedObjArray[i] == key){
-			/*selectedObjArray[i] = null;
-			selObjArray.splice(i ,1);*/
-			pos = i;
-		}
+		
+		},200);
 	}
-	return pos;
-}
 
-function highlightObject(objectTable){
-	objectTable.moveFirst();
-	//console.log("ObjectTable:::"+objectTable);
-	while(objectTable.next()){
-	  var graphicsObject = objectTable.get(objectTable.getKey());
-	   switch(graphicsObject.type){
-				case 1:
-					var pointsArr = graphicsObject.pointsArray;
-					
-					if(point_in_rectagnle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-						if(highlightedObj != null){
-						   if(highlightedObj.id < graphicsObject.id){
-								highlightedObj = graphicsObject;
-						   }
-						}else{
-							highlightedObj = graphicsObject;
-						}
-					}
-
-					break;
-				case 2:
-					ctx.beginPath();
-					var pointsArr = graphicsObject.pointsArray;
-					if(is_in_ellipse(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-						if(highlightedObj != null){
-						   if(highlightedObj.id < graphicsObject.id){
-								highlightedObj = graphicsObject;
-						   }
-						}else{
-							highlightedObj = graphicsObject;
-						}
-					}
-					
-					break;
-				case 3:
-					var pointsArr = graphicsObject.pointsArray;
-					//console.log("points is::::"+points_is_onLine(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3]));						
-					break;
-				case 4:
-					var pointsArray = graphicsObject.pointsArray;
-					break;
-				case 5:
-					var pointsArr = graphicsObject.pointsArray;
-					//console.log("startX:::;"+startX+"::startY:::"+startY);
-					if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-						if(highlightedObj != null){
-						   if(highlightedObj.id < graphicsObject.id){
-								highlightedObj = graphicsObject;
-						   }
-						}else{
-							highlightedObj = graphicsObject;
-						}
-					}
-					break;
-				case 6:
-					var pointsArr = graphicsObject.pointsArray;
-					break;
-					
-				case 11:
-					var pointsArr = graphicsObject.pointsArray;
-					//console.log("startX:::;"+startX+"::startY:::"+startY);
-					if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-						if(highlightedObj != null){
-						   if(highlightedObj.id < graphicsObject.id){
-								highlightedObj = graphicsObject;
-						   }
-						}else{
-							highlightedObj = graphicsObject;
-						}
-					}
-					break;	
-					
-				case 12:
-					ctx.beginPath();
-					var pointsArr = graphicsObject.pointsArray;
-					if(is_in_ellipse(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3])){
-						if(highlightedObj != null){
-						   if(highlightedObj.id < graphicsObject.id){
-								highlightedObj = graphicsObject;
-						   }
-						}else{
-							highlightedObj = graphicsObject;
-						}
-					}
-					
-					break;
-				
-				case 13:
-				    var pointsArr = graphicsObject.pointsArray;
-					//console.log("startX:::;"+startX+"::startY:::"+startY);
-					if(is_in_triangle(startX,startY,pointsArr[0],pointsArr[1],pointsArr[2],pointsArr[3],pointsArr[4],pointsArr[5])){
-						if(highlightedObj != null){
-						   if(highlightedObj.id < graphicsObject.id){
-								highlightedObj = graphicsObject;
-						   }
-						}else{
-							highlightedObj = graphicsObject;
-						}
-					}
-				}
-	}
-	if(highlightedObj != null){ 
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		//drawObject(objectTable,highlightedObj.id,true);
-		showSelectedObject(highlightedObj);
-	}
-}
-
-function showSelection(arr){
-
-		ctx.beginPath();
-		ctx.strokeStyle = "black";
-		ctx.lineWidth= 2;
-		
-		createOval(arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.closePath() ;
-		ctx.moveTo(arr[0]+selCircleRedius,arr[3]);
-		createOval(arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[1]);
-		createOval(arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.closePath() ;
-		ctx.moveTo(arr[0],arr[1]);
-		
-		// ctx.closePath() ;
-		ctx.stroke() ;
-	
-
-}
-
-function is_in_Text(tx,ty,graphicsObject){
-	var currentGAlpha = ctx.globalAlpha;
-	var pointsArr = graphicsObject.pointsArray;
-			ctx.beginPath();
-			ctx.strokeStyle = "red";
-			//console.log("is_in_Text::::::");
-			ctx.globalAlpha = 100;
-			fontStyle = "30px bethhandfont";
-			createText(graphicsObject.text,pointsArr[0],pointsArr[1],graphicsObject.color);
-			ctx.stroke();
-		
-			//console.log("endTm----"+endTm);
-			//console.log("Time taken---"+(endTm-stTime));
-			
-			if (ctx.isPointInStroke(tx, ty)){
-			 //console.log("is_in_Text true");
-				canvas.style.cursor = "pointer"
-				ctx.globalAlpha = currentGAlpha;
-				return true;
-			}else {
-			  //console.log("is_in_Text false");
-				canvas.style.cursor = "default"
-				ctx.globalAlpha = currentGAlpha;
-				return false;
-			}	
-}
-
-
-
-
-
-
-
-
-
-function is_in_path(tx,ty,pointsArray,strokeWidth){
-	var currentGAlpha = ctx.globalAlpha;
-			ctx.beginPath();
-			var stTime =  new Date().getTime();
-			//console.log("stTime:::"+stTime); 
-			ctx.strokeStyle = "red";
-			ctx.lineWidth= parseInt(strokeWidth) + 10;
-			//console.log("ctx.lineWidth::::::"+ctx.lineWidth);
-			ctx.globalAlpha = 0;
-			drawFreeHandLine(pointsArray);
-			ctx.stroke();
-			var endTm =  new Date().getTime();
-			//console.log("endTm----"+endTm);
-			//console.log("Time taken---"+(endTm-stTime));
-			
-			if (ctx.isPointInStroke(tx, ty)){
-			  //console.log("is_in_path true");
-				canvas.style.cursor = "pointer"
-				ctx.globalAlpha = currentGAlpha;
-				return true;
-			}else {
-			   //console.log("is_in_path false");
-				canvas.style.cursor = "default"
-				ctx.globalAlpha = currentGAlpha;
-				return false;
-			}	
-}
-
-function showSelectedObject(objectSel){
-	//console.log("showSelectedObject:::;;"+objectSel);
-	var arr = objectSel.pointsArray;
-	var selectionColor = "#3D0079";
-	ctx.fillStyle = "#3D0079";
-	ctx.globalAlpha = 1;
-	
-	if(isRotaionEnable && !(objectSel.type == 12 ||objectSel.type == 8||objectSel.type == 16)){
-		ctx.fillStyle = "#00FF00";
-		selectionColor = "#00FF00";
-	}
-	/*if(objectSel.type == 12){
-		arr = getCircleBoundedSquare(arr[0],arr[1],arr[2],arr[3]);
-	}*/
-	if(objectSel.type == 12 ||objectSel.type == 8 || objectSel.type == 16){
-		//console.log("selected----------"+ctx.lineWidth + "::"+ctx.strokeStyle);
-		
-		ctx.beginPath();
-		ctx.strokeStyle = selectionColor;
-		ctx.lineWidth= 2;
-		
-		createOval(arr[0]- selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0]+selCircleRedius,arr[3]);
-		createOval(arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[1]);
-		createOval(arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0],arr[1]);
-		
-		// ctx.closePath() ;
-		ctx.stroke() ;
-	}else if(objectSel.type == 5 || objectSel.type ==11 ||objectSel.type ==13){
-		//console.log("selected----------"+ctx.lineWidth + "::"+ctx.strokeStyle);
-		
-		ctx.beginPath();
-		ctx.strokeStyle = selectionColor;
-		ctx.lineWidth= 2;
-		
-		createOval(arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		
-	//	createRectangle(arr[0]-10,arr[3]-10,arr[0]+10,arr[3]+10);
-		
-		//createRectangle(arr[2]-10,arr[1]-10,arr[2]+10,arr[1]+10);
-		
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[4]+selCircleRedius,arr[5]);
-		
-        //createRectangle(arr[4]-10,arr[3]-10,arr[4]+10,arr[3]+10);
-		
-		createOval(arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2],arr[3]);
-		
-		
-		//ctx.closePath() ;
-		ctx.stroke() ;
-		
-	}else if(objectSel.type == 4){
-		ctx.beginPath();
-		ctx.strokeStyle = selectionColor;
-		ctx.lineWidth= 2;
-		var pt = getMinMax(arr);
-		arr = null;
-		arr =  new Array();
-		arr[0] = pt.minX;
-		arr[1] = pt.minY;
-		arr[2] = pt.maxX;
-		arr[3] = pt.maxY;
-		createOval(arr[0]- selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0]+selCircleRedius,arr[3]);
-		createOval(arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[1]);
-		createOval(arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0],arr[1]);
-		
-		// ctx.closePath() ;
-		ctx.stroke() ;
-		//alert("done");
-	
-	}else if(objectSel.type == 3 || objectSel.type == 6){
-	ctx.beginPath();
-		ctx.strokeStyle = selectionColor;
-		ctx.lineWidth= 2;
-		
-		createOval(arr[0]- selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0],arr[1]);
-		
-		// ctx.closePath() ;
-		ctx.stroke() ;
-	
-	}else if(objectSel.type == 2 || objectSel.type ==1 || objectSel.type == 23){
-		//console.log("objectSel.type:::"+objectSel.type);
-		ctx.beginPath();
-		ctx.strokeStyle = selectionColor;
-		ctx.lineWidth= 2;
-		//console.log("hiiii");
-		createOval(arr[0]-selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[4]+selCircleRedius,arr[5]);
-		
-        createOval(arr[4]-selCircleRedius,arr[5]-selCircleRedius,arr[4]+selCircleRedius,arr[5]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[6],arr[7]);
-		
-		createOval(arr[6]-selCircleRedius,arr[7]-selCircleRedius,arr[6]+selCircleRedius,arr[7]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0],arr[1]);
-	
-	ctx.stroke() ;
-	
-	}
-	
-	ctx.strokeStyle = styleColor;
-	ctx.lineWidth = lineWidth;
-	ctx.globalAlpha = globalAlpha;
-	
-}
-function is_in_triangle (px,py,ax,ay,bx,by,cx,cy){
-	var v0 = [cx-ax,cy-ay];
-	var v1 = [bx-ax,by-ay];
-	var v2 = [px-ax,py-ay];
-	var dot00 = (v0[0]*v0[0]) + (v0[1]*v0[1]);
-	var dot01 = (v0[0]*v1[0]) + (v0[1]*v1[1]);
-	var dot02 = (v0[0]*v2[0]) + (v0[1]*v2[1]);
-	var dot11 = (v1[0]*v1[0]) + (v1[1]*v1[1]);
-	var dot12 = (v1[0]*v2[0]) + (v1[1]*v2[1]);
-	var invDenom = 1/ (dot00 * dot11 - dot01 * dot01);
-	var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-	var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
-	return ((u >= 0) && (v >= 0) && (u + v < 1));
-}
-
-function is_in_ellipse(px,py,x1,y1,x2,y2){
-   //console.log("px:"+px+":py::"+py+":x1:"+x1+":y1:"+y1+":x2:"+x2+"y2:"+y2);
-	var w = x2 - x1;
-	var h = y2 - y1;
-	var centerX  = x1 + w/2
-	var centerY  = y1 + h/2
-	
-	if(w<0){
-		 w = -w;
-	}
-	if(h<0){
-		h = -h;
-	}
-   var rx = w/2;
-   var ry = h/2;
-   var val = (Math.pow((px-centerX),2)/Math.pow(rx,2) + Math.pow((py-centerY),2)/Math.pow(ry,2));
-	//console.log("val::::::::::::::"+val);
-	if(val<=1.2){
-		return true;
-	}else{
-		return false;
-	}
-}
-
-function points_is_onLine(x1,y1,x2,y2){
- //console.log(":x1:"+x1+":y1:"+y1+":x2:"+x2+"y2:"+y2);
- /*
-  var s1 = distanceBetween(x1,y1,px,py);
-  var s2 = distanceBetween(px,py,x2,y2);
-  var s3 = distanceBetween(x1,y1,x2,y2);
-  var s = (s1 + s2 + s3)/2;
-  var area = Math.sqrt(s * (s - s1) * (s - s2) * (s - s3));
-  //console.log("Triagle area:::"+area);
-  return area;
-  */
-    var angleRad = slope_In_Radian(x1,y1,x2,y2);
-	angleDeg = angleRad * 180 / Math.PI;
-	angleDeg =  angleDeg -90;
-	angleRad = angleDeg * Math.PI/180;
-	//console.log("angleDeg::;"+angleDeg);
-	 y1 = y1+20;
-	 y2 = y2+20;
-	var x1r = x1*Math.cos(angleRad)-y1*Math.sin(angleRad);
-	var y1r = x1*Math.cos(angleRad)+y1*Math.sin(angleRad);
-
-	  var x2r = x2*Math.cos(angleRad)-y2*Math.sin(angleRad);
-	  var y2r = x2*Math.cos(angleRad)+y2*Math.sin(angleRad);
-   //console.log(":x1r:"+x1r+":y1r:"+y1r+":x2r:"+x2r+":y2r:"+y2r);
-   createLine(x1r,y1r,x2r,y2r);
- }
-
-function distanceBetween(x1,y1,x2,y2){
-   var xDiff = (x2-x1);
-   var yDiff = (y2-y1);
-   var distance = Math.sqrt(Math.pow(xDiff,2)+ Math.pow(yDiff,2));
-   //console.log("distance:::"+distance);
-   return distance
-}
-
-function setLineWidth(obj){
-	 lineWidth = obj.value;
-	 changeSelectedObjectLineWidth(lineWidth)
-}
-
-function setNewUILineWidth(obj){
-	 lineWidth = obj;
-	 changeSelectedObjectLineWidth(lineWidth)
-}
-
-function setGlobalAlpha(obj){
-	 globalAlpha = obj.value;
-	 changeSelectedObjectGlobalAlpha(globalAlpha)
-}
-
-function setFilledColor(obj){
-	if(obj.value == ""){
-		fillColor = null;
-	}else{
-		fillColor= obj.value;
-	}
-	setFillPropOnSelctedObject(fillColor);
-}
-
-function setNewUIFilledColor(obj){
-	var clr = document.getElementById("hex").value;
-	clr = "#"+clr;
-	if(clr == ""){
-		fillColor = null;
-	}else{
-		fillColor= clr;
-	}
-	alert(fillColor);
-	setFillPropOnSelctedObject(fillColor);
-}
-
-function setTextStyleColor(obj){
-	textStyleColor= obj.value;
-	//alert("textStyleColor:;"+textStyleColor);
-	document.getElementById("area1").style.color = textStyleColor;
-}
-
-function setStyleColor(obj){
- styleColor= obj.value;
- changeSelectedObjectColor(styleColor);
-}
-function changeSelectedObjectColor(color){
-		//console.log("Style color::;"+color);
-	  if(selObjArray!= null){
-		  //console.log("ppp:"+document.getElementById("pagenum").value);
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-			  for(var i=0;i<selObjArray.length;i++){
-				var graphicsObject = objectTable.get(selObjArray[i]);
-				//console.log("graphicsObject:;"+graphicsObject+":;color:;"+color);
-					if(graphicsObject.type != 16){
-						graphicsObject.color = color;
-						drawObject(objectTable,selObjArray[i],false);
-						showSelectedObject(graphicsObject);
-					}
-				
-			  }
-		}
-}
-function changeSelectedObjectLineWidth(width){
-	
-	  if(selObjArray!= null){
-		   ctx.clearRect(0, 0, canvas.width, canvas.height);
-		   restore();
-		  //console.log("ppp:"+document.getElementById("pagenum").value);
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-			  for(var i=0;i<selObjArray.length;i++){
-				var graphicsObject = objectTable.get(selObjArray[i]);
-					//console.log("graphicsObject:;"+graphicsObject+":;width:;"+width);
-					if(graphicsObject.type != 16){
-						graphicsObject.lineWidth = width;
-						drawObject(objectTable,selObjArray[i],false);
-						showSelectedObject(graphicsObject);
-					}
-			}
-		}
-}
-
-function changeSelectedObjectGlobalAlpha(globalalpha){
-	
-	  if(selObjArray!= null){
-		   ctx.clearRect(0, 0, canvas.width, canvas.height);
-		   restore();
-		  //console.log("ppp:"+document.getElementById("pagenum").value);
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-			  for(var i=0;i<selObjArray.length;i++){
-				var graphicsObject = objectTable.get(selObjArray[i]);
-					//console.log("current Global Alpha:;"+globalAlpha);
-					if(graphicsObject.type != 16){
-						graphicsObject.opacity = globalAlpha;
-						drawObject(objectTable,selObjArray[i],false);
-						showSelectedObject(graphicsObject);
-					}
-				
-				
-			  }
-		}
-}
-
-function setFillPropOnSelctedObject(fillColor){
-	//console.log("fillColor::"+fillColor);
-	  if(selObjArray!= null){
-		   ctx.clearRect(0, 0, canvas.width, canvas.height);
-		   restore();
-			//console.log("Global Alplha::::"+globalAlpha);
+	function changeSelectedObjectColor(color){
+			//console.log("Style color::;"+color);
+		  if(selObjArray!= null){
+			  //console.log("ppp:"+document.getElementById("pagenum").value);
 			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		//	ctx.save();
-			//ctx.closePath();
-			ctx.beginPath();
-		//	alert("saved state");
-		//	ctx.fill();
-			
-			  for(var i=0;i<selObjArray.length;i++){
+				  for(var i=0;i<selObjArray.length;i++){
 					var graphicsObject = objectTable.get(selObjArray[i]);
-					 if(graphicsObject.type == 3 || graphicsObject.type ==4 || graphicsObject.type == 6 || graphicsObject.type == 11 || graphicsObject.type == 16){
-						
-					 }else{
-						 if(fillColor != null)
-							graphicsObject.isFilled = true;
-						 else
-							graphicsObject.isFilled = false;
-					   
-						 graphicsObject.fillColor = fillColor;
-				    }
-				   //graphicsObject.opacity = globalAlpha;
-				    drawObject(objectTable,selObjArray[i],false);
-			 }
-			 ctx.stroke();
-			 ctx.closePath();
-			 ctx.restore();
-			 for(var i=0;i<selObjArray.length;i++){
-				var graphicsObject = objectTable.get(selObjArray[i]);
-				if(graphicsObject.type != 16){
-					showSelectedObject(graphicsObject);
+					//console.log("graphicsObject:;"+graphicsObject+":;color:;"+color);
+						if(graphicsObject.type != 16){
+							graphicsObject.color = color;
+							drawObject(objectTable,selObjArray[i],false);
+							showSelectedObject(graphicsObject);
+						}
+					
+				  }
+			}
+	}
+	function changeSelectedObjectLineWidth(width){
+		
+		  if(selObjArray!= null){
+			   ctx.clearRect(0, 0, canvas.width, canvas.height);
+			   restore();
+			  //console.log("ppp:"+document.getElementById("pagenum").value);
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+				  for(var i=0;i<selObjArray.length;i++){
+					var graphicsObject = objectTable.get(selObjArray[i]);
+						//console.log("graphicsObject:;"+graphicsObject+":;width:;"+width);
+						if(graphicsObject.type != 16){
+							graphicsObject.lineWidth = width;
+							drawObject(objectTable,selObjArray[i],false);
+							showSelectedObject(graphicsObject);
+						}
 				}
-			 }
-			 
-		}
-}
+			}
+	}
+	
+	function changeSelectedHighlighterObjectLineWidth(width){
+		  if(selObjArray!= null){
+			   ctx.clearRect(0, 0, canvas.width, canvas.height);
+			   restore();
+			  //console.log("ppp:"+document.getElementById("pagenum").value);
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+				  for(var i=0;i<selObjArray.length;i++){
+					var graphicsObject = objectTable.get(selObjArray[i]);
+						//console.log("graphicsObject:;"+graphicsObject+":;width:;"+width);
+						if(graphicsObject.type == 25){
+							graphicsObject.lineWidth = width;
+							drawObject(objectTable,selObjArray[i],false);
+							showSelectedObject(graphicsObject);
+						}
+				}
+			}
+	}
+	
+	function changeHighlighterSelectedObjectColor(color){
+		  if(selObjArray!= null){
+			   ctx.clearRect(0, 0, canvas.width, canvas.height);
+			   restore();
+			   //console.log("ppp:"+document.getElementById("pagenum").value);
+				var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+					  for(var i=0;i<selObjArray.length;i++){
+						var graphicsObject = objectTable.get(selObjArray[i]);
+							//console.log("graphicsObject:;"+graphicsObject+":;width:;"+width);
+							if(graphicsObject.type == 25){
+								graphicsObject.color = color;
+								drawObject(objectTable,selObjArray[i],false);
+								showSelectedObject(graphicsObject);
+							}
+					}
+				}
+	}
+	
+	function changeSelectedObjectGlobalAlpha(globalalpha){
+		
+		  if(selObjArray!= null){
+			   ctx.clearRect(0, 0, canvas.width, canvas.height);
+			   restore();
+			  //console.log("ppp:"+document.getElementById("pagenum").value);
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+				  for(var i=0;i<selObjArray.length;i++){
+					var graphicsObject = objectTable.get(selObjArray[i]);
+						//console.log("current Global Alpha:;"+globalAlpha);
+						if(graphicsObject.type != 16){
+							graphicsObject.opacity = globalAlpha;
+							drawObject(objectTable,selObjArray[i],false);
+							showSelectedObject(graphicsObject);
+						}
+					
+					
+				  }
+			}
+	}
+
+	function setFillPropOnSelctedObject(fillColor){
+		//console.log("fillColor::"+fillColor);
+		  if(selObjArray!= null){
+			   ctx.clearRect(0, 0, canvas.width, canvas.height);
+			   restore();
+				//console.log("Global Alplha::::"+globalAlpha);
+				var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			//	ctx.save();
+				//ctx.closePath();
+				ctx.beginPath();
+			//	alert("saved state");
+			//	ctx.fill();
+				
+				  for(var i=0;i<selObjArray.length;i++){
+						var graphicsObject = objectTable.get(selObjArray[i]);
+						 if(graphicsObject.type == 3 || graphicsObject.type ==4 || graphicsObject.type ==25 || graphicsObject.type == 6 || graphicsObject.type == 11 || graphicsObject.type == 16){
+							
+						 }else{
+							 if(fillColor != null)
+								graphicsObject.isFilled = true;
+							 else
+								graphicsObject.isFilled = false;
+						   
+							 graphicsObject.fillColor = fillColor;
+					    }
+					   //graphicsObject.opacity = globalAlpha;
+						 ctx.clearRect(0, 0, canvas.width, canvas.height);
+						 restore();
+					    drawObject(objectTable,selObjArray[i],false);
+				 }
+				 ctx.stroke();
+				 ctx.closePath();
+				 ctx.restore();
+				 for(var i=0;i<selObjArray.length;i++){
+					var graphicsObject = objectTable.get(selObjArray[i]);
+					if(graphicsObject.type != 16){
+						showSelectedObject(graphicsObject);
+					}
+				 }
+				 
+			}
+	}
 
 
-function rotateSelectedObject(objectTable,mouseX,mouseY){
-//console.log("rotateSelectedObject::::"+selObjArray)
-	if(selObjArray!= null){
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-  
-		var ancPoint = getRotationAnchorPoint(objectTable,selObjArray);
-   
-		var tx = ancPoint.x;
-		var ty = ancPoint.y;
-		//console.log("mouseX points::"+mouseX+","+mouseY);
-		//console.log("startX points::"+startX+","+startY);
-		var dx = mouseX-startX;
-		var dy = mouseY-startY;
-		//console.log("center points::"+dx+","+dy);
-		var angleX1 = tx-mouseX;
-		var angleY1 = ty-mouseY;
-  
-		angleR1=Math.atan2(angleY1, angleX1);
-		//console.log("angleR1::"+angleR1);
-  
-		var angleX2 = angleX1-dx;
-		var angleY2 = angleY1-dy;
-		angleR2=Math.atan2(angleY2, angleX2);
-		//console.log("angleR2::"+angleR2);
-		mouseAngle = angleR2-angleR1;
-	//console.log("objectTable--------------------"+objectTable);
+	function rotateSelectedObject(objectTable,mouseX,mouseY){
+	//console.log("rotateSelectedObject::::"+selObjArray)
+		if(selObjArray!= null){
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+	  
+			var ancPoint = getRotationAnchorPoint(objectTable,selObjArray);
+	   
+			var tx = ancPoint.x;
+			var ty = ancPoint.y;
+			//console.log("mouseX points::"+mouseX+","+mouseY);
+			//console.log("startX points::"+startX+","+startY);
+			var dx = mouseX-startX;
+			var dy = mouseY-startY;
+			//console.log("center points::"+dx+","+dy);
+			var angleX1 = tx-mouseX;
+			var angleY1 = ty-mouseY;
+	  
+			angleR1=Math.atan2(angleY1, angleX1);
+			//console.log("angleR1::"+angleR1);
+	  
+			var angleX2 = angleX1-dx;
+			var angleY2 = angleY1-dy;
+			angleR2=Math.atan2(angleY2, angleX2);
+			//console.log("angleR2::"+angleR2);
+			mouseAngle = angleR2-angleR1;
+		//console.log("objectTable--------------------"+objectTable);
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				
+				var pointsArray = graphicsObject.pointsArray;
+				for(var j=0;j<pointsArray.length;j+=2){
+	    
+					var obj = Rotate(tx, ty, pointsArray[j],pointsArray[j+1],mouseAngle);
+					// //console.log("Points After Rotation:::"+obj.newX+","+obj.newY);
+					if(obj.newX == null){
+					//alert("points returned null");
+					}
+					graphicsObject.pointsArray[j] = obj.newX;
+					graphicsObject.pointsArray[j+1] = obj.newY;
+	    
+				}
+	    
+	    //drawObject(objectTable,selObjArray[i],false);
+			}   
+	    //drawObject(objectTable,selObjArray[i],false);
+	     ctx.clearRect(0, 0, canvas.width, canvas.height);
+	     restore();
 		for(var i=0;i<selObjArray.length;i++){
 			var graphicsObject = objectTable.get(selObjArray[i]);
-			
-			var pointsArray = graphicsObject.pointsArray;
-			for(var j=0;j<pointsArray.length;j+=2){
-    
-				var obj = Rotate(tx, ty, pointsArray[j],pointsArray[j+1],mouseAngle);
-				// //console.log("Points After Rotation:::"+obj.newX+","+obj.newY);
-				if(obj.newX == null){
-				//alert("points returned null");
-				}
-				graphicsObject.pointsArray[j] = obj.newX;
-				graphicsObject.pointsArray[j+1] = obj.newY;
-    
-			}
-    
-    //drawObject(objectTable,selObjArray[i],false);
-		}   
-    //drawObject(objectTable,selObjArray[i],false);
-     ctx.clearRect(0, 0, canvas.width, canvas.height);
-     restore();
-	for(var i=0;i<selObjArray.length;i++){
-		var graphicsObject = objectTable.get(selObjArray[i]);
-		drawObject(objectTable,selObjArray[i],false);
-		showSelectedObject(graphicsObject);
+			drawObject(objectTable,selObjArray[i],false);
+			showSelectedObject(graphicsObject);
+		}
+	  }
 	}
-  }
-}
 
-function getRotationAnchorPoint(objectTable,selObjArray){
-		//console.log("graphicsObject"+selObjArray);
-			var cx,cy;
-			if(selObjArray.length > 1){
-				var ponitXarr = new Array();
-				var ponitYarr = new Array();
-				for(var i=0;i<selObjArray.length;i++){
-					var graphicsObject = objectTable.get(selObjArray[i]);
+	function getRotationAnchorPoint(objectTable,selObjArray){
+			//console.log("graphicsObject"+selObjArray);
+				var cx,cy;
+				if(selObjArray.length > 1){
+					var ponitXarr = new Array();
+					var ponitYarr = new Array();
+					for(var i=0;i<selObjArray.length;i++){
+						var graphicsObject = objectTable.get(selObjArray[i]);
+						//console.log("graphicsObject"+graphicsObject)
+						var pointsArray = graphicsObject.pointsArray;
+						if(pointsArray ==  null){
+							//alert("points array null::"+graphicsObject.type);
+						}
+						//console.log("1");
+						
+						for(var j=0;j<pointsArray.length;j++){
+							//console.log("pointsArray::"+pointsArray);
+							if(j % 2==0)
+								ponitXarr[ponitXarr.length] = pointsArray[j];
+							else
+								ponitYarr[ponitYarr.length] = pointsArray[j];
+						}
+						
+						
+						
+					}
+					//console.log("ponitXarr::"+ponitXarr+"::ponitYarr::"+ponitYarr+"::ponitXarr[ponitXarr.length-1]::"+ponitXarr[ponitXarr.length-1]+"::ponitYarr[ponitYarr.length-1]::"+ponitYarr[ponitYarr.length-1]);
+					ponitXarr = ponitXarr.sort(function(a, b){return a-b});	
+					ponitYarr = ponitYarr.sort(function(a, b){return a-b});
+					cx = (ponitXarr[0] + ponitXarr[ponitXarr.length-1])/2;
+					cy = (ponitYarr[0] + ponitYarr[ponitYarr.length-1])/2;
+					
+				}else if(selObjArray.length == 1){
+					var graphicsObject = objectTable.get(selObjArray[0]);
 					//console.log("graphicsObject"+graphicsObject)
 					var pointsArray = graphicsObject.pointsArray;
-					if(pointsArray ==  null){
-						//alert("points array null::"+graphicsObject.type);
+					//console.log("2");
+					if (graphicsObject.type ==5 || graphicsObject.type ==11){
+						cx = (1/3*(pointsArray[0]+pointsArray[2]+pointsArray[4]));
+						cy = (1/3*(pointsArray[1]+pointsArray[3]+pointsArray[5]));
+					}else if (graphicsObject.type ==3||graphicsObject.type ==6){
+						cx =(1/2*(pointsArray[0]+pointsArray[2]));
+						cy =(1/2*(pointsArray[1]+pointsArray[3]));
+					}else if(graphicsObject.type ==13){
+						cx = (pointsArray[0]+pointsArray[2]+pointsArray[4])/3;
+						cy = (pointsArray[1]+pointsArray[3]+pointsArray[5])/3;
+					}else if(graphicsObject.type ==12 ){
+						cx = (pointsArray[0]+pointsArray[2])/2;
+						cy = (pointsArray[1]+pointsArray[3])/2;
+					}else if(graphicsObject.type ==4 || graphicsObject.type ==25){
+						var pt = getMinMax(pointsArray);
+						pointsArray = null;
+						pointsArray =  new Array();
+						pointsArray[0] = pt.minX;
+						pointsArray[1] = pt.minY;
+						pointsArray[2] = pt.maxX;
+						pointsArray[3] = pt.maxY;
+						cx =(1/2*(pointsArray[0]+pointsArray[2]));
+						cy =(1/2*(pointsArray[1]+pointsArray[3]));
+					}else if(graphicsObject.type ==1 || graphicsObject.type == 2 || graphicsObject.type == 23 ){
+						//console.log("points::"+pointsArray[0]+","+pointsArray[1]+","+pointsArray[2]+","+pointsArray[3]+","+pointsArray[4]+","+pointsArray[5]+","+pointsArray[6]+","+pointsArray[7]);
+						cx = (pointsArray[0]+pointsArray[4])/2;
+						cy = (pointsArray[1]+pointsArray[5])/2;
 					}
-					//console.log("1");
-					
-					for(var j=0;j<pointsArray.length;j++){
-						//console.log("pointsArray::"+pointsArray);
-						if(j % 2==0)
-							ponitXarr[ponitXarr.length] = pointsArray[j];
-						else
-							ponitYarr[ponitYarr.length] = pointsArray[j];
-					}
-					
-					
-					
 				}
-				//console.log("ponitXarr::"+ponitXarr+"::ponitYarr::"+ponitYarr+"::ponitXarr[ponitXarr.length-1]::"+ponitXarr[ponitXarr.length-1]+"::ponitYarr[ponitYarr.length-1]::"+ponitYarr[ponitYarr.length-1]);
-				ponitXarr = ponitXarr.sort(function(a, b){return a-b});	
-				ponitYarr = ponitYarr.sort(function(a, b){return a-b});
-				cx = (ponitXarr[0] + ponitXarr[ponitXarr.length-1])/2;
-				cy = (ponitYarr[0] + ponitYarr[ponitYarr.length-1])/2;
-				
-			}else if(selObjArray.length == 1){
-				var graphicsObject = objectTable.get(selObjArray[0]);
-				//console.log("graphicsObject"+graphicsObject)
-				var pointsArray = graphicsObject.pointsArray;
-				//console.log("2");
-				if (graphicsObject.type ==5 || graphicsObject.type ==11){
-					cx = (1/3*(pointsArray[0]+pointsArray[2]+pointsArray[4]));
-					cy = (1/3*(pointsArray[1]+pointsArray[3]+pointsArray[5]));
-				}else if (graphicsObject.type ==3||graphicsObject.type ==6){
-					cx =(1/2*(pointsArray[0]+pointsArray[2]));
-					cy =(1/2*(pointsArray[1]+pointsArray[3]));
-				}else if(graphicsObject.type ==13){
-					cx = (pointsArray[0]+pointsArray[2]+pointsArray[4])/3;
-					cy = (pointsArray[1]+pointsArray[3]+pointsArray[5])/3;
-				}else if(graphicsObject.type ==12 ){
-					cx = (pointsArray[0]+pointsArray[2])/2;
-					cy = (pointsArray[1]+pointsArray[3])/2;
-				}else if(graphicsObject.type ==4){
-					var pt = getMinMax(pointsArray);
-					pointsArray = null;
-					pointsArray =  new Array();
-					pointsArray[0] = pt.minX;
-					pointsArray[1] = pt.minY;
-					pointsArray[2] = pt.maxX;
-					pointsArray[3] = pt.maxY;
-					cx =(1/2*(pointsArray[0]+pointsArray[2]));
-					cy =(1/2*(pointsArray[1]+pointsArray[3]));
-				}else if(graphicsObject.type ==1 || graphicsObject.type == 2 || graphicsObject.type == 23 ){
-					//console.log("points::"+pointsArray[0]+","+pointsArray[1]+","+pointsArray[2]+","+pointsArray[3]+","+pointsArray[4]+","+pointsArray[5]+","+pointsArray[6]+","+pointsArray[7]);
-					cx = (pointsArray[0]+pointsArray[4])/2;
-					cy = (pointsArray[1]+pointsArray[5])/2;
-				}
-			}
-	
-	return{x:cx,y:cy};	
-}
-
-function insertIframe(){
-	document.getElementById("div1").innerHTML = '<iframe src="http://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&embedded=true&a=bi&pagenumber=9&w=500&h=400" width="500" height="400" style="border: 0;"></iframe>';
-	
-	document.getElementById("div1").style.zIndex = -1;
-	document.getElementById("div1").style.opacity = .9;
-}
-
-function insertIframe(){
-	document.getElementById("div1").innerHTML = '<iframe src="http://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&embedded=true&a=bi&pagenumber=9&w=500&h=400" width="500" height="400" style="border: 0;"></iframe>';
-	
-	document.getElementById("div1").style.zIndex = -1;
-	document.getElementById("div1").style.opacity = .9;
-}
-
-// Function Not In Use
-function insertImage(){
-	return;
-	var pageNum = document.getElementById("pagenum").value
-	var src = "https://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&a=bi&pagenumber=52";
-	tempArray = insertImageObj(pageNum,src);
-	loadImage(src);
-	
-}
-
-function insertImageObj(pageNum,src,imageLoaded,fileName){
-	var objectTable = pageObjTable.get(pageNum);
-	count++;
-	//console.log("222222222:::"+count);
-	
-	var imgTempArray =  new Array();
-	imgTempArray[0] = imageX;
-	imgTempArray[1] = imageY;
-	imgTempArray[2] = canvas.width - imageX;
-	imgTempArray[3] = canvas.height - (2*imageY);
-	var graphicsObject = new GraphicsObject(count,8,imgTempArray,null,null,src,false,null,null,imageLoaded,null,null);
-	if(objectTable == null){
-		objectTable = new Hashtable();
-		pageObjTable.put(pageNum,objectTable);
-	}
-	objectTable.put(count, graphicsObject);
-	objectPageRefTable.put(count,pageNum);
 		
-		if(!isPlayingStoped){
-				//currentMiliSec =Math.floor(myVid.currentTime * 1000);
-				var imageInsertTime = dropedFileTimeTab.get(fileName);
-				//console.log("case 1 CurrentTime:"+currentMiliSec);
-				//console.log("case 1 CurrentTime::::"+currentMiliSec+"::::count:::::"+count);
-				var pageObject = new PageObject(pageNum,count);
-				//objectTimeTable.put(count,imageInsertTime);
-				
-				//timeRefTable.put(currentMiliSec,pageObject);
-				//console.log("insertObjectInPlayingStream ********"+currentMiliSec);
-				insertObjectInPlayingStream(imageInsertTime,pageObject);
-				//console.log("case 1 objectTimeTable:"+objectTimeTable);
-				
-			
-		}else if(startTime != 0){
-			/*
-			var currentTime = new Date().getTime();
-			currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
-			*/
-			var imageInsertTime = dropedFileTimeTab.get(fileName);
-			//console.log("****Inserted *FileName :::"+fileName+":::Time:::"+imageInsertTime);
-			//console.log("currentMiliSec::::"+currentMiliSec+"::::count:::::"+count);
-			var pageObject = new PageObject(pageNum,count);
-			objectTimeTable.put(count,imageInsertTime);
-			
-			var recordedObjArr = timeRefTable.get(imageInsertTime);
-			if(recordedObjArr ==  null){
-				recordedObjArr = new Array();
-			}
-			recordedObjArr[recordedObjArr.length] = pageObject;
-			timeRefTable.put(imageInsertTime,recordedObjArr);
-			
-			
-			
-		//	timeRefTable.put(imageInsertTime,pageObject);
-			
-			//console.log("timeRefTable::::"+timeRefTable+"pageObject"+pageObject.num+"::"+pageObject.objectId);
-		}else{
-			var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
-			if(nonRecordingObjArray == null){
-				nonRecordingObjArray = new Array();
-				nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
-			}
-			nonRecordingObjArray[nonRecordingObjArray.length] = count;
+		return{x:cx,y:cy};	
+	}
+
+	function insertIframe(){
+		document.getElementById("div1").innerHTML = '<iframe src="http://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&embedded=true&a=bi&pagenumber=9&w=500&h=400" width="500" height="400" style="border: 0;"></iframe>';
+		
+		document.getElementById("div1").style.zIndex = -1;
+		document.getElementById("div1").style.opacity = .9;
+	}
+
+	function insertIframe(){
+		document.getElementById("div1").innerHTML = '<iframe src="http://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&embedded=true&a=bi&pagenumber=9&w=500&h=400" width="500" height="400" style="border: 0;"></iframe>';
+		
+		document.getElementById("div1").style.zIndex = -1;
+		document.getElementById("div1").style.opacity = .9;
+	}
+
+	// Function Not In Use
+	function insertImage(){
+		return;
+		var pageNum = document.getElementById("pagenum").value
+		var src = "https://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&a=bi&pagenumber=52";
+		tempArray = insertImageObj(pageNum,src);
+		loadImage(src);
+		
+	}
+
+	function insertImageObj(pageNum,src,imageLoaded,fileName){
+		var objectTable = pageObjTable.get(pageNum);
+		count++;
+		var imgTempArray =  new Array();
+		imgTempArray[0] = imageX;
+		imgTempArray[1] = imageY;
+		imgTempArray[2] = canvasWidth - imageX;
+		imgTempArray[3] = canvasHeight - (2*imageY);
+		var graphicsObject = new GraphicsObject(count,8,imgTempArray,null,null,src,false,null,null,imageLoaded,null,null,1,null);
+		if(objectTable == null){
+			objectTable = new Hashtable();
+			pageObjTable.put(pageNum,objectTable);
 		}
-	return graphicsObject;
-}
-
-function drawImage(x1,y1,x2,y2){
-	//console.log("--------------------draw   Image-------------------");
-	//imageObj.style.opacity = .5;
-
-	var x = ctx.globalAlpha;
-	ctx.globalAlpha = 0.9;
-	//imageObj.style.width = '50%'
-	//imageObj.style.height = 'auto'
-	//imageObj.style.width  = "auto";
-	//imageObj.style.maxheight = "400px";
-	ctx.drawImage(imageObj,x1,y1,x2-x1,y2-y1);
-	ctx.globalAlpha = x;
-
-
-	 
-}
-
-
-function loadImage(src,objId){
-	 imageObj= new Image();
-	 imageObj.src = src;
-	 //createWaitZone();
-	checkImageLoaded(objId);
-}
-
-
-function loadAndDrawImage(){
-	isImageLoaded  = imageObj.complete;
-	//console.log("checkImageLoaded:::"+isImageLoaded);
-	if(!isImageLoaded){
-		  imageloadingTimer = setTimeout("loadAndDrawImage()",1000);
-	}else{
-		clearTimeout(imageloadingTimer);	
-		//clearWaitZone();
-		drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3]);
-		if(currentObjId != 15)
-			canvas.style.cursor  = "default";
-		//restoreAllExceptImage();
-	}
-}
-
-function checkImageLoaded(id){
-	isImageLoaded  = imageObj.complete;
-	//console.log("checkImageLoaded:::"+id);
-	if(!isImageLoaded){
-		  imageloadingTimer = setTimeout("checkImageLoaded("+id+")",1000);
-	}else{
-			clearTimeout(imageloadingTimer);
-			var pageNum = document.getElementById("pagenum").value;
-			var objectTable = pageObjTable.get(pageNum);
-			//console.log("id::"+id+":::pageNum:;"+pageNum);
-			var graphicsObject = objectTable.get(id);
-			var ptsArray = graphicsObject.pointsArray;
-		//clearWaitZone();		
-		//console.log("Image Object------------------------------------"+imageObj.naturalWidth + "::"+imageObj.naturalHeight);
-			//console.log("tempArray--111-----------"+tempArray);
-			getImageWidthHeight(imageObj,ptsArray[2],ptsArray[3]);
-			ptsArray[2] = ptsArray[0] + imageObj.width;
-			ptsArray[3] = ptsArray[1] + imageObj.height;
-			graphicsObject.pointsArray = ptsArray;
-			graphicsObject.imageLoaded = true;
-			//console.log("tempArray---2222----------"+tempArray);
-		/*	}else{
-			getImageWidthHeight(imageObj,tempArray[2],tempArray[3]);
-			tempArray[2] = tempArray[0] + imageObj.width;
-			tempArray[3] = tempArray[1] + imageObj.height;
-		}*/
-		/*
-		imageObj.height = (canvas.height - 20);
-		imageObj.width = Math.ceil((imageObj.naturalWidth * imageObj.height) / imageObj.naturalHeight);
-		*/
-		//console.log("Image Object- current Height-----------------------------------::"+imageObj.width+":::"+imageObj.height);
-		
-		//var pageNum = document.getElementById("pagenum").value
-		//var src = "https://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&a=bi&pagenumber="+pageNum;
-		drawImage(ptsArray[0],ptsArray[1],ptsArray[2],ptsArray[3]);
-		canvas.style.cursor  = "default";
-		//restoreAllExceptImage();
-	}
-}
-
-function zoomImage(imageObject){
-	//console.log("----------zoomimage-----------"+imageObject);
-    var pointsArray = imageObject.pointsArray;
-	//console.log("@@@@@@@@@@@pointsArray::::"+pointsArray);
-	var pointsArr = new Array();
-		pointsArr[0] = pointsArray[0];
-		pointsArr[1] = pointsArray[1];
-		pointsArr[2] = pointsArray[2];
-		pointsArr[3] = pointsArray[3];
-	
-	var imageWidth = pointsArr[2] - pointsArr[0];
-	var imageHeight =  pointsArr[3] - pointsArr[1];
-	
-	var widthDelta = Math.ceil(imageWidth * 0.2)  ;
-	var heightDelta = Math.ceil(imageHeight * 0.2) ;
-    if(zoomType == 1){
-			pointsArr[2] = pointsArr[2] + widthDelta;
-			pointsArr[3] = pointsArr[3] + heightDelta;
+		objectTable.put(count, graphicsObject);
+		objectPageRefTable.put(count,pageNum);
 			
-	}else{
-		pointsArr[2] = pointsArr[2] - widthDelta;
-		pointsArr[3] = pointsArr[3] - heightDelta;
+			if(!isPlayingStoped){
+					var imageInsertTime = dropedFileTimeTab.get(fileName);
+					var pageObject = new PageObject(pageNum,count);
+					insertObjectInPlayingStream(imageInsertTime,pageObject);
+			}else if(startTime != 0){
+				var imageInsertTime = dropedFileTimeTab.get(fileName);
+				var pageObject = new PageObject(pageNum,count);
+				objectTimeTable.put(count,imageInsertTime);
+				var recordedObjArr = timeRefTable.get(imageInsertTime);
+				if(recordedObjArr ==  null){
+					recordedObjArr = new Array();
+				}
+				recordedObjArr[recordedObjArr.length] = pageObject;
+				timeRefTable.put(imageInsertTime,recordedObjArr);
+			}else{
+				var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+				if(nonRecordingObjArray == null){
+					nonRecordingObjArray = new Array();
+					nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+				}
+				nonRecordingObjArray[nonRecordingObjArray.length] = count;
+			}
+		return graphicsObject;
+	}
+
+	function drawImage(x1,y1,x2,y2,imageObj){
+		var x = ctx.globalAlpha;
+		ctx.globalAlpha = 1.0;
+		//imageObj.style.width = '50%'
+		//imageObj.style.height = 'auto'
+		//imageObj.style.width  = "auto";
+		//imageObj.style.maxheight = "400px";
+		ctx.drawImage(imageObj,ratio*x1,ratio*y1,ratio*(x2-x1),ratio*(y2-y1));
+		ctx.globalAlpha = x;
+	}
+
+
+	function loadImage(src,objId){
+		 imageObj= new Image();
+		 imageObj.src = src;
+		 //createWaitZone();
+		checkImageLoaded(objId);
+	}
+
+
+	function loadAndDrawImage(){
+		isImageLoaded  = imageObj.complete;
+		//console.log("checkImageLoaded:::"+isImageLoaded);
+		if(!isImageLoaded){
+			  imageloadingTimer = setTimeout("loadAndDrawImage()",1000);
+		}else{
+			clearTimeout(imageloadingTimer);	
+			//clearWaitZone();
+			drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3]);
+			if(currentObjId != 15)
+				canvas.style.cursor  = "default";
+			//restoreAllExceptImage();
+		}
+	}
+
+	function checkImageLoaded(id){
+		isImageLoaded  = imageObj.complete;
+		//console.log("checkImageLoaded:::"+id);
+		if(!isImageLoaded){
+			  imageloadingTimer = setTimeout("checkImageLoaded("+id+")",1000);
+		}else{
+				clearTimeout(imageloadingTimer);
+				var pageNum = document.getElementById("pagenum").value;
+				var objectTable = pageObjTable.get(pageNum);
+				//console.log("id::"+id+":::pageNum:;"+pageNum);
+				var graphicsObject = objectTable.get(id);
+				var ptsArray = graphicsObject.pointsArray;
+			//clearWaitZone();		
+			//console.log("Image Object------------------------------------"+imageObj.naturalWidth + "::"+imageObj.naturalHeight);
+				//console.log("tempArray--111-----------"+tempArray);
+				getImageWidthHeight(imageObj,ptsArray[2],ptsArray[3]);
+				ptsArray[2] = ptsArray[0] + imageObj.width;
+				ptsArray[3] = ptsArray[1] + imageObj.height;
+				graphicsObject.pointsArray = ptsArray;
+				graphicsObject.imageLoaded = true;
+				//console.log("tempArray---2222----------"+tempArray);
+			/*	}else{
+				getImageWidthHeight(imageObj,tempArray[2],tempArray[3]);
+				tempArray[2] = tempArray[0] + imageObj.width;
+				tempArray[3] = tempArray[1] + imageObj.height;
+			}*/
+			/*
+			imageObj.height = (canvas.height - 20);
+			imageObj.width = Math.ceil((imageObj.naturalWidth * imageObj.height) / imageObj.naturalHeight);
+			*/
+			//console.log("Image Object- current Height-----------------------------------::"+imageObj.width+":::"+imageObj.height);
+			
+			//var pageNum = document.getElementById("pagenum").value
+			//var src = "https://docs.google.com/viewer?url=http%3A%2F%2Fwww.topchalks.com%2Ftc%2Fppt.ppt&a=bi&pagenumber="+pageNum;
+			drawImage(ptsArray[0],ptsArray[1],ptsArray[2],ptsArray[3]);
+			canvas.style.cursor  = "default";
+			//restoreAllExceptImage();
+		}
+	}
+
+	function zoomImage(imageObject){
+		//console.log("----------zoomimage-----------"+imageObject);
+	    var pointsArray = imageObject.pointsArray;
+		//console.log("@@@@@@@@@@@pointsArray::::"+pointsArray);
+		var pointsArr = new Array();
+			pointsArr[0] = pointsArray[0];
+			pointsArr[1] = pointsArray[1];
+			pointsArr[2] = pointsArray[2];
+			pointsArr[3] = pointsArray[3];
+		
+		var imageWidth = pointsArr[2] - pointsArr[0];
+		var imageHeight =  pointsArr[3] - pointsArr[1];
+		
+		var widthDelta = Math.ceil(imageWidth * 0.2)  ;
+		var heightDelta = Math.ceil(imageHeight * 0.2) ;
+	    if(zoomType == 1){
+				pointsArr[2] = pointsArr[2] + widthDelta;
+				pointsArr[3] = pointsArr[3] + heightDelta;
+				
+		}else{
+			pointsArr[2] = pointsArr[2] - widthDelta;
+			pointsArr[3] = pointsArr[3] - heightDelta;
+			
+		}
+		var state = checkAllPointsInCanvas(pointsArr);
+		//console.log("checkAllPointsInCanvas(pointsArr) ::::;"+state);
+		if(state){
+			//console.log("@@@@@@@@@@@pointsArr::::"+pointsArr);
+			pointsArray =  null;
+			imageObject.pointsArray = pointsArr;
+			//console.log("@@@@@@@@@@@pointsArray::::"+pointsArray);
+			//console.log("@@@@@@@@@@@imageObject.pointsArray::::"+imageObject.pointsArray);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			drawObject(objectTable,imageObject.id,false);
+		}
 		
 	}
-	var state = checkAllPointsInCanvas(pointsArr);
-	//console.log("checkAllPointsInCanvas(pointsArr) ::::;"+state);
-	if(state){
-		//console.log("@@@@@@@@@@@pointsArr::::"+pointsArr);
-		pointsArray =  null;
-		imageObject.pointsArray = pointsArr;
-		//console.log("@@@@@@@@@@@pointsArray::::"+pointsArray);
-		//console.log("@@@@@@@@@@@imageObject.pointsArray::::"+imageObject.pointsArray);
+
+	function getImageWidthHeight(imageObj,width,height){
+		var  pagenum = document.getElementById("pagenum").value;
+		//console.log("----------------getImageWidthHeight-----canvas---------"+width+"::height:;"+height+"::pagenum::"+pagenum);
+		var imageWidth = imageObj.naturalWidth;
+		var imageHeight = imageObj.naturalHeight;
+		//console.log("----------------getImageWidthHeight-----image---------"+imageWidth+"::height:;"+imageHeight);
+		if(imageWidth <= width && imageHeight <= height){
+			imageObj.width = imageWidth;
+			imageObj.height = imageHeight;
+		}else{
+			var imageProportion = (imageWidth / imageHeight);
+			var canvasProportion = (width / height);
+			if(canvasProportion > imageProportion){
+				//console.log("----------------111111111111111111111111--------------");
+				imageObj.height = (height);
+				imageObj.width = Math.ceil((imageWidth * imageObj.height) / imageHeight);
+			}else{
+				//console.log("----------------22222222222222222222222222----------");
+				imageObj.width = (width);
+				imageObj.height = Math.ceil((imageHeight * imageObj.width) / imageWidth);
+			}
+		}
+		
+	}
+
+	function showPageObject(){
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		restore();
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		drawObject(objectTable,imageObject.id,false);
 	}
-	
-}
-
-function getImageWidthHeight(imageObj,width,height){
-	var  pagenum = document.getElementById("pagenum").value;
-	//console.log("----------------getImageWidthHeight-----canvas---------"+width+"::height:;"+height+"::pagenum::"+pagenum);
-	var imageWidth = imageObj.naturalWidth;
-	var imageHeight = imageObj.naturalHeight;
-	//console.log("----------------getImageWidthHeight-----image---------"+imageWidth+"::height:;"+imageHeight);
-	if(imageWidth <= width && imageHeight <= height){
-		imageObj.width = imageWidth;
-		imageObj.height = imageHeight;
-	}else{
-		var imageProportion = (imageWidth / imageHeight);
-		var canvasProportion = (width / height);
-		if(canvasProportion > imageProportion){
-			//console.log("----------------111111111111111111111111--------------");
-			imageObj.height = (height);
-			imageObj.width = Math.ceil((imageWidth * imageObj.height) / imageHeight);
+	function setPageNum(val){
+		//console.log("isPlayingStoped::;"+isPlayingStoped)
+		var pagenum = document.getElementById("pagenum").value;
+		if(val == 'P' && pagenum >1){
+			pagenum--;
+		
+		}else if(val == 'N'){
+			pagenum++;
+			
+		}
+		clearTimeout(imageloadingTimer);
+		isImageLoaded = false;
+		document.getElementById("pagenum").value = pagenum;
+		document.getElementById("pagenumdiv").innerHTML = "Page "+pagenum;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//restore();
+		if(!isPlayingStoped || startTime != 0){
+			storePageChangeEvent(pagenum);
+		}
+		//console.log("11111111111111111111111111");
+		var pageBgType = pageBgTable.get(pagenum);
+		if(pageBgType != null){
+			setPageBackgroundAttrib(pagenum,pageBgType)
+			setActiveBg(pageBgType);
 		}else{
-			//console.log("----------------22222222222222222222222222----------");
-			imageObj.width = (width);
-			imageObj.height = Math.ceil((imageHeight * imageObj.width) / imageWidth);
+			setDefaultPageBackground();
 		}
-	}
-	
-}
-
-function showPageObject(){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	restore();
-}
-function setPageNum(val){
-	//console.log("isPlayingStoped::;"+isPlayingStoped)
-	var pagenum = document.getElementById("pagenum").value;
-	if(val == 'P' && pagenum >1){
-		pagenum--;
-	
-	}else if(val == 'N'){
-		pagenum++;
+		drawNonRecordingObject(pagenum);
+		if(!isPlayingStoped){
+			restoreOnlyPlayedObject();
+			restoreInsertedObjectInStream(pagenum);
+		}else if(startTime != 0){
+			restoreRecordedObj(currentMiliSec);
+		}else if(isPlayingStoped){
+			restoreAllRecordedObj(pagenum);
+		}
+		
+		selObjArray =  null;
+		selObjArray = new Array()
 		
 	}
-	clearTimeout(imageloadingTimer);
-	isImageLoaded = false;
-	document.getElementById("pagenum").value = pagenum;
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	//restore();
-	if(!isPlayingStoped || startTime != 0){
-		storePageChangeEvent(pagenum);
-	}
-	//console.log("11111111111111111111111111");
-	drawNonRecordingObject(pagenum);
-	if(!isPlayingStoped){
-		restoreOnlyPlayedObject();
-		restoreInsertedObjectInStream(pagenum);
-	}else if(startTime != 0){
-		restoreRecordedObj(currentMiliSec);
-	}else if(isPlayingStoped){
-		restoreAllRecordedObj(pagenum);
-	}
-	
-	selObjArray =  null;
-	selObjArray = new Array()
-	
-}
 
-function storePageChangeEvent(pagenum){
-	count++;
-	//console.log("333333333:::"+count);
-	var objectTable = pageObjTable.get(pagenum);
-	var graphicsObject = new GraphicsObject(count,10,null,null,null,null,false,null,null,false,null,null);
-	if(objectTable == null){
-		objectTable = new Hashtable();
-		pageObjTable.put(pagenum,objectTable);
-	}
-	objectTable.put(count, graphicsObject);
-	objectPageRefTable.put(count,pagenum);
-	//console.log("insertObjectInPlayingStream &&&&&currentMiliSec&&&"+currentMiliSec);
-	if(!isPlayingStoped){
-			currentMiliSec =Math.floor(myVid.currentTime * 1000);
-			//console.log("case 1 CurrentTime:"+currentMiliSec);
-			//console.log("case 1 CurrentTime::::"+currentMiliSec+"::::count:::::"+count);
-			var pageObject = new PageObject(pagenum,count);
-			//objectTimeTable.put(count,currentMiliSec);
-			//timeRefTable.put(currentMiliSec,pageObject);
-			//console.log("insertObjectInPlayingStream &&&&&&&&"+currentMiliSec);
-			//alert("insertObjectInPlayingStream &&&&&&&&"+currentMiliSec);
-			insertObjectInPlayingStream(currentMiliSec,pageObject);
-			//console.log("case 1 objectTimeTable:"+objectTimeTable);
-	}else if(startTime != 0){
-			var currentTime = new Date().getTime();
-			currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
-			//console.log("currentMiliSec::::"+currentMiliSec+"::::count:::::"+count);
-			var pageObject = new PageObject(pagenum,count);
-			objectTimeTable.put(count,currentMiliSec);
-			
-			
-			var recordedObjArr = timeRefTable.get(currentMiliSec);
-			if(recordedObjArr ==  null){
-				recordedObjArr = new Array();
-			}
-			recordedObjArr[recordedObjArr.length] = pageObject;
-			timeRefTable.put(currentMiliSec,recordedObjArr);
-			
-			
-			//timeRefTable.put(currentMiliSec,pageObject);
-			//console.log("timeRefTable::::"+timeRefTable+"pageObject"+pageObject.num+"::"+pageObject.objectId+"objectTimeTable::"+objectTimeTable);
-	}
-}
-
-function saveMeetingOnServer(eventType){
-	$('#save-Modal').modal('show');
-	var jsonData = createJSON();
-	//console.log("jsonData:::"+jsonData);
-	 jQuery.ajax({
-		  	type:	"POST",
-	  		url: 	"save.action",
-	  		data: jsonData,
-	  		contentType: 'application/json; charset=utf-8',
-	  		dataType: 'json',
-		  		success:function(msg) {
-		  			//alert(msg.parentId);
-		  			 //$('#save-Modal').modal('hide');
-		  			if(msg.actionErrors != null)
-		  			{
-		  				//alert("error");
-						showSaveModal('error');
-		  		  	}else{
-		  		  		//alert("showchild"+msg.status);
-		  		  		//filename = 'Enotebook/'+meetingName+'/recording/'+meetingName+'.mp3';
-						showSaveModal('success');
-		  		  		}
-		  			if (eventType =='exit'){
-		  		   		window.location.href = "userlectures";
-		  			}
-		  }});
-}
-
-function exitMeeting(){
-	//console.log("hiiii");
-	window.location.href = "userlectures";
-}
-
-function submitEditLectureform(){
-    	document.editlectureform.submit();
-}
-
-function createJSON(){
-	var duration = getDurationInMinAndSec(recFileDuration);
-	//console.log("recFileDuration:::::"+duration);
-	var data = '{"MeetingName":"'+ meetingName +'"';
-	data = data + ', "channelId":"'+ channel_id +'"';
-	data = data + ',"recSequenceNo":-1';
-	if(filename != null && filename.length >0 ){
-		var pos = filename.lastIndexOf('/');
-		var fname;
-		if(pos != -1){
-			fname = filename.substring(pos+1,filename.length);
+	function storePageChangeEvent(pagenum){
+		count++;
+		//console.log("333333333:::"+count);
+		var objectTable = pageObjTable.get(pagenum);
+		var graphicsObject = new GraphicsObject(count,10,null,null,null,null,false,null,null,false,null,null,1,null);
+		if(objectTable == null){
+			objectTable = new Hashtable();
+			pageObjTable.put(pagenum,objectTable);
 		}
-		var recFileName = 'Enotebook/'+userId + '/'+meetingName+'/recording/'+fname; 
-		var data = data + ', "TempRecFile":"'+ filename +'","RecFname":"'+recFileName+'"'+',"RecFileDuration":"'+duration+'"';
-	}
-	if(pageObjTable.size()>0){
-		
-		var data = data + ', "PageList":[';
-		var jsonData = '';
-		pageObjTable.moveFirst();
-		//console.log("pageObjTable:::"+pageObjTable);
-	    while(pageObjTable.next()){
-	    	jsonData = jsonData + '{';
-	    	var pageNo = pageObjTable.getKey();
-	    	jsonData = jsonData + '"pagenumber":'+pageNo+",";
-			var objectTable = pageObjTable.get(pageNo);
-			objectTable.moveFirst();
-			if(objectTable.size()>0){
-				 var graphicsObjData = '"graphicsObject": [ ' ;
-				 var objectData = '';
-				 while(objectTable.next()){
-					 objectData = objectData + '{';
-				 	 var graphicsObject = objectTable.get(objectTable.getKey());
-				 	 objectData = objectData + '"id":' + graphicsObject.id + ',';
-				 	 objectData = objectData + '"sequenceNo":"' + graphicsObject.sequenceNo + '",';
-					 objectData = objectData + '"type":' + graphicsObject.type + ',';
-					 objectData = objectData + '"usersObjectIdentifierId":"' + graphicsObject.usersObjectIdentifierId + '",';
-					 if(graphicsObject.pointsArray != null){
-						 var pointsArray = graphicsObject.pointsArray;
-						 var points = '';
-						 //console.log("PonitsArray:::"+pointsArray);
-						 for(var i=0;i<pointsArray.length;i++){
-								points = points + pointsArray[i] + ',';
-								//console.log("points:::"+points);
-							}
-							points = points.substring(0,points.length-1);
-							
-							objectData = objectData + '"pointsList":['+ points + '],';
-						}
-					
-					 if(graphicsObject.lineWidth != null){
-						 objectData = objectData + '"lineWidth":' + graphicsObject.lineWidth + ',';
-					 }if(graphicsObject.color != null){	 
-					 	objectData = objectData + '"lineColor":"' + graphicsObject.color + '",';
-					 }if(graphicsObject.src != null){	 
-					 	objectData = objectData + '"src":"' + graphicsObject.src + '",';
-					 }
-					 if(graphicsObject.isFilled != null){	 
-					 	objectData = objectData + '"isFilled":' + graphicsObject.isFilled + ',';
-					 }
-					 if(graphicsObject.fillColor != null){	 
-					 	objectData = objectData + '"fillColor":"' + graphicsObject.fillColor + '",';
-					 }
-					 if(graphicsObject.opacity != null){	 
-					 	objectData = objectData + '"opacity":"' + graphicsObject.opacity + '",';
-					 }
-					 if(graphicsObject.imageLoaded != null){	 
-					 	objectData = objectData + '"imageLoaded":"' + graphicsObject.imageLoaded + '",';
-					 }
-					 if(graphicsObject.usersObjectIdentifierId != null){	 
-						 	objectData = objectData + '"usersObjectIdentifierId":"' + graphicsObject.usersObjectIdentifierId + '",';
-						 }
-					 
-					 if(graphicsObject.sequenceNo != null){	 
-						 	objectData = objectData + '"sequenceNo":"' + graphicsObject.sequenceNo + '",';
-						 }
-					 if(graphicsObject.text != null){	
-					 	var textobj = graphicsObject.text;
-						var textJson = '{"textData":"'+(textobj.textData).trim()+'","fontType":"'+textobj.fontType+'","fontSize":"'+textobj.fontSize+'","isBold":"'+textobj.isBold+'","isUnderLine":"'+textobj.isUnderLine+'","isItalic":"'+textobj.isItalic+'"}'
-					 	objectData = objectData + '"text":' + textJson + ',';
-					 }
-					 if(graphicsObject.ref != null){	 
-					 	objectData = objectData + '"ref":"' + graphicsObject.ref + '",';
-					 }
-					 if(graphicsObject.attachment != null){	 
-					 	objectData = objectData + '"attachment":"' + graphicsObject.attachment + '",';
-					 }
-					 var timeStamp = objectTimeTable.get(graphicsObject.id);
-					 //console.log(objectTimeTable);
-					 if(timeStamp != null){
-						 objectData = objectData + '"timeStamp":"' + timeStamp + '",';
-					 }
-					 objectData = objectData.substring(0,objectData.length-1)+'},';
+		objectTable.put(count, graphicsObject);
+		objectPageRefTable.put(count,pagenum);
+		//console.log("insertObjectInPlayingStream &&&&&currentMiliSec&&&"+currentMiliSec);
+		if(!isPlayingStoped){
+				currentMiliSec =Math.floor(myVid.currentTime * 1000);
+				//console.log("case 1 CurrentTime:"+currentMiliSec);
+				//console.log("case 1 CurrentTime::::"+currentMiliSec+"::::count:::::"+count);
+				var pageObject = new PageObject(pagenum,count);
+				//objectTimeTable.put(count,currentMiliSec);
+				//timeRefTable.put(currentMiliSec,pageObject);
+				//console.log("insertObjectInPlayingStream &&&&&&&&"+currentMiliSec);
+				//alert("insertObjectInPlayingStream &&&&&&&&"+currentMiliSec);
+				insertObjectInPlayingStream(currentMiliSec,pageObject);
+				//console.log("case 1 objectTimeTable:"+objectTimeTable);
+		}else if(startTime != 0){
+				var currentTime = new Date().getTime();
+				currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
+				//console.log("currentMiliSec::::"+currentMiliSec+"::::count:::::"+count);
+				var pageObject = new PageObject(pagenum,count);
+				objectTimeTable.put(count,currentMiliSec);
 				
+				
+				var recordedObjArr = timeRefTable.get(currentMiliSec);
+				if(recordedObjArr ==  null){
+					recordedObjArr = new Array();
 				}
-				 graphicsObjData = graphicsObjData +  objectData.substring(0,objectData.length-1) + ']';
-			 }
-			 var grpObjectTable = pageGrpObjTable.get(pageNo);
-			 var groupObjData  = '';
-			 if(grpObjectTable != null){
-				grpObjectTable.moveFirst();
-				if(grpObjectTable.size()>0){
-					groupObjData = groupObjData + ',"groupObject": [ ' ;
-					var grpObjectData = '';
-					 while(grpObjectTable.next()){
-						 grpObjectData = grpObjectData + '{';
-						 var groupObject = grpObjectTable.get(grpObjectTable.getKey());
-						 grpObjectData = grpObjectData + '"id":' + groupObject.id + ',';
-						 if(groupObject.refObjectList != null){
-							 var objRefArray = groupObject.refObjectList;
-							 var objIds = '';
+				recordedObjArr[recordedObjArr.length] = pageObject;
+				timeRefTable.put(currentMiliSec,recordedObjArr);
+				
+				
+				//timeRefTable.put(currentMiliSec,pageObject);
+				//console.log("timeRefTable::::"+timeRefTable+"pageObject"+pageObject.num+"::"+pageObject.objectId+"objectTimeTable::"+objectTimeTable);
+		}
+	}
+
+	function saveMeetingOnServer(eventType){
+		//$('#save-Modal').modal('show');
+		var jsonData = createJSON(eventType);
+		//console.log("jsonData:::"+jsonData);
+		
+		jQuery.ajax({
+			  	type:	"POST",
+		  		url: 	"save.action",
+		  		data: jsonData,
+		  		contentType: 'application/json; charset=utf-8',
+		  		dataType: 'json',
+			  		success:function(msg) {
+			  			//alert(msg.parentId);
+			  			 //$('#save-Modal').modal('hide');
+			  			if(msg.actionErrors != null)
+			  			{
+			  				//alert("error");
+							//showSaveModal('error');
+			  		  	}else{
+			  		  		alert("message saved")
+			  		  		//alert("showchild"+msg.status);
+			  		  		//filename = 'Enotebook/'+meetingName+'/recording/'+meetingName+'.mp3';
+							//showSaveModal('success');
+			  		  		}
+			  			if (eventType =='exit'){
+			  		   		window.location.href = "userlectures";
+			  			}
+			  }});
+	}
+
+	function exitMeeting(){
+		//console.log("hiiii");
+		window.location.href = "userlectures";
+	}
+
+	function submitEditLectureform(){
+	    	document.editlectureform.submit();
+	}
+
+	function createJSON(eventType){
+		var duration = getDurationInMinAndSec(recFileDuration);
+		var meetingName = document.getElementById("meetingName").value;
+		var draftMsgId = document.getElementById("draftMsgId").value;
+		var data = '{"MeetingName":"'+ meetingName +'"';
+		data = data + ', "channelId":"'+ channel_id +'"';
+		data = data + ', "userId":"'+ user_Id +'"';
+		data = data + ',"recSequenceNo":-1';
+		data = data + ',"toId":"'+ toId +'"';
+		data = data + ',"groupId":"'+ grId +'"';
+		if(meetingContextSequence != null)
+		data = data + ',"meetingContextSequence":'+meetingContextSequence;
+		
+	    var isDraftMsg = false;
+		if(draftMsgId != null && draftMsgId != ''){
+			data = data + ',"draftMsgId":'+draftMsgId;
+			isDraftMsg = true;
+		}
+		if(eventType == 'send')
+			data = data + ',"send":1';
+		else if(eventType == 'save')
+			data = data + ',"send":0';
+		// Not requied becaz file is recorded by IOS app
+		/*if(filename != null && filename.length >0 ){
+			var pos = filename.lastIndexOf('/');
+			var fname;
+			if(pos != -1){
+				fname = filename.substring(pos+1,filename.length);
+			}
+			var recFileName = 'Enotebook/'+userId + '/'+meetingName+'/recording/'+fname; 
+			var data = data + ', "TempRecFile":"'+ filename +'","RecFname":"'+recFileName+'"'+',"RecFileDuration":"'+duration+'"';
+		}*/
+		//alert("recordingFilePath:::"+recordingFilePath);
+		var data = data + ',"RecFname":"'+recordingFilePath+'"';
+		
+		
+		if(pageObjTable.size()>0){
+			
+			var data = data + ', "PageList":[';
+			var jsonData = '';
+			pageObjTable.moveFirst();
+			//console.log("pageObjTable:::"+pageObjTable);
+		    while(pageObjTable.next()){
+		    	jsonData = jsonData + '{';
+		    	var pageNo = pageObjTable.getKey();
+		    	jsonData = jsonData + '"pagenumber":'+pageNo+",";
+		    	var bgType = pageBgTable.get(pageNo)
+		    	if(bgType != null){
+		    		jsonData = jsonData + '"pagebg":'+bgType+",";
+		    	}
+				var objectTable = pageObjTable.get(pageNo);
+				objectTable.moveFirst();
+				if(objectTable.size()>0){
+					 var graphicsObjData = '"graphicsObject": [ ' ;
+					 var objectData = '';
+					 while(objectTable.next()){
+						 var graphicsObject = objectTable.get(objectTable.getKey());
+						 if(graphicsObject.sequenceNo != null && graphicsObject.sequenceNo != 'null' && !isDraftMsg){
+							 continue;
+						 }
+						 objectData = objectData + '{';
+					 	 objectData = objectData + '"id":' + graphicsObject.id + ',';
+					 	 objectData = objectData + '"sequenceNo":"' + graphicsObject.sequenceNo + '",';
+						 objectData = objectData + '"type":' + graphicsObject.type + ',';
+						 objectData = objectData + '"isDraft":"' + graphicsObject.isDraft + '",';
+						 if(graphicsObject.pointsArray != null){
+							 var pointsArray = graphicsObject.pointsArray;
+							 var points = '';
 							 //console.log("PonitsArray:::"+pointsArray);
-							 for(var i=0;i<objRefArray.length;i++){
-									objIds = objIds + objRefArray[i] + ',';
+							 for(var i=0;i<pointsArray.length;i++){
+									points = points + pointsArray[i] + ',';
 									//console.log("points:::"+points);
 								}
-								objIds = objIds.substring(0,objIds.length-1);
-								grpObjectData = grpObjectData + '"ObjectRefList":['+ objIds + ']' + "},";
-							}
+								points = points.substring(0,points.length-1);
+								objectData = objectData + '"pointsList":['+ points + '],';
+						}
+						
+						 if(graphicsObject.lineWidth != null){
+							 objectData = objectData + '"lineWidth":' + graphicsObject.lineWidth + ',';
+						 }if(graphicsObject.color != null){	 
+						 	objectData = objectData + '"lineColor":"' + graphicsObject.color + '",';
+						 }if(graphicsObject.src != null){	 
+						 	objectData = objectData + '"src":"' + graphicsObject.src + '",';
+						 }
+						 if(graphicsObject.isFilled != null){	 
+						 	objectData = objectData + '"isFilled":' + graphicsObject.isFilled + ',';
+						 }
+						 if(graphicsObject.fillColor != null){	 
+						 	objectData = objectData + '"fillColor":"' + graphicsObject.fillColor + '",';
+						 }
+						 if(graphicsObject.opacity != null){	 
+						 	objectData = objectData + '"opacity":"' + graphicsObject.opacity + '",';
+						 }
+						 if(graphicsObject.imageLoaded != null && graphicsObject.imageLoaded != false){	 
+						 	objectData = objectData + '"imageLoaded":"true",';
+						 }
+						/* if(graphicsObject.isDraft != null){	 
+							 	objectData = objectData + '"isDraft":"' + graphicsObject.isDraft + '",';
+							 }
+						 
+						 if(graphicsObject.sequenceNo != null){	 
+							 	objectData = objectData + '"sequenceNo":"' + graphicsObject.sequenceNo + '",';
+							 }*/
+						 if(graphicsObject.text != null){	
+						 	var textobj = graphicsObject.text;
+							var textJson = '{"textData":"'+(textobj.textData).trim()+'","fontType":"'+textobj.fontType+'","fontSize":"'+textobj.fontSize+'","isBold":"'+textobj.isBold+'","isUnderLine":"'+textobj.isUnderLine+'","isItalic":"'+textobj.isItalic+'"}'
+						 	objectData = objectData + '"text":' + textJson + ',';
+						 }
+						 if(graphicsObject.media != null){	
+							 	var mediaObj = graphicsObject.media;
+								var mediaJson = '{"mediaType":"'+mediaObj.mediaType+'","mediaPath":"'+mediaObj.url+'","fileName":"'+mediaObj.fileName+'"}'
+							 	objectData = objectData + '"media":' + mediaJson + ',';
+						 }
+						 if(graphicsObject.ref != null){	 
+						 	objectData = objectData + '"ref":"' + graphicsObject.ref + '",';
+						 }
+						 if(graphicsObject.attachment != null){	 
+						 	objectData = objectData + '"attachment":"' + graphicsObject.attachment + '",';
+						 }
+						 var timeStamp = objectTimeTable.get(graphicsObject.id);
+						 if(timeStamp != null){
+							 objectData = objectData + '"timeStamp":"' + timeStamp + '",';
+						 }
+						 objectData = objectData.substring(0,objectData.length-1)+'},';
+					
 					}
-					groupObjData = groupObjData +  grpObjectData.substring(0,grpObjectData.length-1) + ']';
+					 graphicsObjData = graphicsObjData +  objectData.substring(0,objectData.length-1) + ']';
 				 }
-			 }
-			 
-			 //console.log(groupObjData);
-			jsonData = jsonData + graphicsObjData + groupObjData + '},';	 
-		}
-	    data = data + jsonData.substring(0,jsonData.length-1) + ']';
-	}
-	 data = data + '}';
-	 //console.log(data);
-	return data;
-}
-
-function showNewMeetingPopUp(){
-	document.getElementById("intialOption").style.display = "none";
-	document.getElementById("newMeetingPopUp").style.display = "block";
-
-}
-function createNewMeeting(){
-	var name = meetingName;
-	if(name.trim().length >0){
-		meetingName = name.trim();
-		/* document.getElementById("intialOption").style.display = "block";
-		document.getElementById("newMeetingPopUp").style.display = "none"; */
-	//	document.getElementById("meetingToolBar").style.display = "block";
-	//	document.getElementById("disableDiv").style.zIndex = -1;
-	//	document.getElementById("disableDiv").style.opacity = 1;
-	//	document.getElementById("meetingToolBar").style.zIndex = 5;
-	}else{
-		alert("Invalid Meeting Name");
-	}
-}
-function cancelNewMeeting(){
-	document.getElementById("intialOption").style.display = "block";
-	document.getElementById("newMeetingPopUp").style.display = "none";
-
-}
-function getMeetingList(){
-	//alert("open lecture");
-	 jQuery.ajax({
-		  	type:	"get",
-	  		url: 	"getmeetinglist.action",
-	  		data: 	"",
-		  		success:function(msg) {
-		  			//alert(msg.parentId);
-		  			
-		  			if(msg.actionErrors != null)
-		  			{
-		  				alert("error");
-		  		  	}else{
-		  		  		openMeet(msg.meetings)
-		  		  	}
-		  			
-		  	}});
-}
-function openMeet(meetingList){
-	var str = '<div style="overflow:auto;width:470px;height:270px;border:0px solid;background-color:#FFFFFF;margin:10px"><TABLE border="0" ><TR>';
-	var str1 = '';
-	if(meetingList != null){
-	for(var i=0;i<meetingList.length;i++){
-			var name= escape(meetingList[i]);
-			if((i+1)%3 == 0){
-				str1 = str1 +'<TD id="'+name+'" style="width:150px;"  onmouseover = selectFile2("'+name+'") onclick = selectFile("'+name+'")><img src="images/meeting/folder-icon.png" />&nbsp;'+meetingList[i]+ '</TD></TR><TR>';
-			}else{
-				str1 = str1 +'<TD id="'+name+'" style="width:150px;" onmouseover = selectFile2("'+name+'") onclick = selectFile("'+name+'") ><img src="images/meeting/folder-icon.png" />&nbsp;'+meetingList[i]+ '</TD>';
+				 var grpObjectTable = pageGrpObjTable.get(pageNo);
+				 var groupObjData  = '';
+				 if(grpObjectTable != null){
+					grpObjectTable.moveFirst();
+					if(grpObjectTable.size()>0){
+						groupObjData = groupObjData + ',"groupObject": [ ' ;
+						var grpObjectData = '';
+						 while(grpObjectTable.next()){
+							 grpObjectData = grpObjectData + '{';
+							 var groupObject = grpObjectTable.get(grpObjectTable.getKey());
+							 grpObjectData = grpObjectData + '"id":' + groupObject.id + ',';
+							 if(groupObject.refObjectList != null){
+								 var objRefArray = groupObject.refObjectList;
+								 var objIds = '';
+								 //console.log("PonitsArray:::"+pointsArray);
+								 for(var i=0;i<objRefArray.length;i++){
+										objIds = objIds + objRefArray[i] + ',';
+										//console.log("points:::"+points);
+									}
+									objIds = objIds.substring(0,objIds.length-1);
+									grpObjectData = grpObjectData + '"ObjectRefList":['+ objIds + ']' + "},";
+								}
+						}
+						groupObjData = groupObjData +  grpObjectData.substring(0,grpObjectData.length-1) + ']';
+					 }
+				 }
+				 
+				 //console.log(groupObjData);
+				jsonData = jsonData + graphicsObjData + groupObjData + '},';	 
 			}
-	
+		    data = data + jsonData.substring(0,jsonData.length-1) + ']';
 		}
-	
+		 data = data + '}';
+		 console.log(data);
+		return data;
 	}
-			str1 = str1 +'</TR></TABLE></div>';
+
+	function showNewMeetingPopUp(){
+		document.getElementById("intialOption").style.display = "none";
+		document.getElementById("newMeetingPopUp").style.display = "block";
+
+	}
+	function createNewMeeting(){
+		var name = meetingName;
+		if(name.trim().length >0){
+			meetingName = name.trim();
+			/* document.getElementById("intialOption").style.display = "block";
+			document.getElementById("newMeetingPopUp").style.display = "none"; */
+		//	document.getElementById("meetingToolBar").style.display = "block";
+		//	document.getElementById("disableDiv").style.zIndex = -1;
+		//	document.getElementById("disableDiv").style.opacity = 1;
+		//	document.getElementById("meetingToolBar").style.zIndex = 5;
+		}else{
+			alert("Invalid Meeting Name");
+		}
+	}
+	function cancelNewMeeting(){
+		document.getElementById("intialOption").style.display = "block";
+		document.getElementById("newMeetingPopUp").style.display = "none";
+
+	}
+	function getMeetingList(){
+		//alert("open lecture");
+		 jQuery.ajax({
+			  	type:	"get",
+		  		url: 	"getmeetinglist.action",
+		  		data: 	"",
+			  		success:function(msg) {
+			  			//alert(msg.parentId);
+			  			
+			  			if(msg.actionErrors != null)
+			  			{
+			  				alert("error");
+			  		  	}else{
+			  		  		openMeet(msg.meetings)
+			  		  	}
+			  			
+			  	}});
+	}
+	function openMeet(meetingList){
+		var str = '<div style="overflow:auto;width:470px;height:270px;border:0px solid;background-color:#FFFFFF;margin:10px"><TABLE border="0" ><TR>';
+		var str1 = '';
+		if(meetingList != null){
+		for(var i=0;i<meetingList.length;i++){
+				var name= escape(meetingList[i]);
+				if((i+1)%3 == 0){
+					str1 = str1 +'<TD id="'+name+'" style="width:150px;"  onmouseover = selectFile2("'+name+'") onclick = selectFile("'+name+'")><img src="images/meeting/folder-icon.png" />&nbsp;'+meetingList[i]+ '</TD></TR><TR>';
+				}else{
+					str1 = str1 +'<TD id="'+name+'" style="width:150px;" onmouseover = selectFile2("'+name+'") onclick = selectFile("'+name+'") ><img src="images/meeting/folder-icon.png" />&nbsp;'+meetingList[i]+ '</TD>';
+				}
 		
-
-	//console.log(str+str1);
-	/*
+			}
 		
-	<TD style="width:200px"><img src="images/meeting/folder-icon.png" />123</TD><TD style="width:100px">31221</TD><TD style="width:100px">23123</TD></TR><TR><TD style="width:100px">123</TD><TD style="width:100px">31221</TD><TD style="width:100px">23123</TD></TR><TR><TD style="width:100px">123</TD>			<TD style="width:100px">31221</TD><TD style="width:100px">23123</TD></TR></TABLE></div>';
-	
-	*/
-	var str2 =  '<div  style="overflow:auto;margin:10px"><TABLE><TR><TD>File Name</TD><TD><INPUT id="selFile" TYPE="text" NAME="" size="40" onkeyup="setOpenButton();" ></TD><TD><INPUT id="openButton" TYPE="button" value="Open" disabled="true" onclick = checkEvent("open"); /></TD><TD><INPUT TYPE="button" value="Cancel" onclick = checkEvent("cancel"); /></TD></TR></TABLE></div>';
-	document.getElementById("meetingDiv").innerHTML = str + str1 +str2;
-	document.getElementById("meetingDiv").style.display = "block";
-}
-var lstSel = null;
-function selectFile(name){
-	//alert("name::"+);
-	if(lstSel != null){
-		lstSel.style.backgroundColor  = "#FFFFFF";
+		}
+				str1 = str1 +'</TR></TABLE></div>';
+			
+
+		//console.log(str+str1);
+		/*
+			
+		<TD style="width:200px"><img src="images/meeting/folder-icon.png" />123</TD><TD style="width:100px">31221</TD><TD style="width:100px">23123</TD></TR><TR><TD style="width:100px">123</TD><TD style="width:100px">31221</TD><TD style="width:100px">23123</TD></TR><TR><TD style="width:100px">123</TD>			<TD style="width:100px">31221</TD><TD style="width:100px">23123</TD></TR></TABLE></div>';
+		
+		*/
+		var str2 =  '<div  style="overflow:auto;margin:10px"><TABLE><TR><TD>File Name</TD><TD><INPUT id="selFile" TYPE="text" NAME="" size="40" onkeyup="setOpenButton();" ></TD><TD><INPUT id="openButton" TYPE="button" value="Open" disabled="true" onclick = checkEvent("open"); /></TD><TD><INPUT TYPE="button" value="Cancel" onclick = checkEvent("cancel"); /></TD></TR></TABLE></div>';
+		document.getElementById("meetingDiv").innerHTML = str + str1 +str2;
+		document.getElementById("meetingDiv").style.display = "block";
 	}
-	var obj = document.getElementById(name);
-	//console.log(obj.id);
-	obj.style.backgroundColor  = "#CCCCCA";
-	lstSel = obj;
-	document.getElementById("selFile").value = name;
-	document.getElementById("openButton").disabled = false;
-}
-
-
-function selectFile2(name){
-	//alert("name::"+);
-	if(lstSel != null){
-		lstSel.style.backgroundColor  = "#FFFFFF";
-	}
-	var obj = document.getElementById(name);
-	//console.log(obj.id);
-	obj.style.backgroundColor  = "#CCCCCA";
-	lstSel = obj;
-	
-}
-
-function setOpenButton(){
-	//console.log("-----change--------------------");
-	var name = document.getElementById("selFile").value;
-	if(name.length == 0){
-		document.getElementById("openButton").disabled = true;
-	}else{
+	var lstSel = null;
+	function selectFile(name){
+		//alert("name::"+);
+		if(lstSel != null){
+			lstSel.style.backgroundColor  = "#FFFFFF";
+		}
+		var obj = document.getElementById(name);
+		//console.log(obj.id);
+		obj.style.backgroundColor  = "#CCCCCA";
+		lstSel = obj;
+		document.getElementById("selFile").value = name;
 		document.getElementById("openButton").disabled = false;
 	}
-	
-}
-function checkEvent(eType){
-	//console.log("eType::::"+eType);
-	if(eType == "open"){
-		var fileName = document.getElementById("selFile").value;
-		if(fileName.length == 0){
-			alert("No file selected");
+
+
+	function selectFile2(name){
+		//alert("name::"+);
+		if(lstSel != null){
+			lstSel.style.backgroundColor  = "#FFFFFF";
+		}
+		var obj = document.getElementById(name);
+		//console.log(obj.id);
+		obj.style.backgroundColor  = "#CCCCCA";
+		lstSel = obj;
+		
+	}
+
+	function setOpenButton(){
+		//console.log("-----change--------------------");
+		var name = document.getElementById("selFile").value;
+		if(name.length == 0){
+			document.getElementById("openButton").disabled = true;
 		}else{
-			openMeeting(fileName);
+			document.getElementById("openButton").disabled = false;
+		}
+		
+	}
+	function checkEvent(eType){
+		//console.log("eType::::"+eType);
+		if(eType == "open"){
+			var fileName = document.getElementById("selFile").value;
+			if(fileName.length == 0){
+				alert("No file selected");
+			}else{
+				openMeeting(fileName);
+				document.getElementById("meetingDiv").style.display = "none";
+			}
+		}if(eType == "cancel"){ 
 			document.getElementById("meetingDiv").style.display = "none";
 		}
-	}if(eType == "cancel"){ 
-		document.getElementById("meetingDiv").style.display = "none";
 	}
-}
+	function openOldMessage (sequenceNum,obj){
+		document.getElementById("draftMsgId").value = null;
+		obj.className = "loading";
+		openMeeting(sequenceNum);
+	}
 
-function openMeeting(meetingName){
-	//alert("Open Meeting:: "+meetingName);
-	// var meetingName = "tinu";
-	var channelId = document.getElementById("channel_id").value
-	 jQuery.ajax({
-		  	type:	"get",
-	  		url: 	"getmeetingjson.action",
-	  		data: 	"meetingName="+meetingName+"&status="+true+"&channel_id="+channelId,
-		  		success:function(msg) {
-		  			//alert(msg);
-		  			
-		  			if(msg.actionErrors != null)
-		  			{
-		  				alert("error");
-		  		  	}else{
-		  		  		//console.log("showchild"+msg.jsonContent);
-		  		  		var json = JSON.parse(msg.jsonContent);
-			  		  	if(json == null){
-		  		  			return;
-		  		  		}
-		  		  		//alert(json)
-		  		  		meetingName = json.MeetingName;
-						//alert(document.getElementById("meetingName").value);
-						if(json.RecFname!= null){
-							var fname = json.RecFname;
-							var pos = fname.lastIndexOf('/');
-							var recFileName;
-							if(pos != -1){		
-								 recFileName = fname.substring(pos+1,fname.length);
-							}
-							//console.log("Recording recFileName::"+recFileName);
-							filename = json.TempRecFile;
-							recCount = 1;
-							var pos2 = filename.lastIndexOf('/');
-							if(pos2 != -1){		
-								filename = filename.substring(0,pos2+1) + recFileName;
-							}
-							//console.log("Recording file name::"+filename);
-							
-						}
-		  		  		initDataStruture();
-		  		  		if(json.PageList != null){
-		  		  			parseMeetingJSON(json.PageList);
-		  		  		}
-		  		  			
-						createNewMeeting();
-						pageObjTable.moveFirst();
-						var pageNum;
-						if(pageObjTable.next()){
-							pageNum = pageObjTable.getKey();
-						}else{
-							pageNum = 1;
-						}
-						document.getElementById("pagenum").value = pageNum;
-						//console.log("22222222222222222222222222222");
-		  		  		drawNonRecordingObject(pageNum);
-						restoreAllRecordedObj(pageNum);
-						//console.log("---------------filename----------------------------"+filename);
-						if(filename.length >0){
-							myVid=document.getElementById("audio1");
-							myVid.src = "http://"+window.location.host+"/"+filename;
-							if(isAutoPlay == "true"){
-								//alert("startttttttttttttttt");
-								var playButObj = document.getElementById("playpause")
-								playButObj.className  = "pause";
-								playObject();
-								isAutoPlay = "false";
-								 $('#openRecord').click();
-							}
-							/*
-							myVid.addEventListener("loadedmetadata", function(_event) {
-									var duration = myVid.duration;
-									recFileDuration = duration * 1000;
-									//console.log("duration:"+recFileDuration);
-							
-							});*/
-						}
-						
-						//var obj =document.getElementById("pt");
-						//document.getElementById("petrol").innerHTML= "BYEEEEEEE";
-						//fireEvent(obj,'click');
-		  		  		//drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3],imageUrl);	
-		  		  		//showChild(msg.parentId,msg.childList,false);
-		  		  	}
-		  			
-		  	}});
-}
-
-function getCanvasObject( obj, meetingName, channel_id){
-	//$('#save-Modal').modal('show');
-	//var jsonData = createJSON();
-	//console.log("jsonData:::"+jsonData);
-	var jsondata = '{"participantId":'+obj.value+'}' 
-	//alert(obj.id+" -:::- "+obj.value);
-	 jQuery.ajax({
-		  	type:	"get",
-	  		url: 	"getmeetingjson.action",
-	  		data: "meetingName="+meetingName+"&status="+true+"&channel_id="+channel_id+"&participantId= "+obj.value,
-	  		contentType: 'application/json; charset=utf-8',
-	  		dataType: 'json',
-		  		success:function(msg) {
-		  			//alert(msg.parentId);
-		  			 //$('#save-Modal').modal('hide');
-		  			if(msg.actionErrors != null)
-		  			{
-		  				//alert("error");
-						showSaveModal('error');
-		  		  	}else{
-		  		  		//console.log("showchild"+msg.jsonContent);
-		  		  		var json = JSON.parse(msg.jsonContent);
-		  		  		//alert(json);
-		  		  		if(json == null){
-		  		  			return;
-		  		  		}
-		  		  		meetingName = json.MeetingName;
-		  		  		recSequenceNo = json.recSequenceNo;
-		  		  		console.log("recSequenceNo :: "+recSequenceNo);
-						//alert(document.getElementById("meetingName").value);
-		  		  		filename ='';
-						if(json.RecFname!= null){
-							var fname = json.RecFname;
-							var pos = fname.lastIndexOf('/');
-							var recFileName;
-							if(pos != -1){		
-								 recFileName = fname.substring(pos+1,fname.length);
-							}
-							console.log("Recording recFileName::"+recFileName);
-							filename = json.TempRecFile;
-							recCount = 1;
-							var pos2 = filename.lastIndexOf('/');
-							if(pos2 != -1){		
-								filename = filename.substring(0,pos2+1) + recFileName;
-							}
-							console.log("Recording file name::"+filename);
-							
-						}
-		  		  		initDataStruture();
-		  		  		if(json.PageList != null){
-		  		  			parseMeetingJSON(json.PageList);
-		  		  		}
-		  		  			
-						createNewMeeting();
-						pageObjTable.moveFirst();
-						var pageNum;
-						if(pageObjTable.next()){
-							pageNum = pageObjTable.getKey();
-						}else{
-							pageNum = 1;
-						}
-						document.getElementById("pagenum").value = pageNum;
-						//console.log("22222222222222222222222222222");
-		  		  		drawNonRecordingObject(pageNum, false);
-						restoreAllRecordedObj(pageNum, false);
-						//console.log("---------------filename----------------------------"+filename);
-						//myVid = '';
-						if(filename.length >0){
-							myVid=document.getElementById("audio1");
-							myVid.src = "http://"+window.location.host+"/"+filename;
-							if(isAutoPlay == "true"){
-								//alert("startttttttttttttttt");
-								var playButObj = document.getElementById("playpause")
-								playButObj.className  = "pause";
-								playObject();
-								isAutoPlay = "false";
-								 $('#openRecord').click();
-							}
-							
-							/*
-							myVid.addEventListener("loadedmetadata", function(_event) {
-									var duration = myVid.duration;
-									recFileDuration = duration * 1000;
-									//console.log("duration:"+recFileDuration);
-							
-							});*/
-						}else{
-							recFileDuration = 0;
-							filename = "";
-							recCount = 0;
-							document.getElementById("eTime").innerHTML = "<b>00:00</b>";				
-							document.getElementById("cTime").innerHTML = "<b>00:00</b>";
-							clearRecordedObjectTime();	
-						}
-						
-						//var obj =document.getElementById("pt");
-						//document.getElementById("petrol").innerHTML= "BYEEEEEEE";
-						//fireEvent(obj,'click');
-		  		  		//drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3],imageUrl);	
-		  		  		//showChild(msg.parentId,msg.childList,false);
-		  		  	}
-		  			/* if (eventType =='exit'){
-		  		   		window.location.href = "userlectures";
-		  			} */
-		  }});
-}
-
-function parseMeetingJSON(pageList){
-	//console.log(pageList);
-	jQuery.each(pageList, function(i, obj) {
-		parseGraphicsObjectList(obj.pagenumber,obj.graphicsObject);
-		parseGroupObjectList(obj.pagenumber,obj.groupObject);
-	
-	});
-	//console.log("done");
-}
-
-function initDataStruture(){
-	pageObjTable =  null;
-	nonRecordinPageObjTable = null;
-	timeRefTable = null;
-	objectTimeTable = null;
-	selObjArray = null;
-	count = 0;
-	pageObjTable =  new Hashtable();
-	nonRecordinPageObjTable =  new Hashtable();
-	timeRefTable = new Hashtable();
-	objectTimeTable = new Hashtable();
-	selObjArray = new Array();
-	selObjRotatable = true;
-}
-function parseGraphicsObjectList(pageNum,gObjectList){
-	var objectTable = new Hashtable();
-	var nonRecordingObjArray = new Array();
-	jQuery.each(gObjectList, function(i, obj) {
-	    //console.log("text object:::"+obj.text);
-		var textObj;
-		if(obj.text != null){
-			textObj= new Text(obj.text.textData,obj.text.fontType,obj.text.fontSize,obj.text.isBold,obj.text.isUnderLine,obj.text.isItalic);
-		}
-		var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref,obj.usersObjectIdentifierId, obj.sequenceNo);
-		//count++;
-		if((gObj.type == 1 || gObj.type == 2 || gObj.type == 23) && (obj.pointsList.length == 4)){
-			checkAndAddPonitsForNewVersion(gObj);
-		}
-		if(count < parseInt(obj.id)){
-			count = obj.id;
-		}
-		if(obj.attachment != null){
-			//alert("Attachement found"+obj.id);
-			gObj.attachment = obj.attachment;
-		}
-		//console.log("44444444:::"+count);
-		objectTable.put(obj.id, gObj);
-		objectPageRefTable.put(obj.id,pageNum);
-		//console.log("obj.timeStamp::::"+obj.timeStamp);
-		if(obj.timeStamp != null){
-			var pageObject = new PageObject(pageNum,obj.id);
-			objectTimeTable.put(obj.id,obj.timeStamp);
-			
-			var recordedObjArr = timeRefTable.get(obj.timeStamp);
-			if(recordedObjArr ==  null){
-				recordedObjArr = new Array();
-			}
-			recordedObjArr[recordedObjArr.length] = pageObject;
-			timeRefTable.put(obj.timeStamp,recordedObjArr);
-			
-			var seqBasedPageTable = seqBasedPageRecObjTable.get(obj.sequenceNo);
-			if(seqBasedPageTable == null){
-				seqBasedPageTable = new Hashtable(); 
-				seqBasedPageRecObjTable.put(obj.sequenceNo,seqBasedPageTable);
-			}
-			var recObjArrayOnPage = seqBasedPageTable.get(pageNum);
-			if(recObjArrayOnPage == null){
-				recObjArrayOnPage = new Array();
-			}
-			recObjArrayOnPage[recObjArrayOnPage.length] = pageObject;
-			seqBasedPageTable.put(pageNum,recObjArrayOnPage);
-			
-			
-			
-			//timeRefTable.put(obj.timeStamp,pageObject);
+	function openMeeting(sequenceNum){
+		var channelId = document.getElementById("channel_id").value
+		var currentSeqNumber = document.getElementById("currentSeqNumber").value;
+		var draftMsgId = document.getElementById("draftMsgId").value;
+		var meetingName = document.getElementById("meetingName").value;
+		var paramdata = "";
+		if(sequenceNum != null && sequenceNum !=''){
+			paramdata = "meetingName="+meetingName+"&status="+true+"&channel_id="+channel_id+"&participantId= "+sequenceNum+"&userId="+user_Id;
+		}else if(meetingName != null && meetingName!= ''){
+			paramdata = "meetingName="+meetingName+"&status="+true+"&channel_id="+channelId+"&userId="+user_Id;
 		}else{
-			 nonRecordingObjArray[nonRecordingObjArray.length] = obj.id;
+			alert("Invalid Case, message title can not be blank")
+		}	
+		if(draftMsgId != null && draftMsgId != ''){
+			paramdata = paramdata + "&draftMsgId="+draftMsgId;
 		}
-				
-		
-	});
-	nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
-	pageObjTable.put(pageNum,objectTable);
-	console.log("seqBasedPageRecObjTable:::::"+seqBasedPageRecObjTable);
-}
+		 jQuery.ajax({
+			  	type:	"get",
+		  		url: 	"getmeetingjson.action",
+		  		data: 	 paramdata,
+			  		success:function(msg) {
+			  			//alert(msg);
+			  			if(msg.actionErrors != null){
+			  				alert("Either new message or not found in DB");
+			  		  	}else{
+			  		  		//console.log("showchild"+msg.jsonContent);
+			  		  		var json = JSON.parse(msg.jsonContent);
+			  		  		var toFromData = msg.toOrFromName;
+			  		  		setToFromData(msg.toUserName,msg.toUserPic,msg.fromUserName,msg.fromUserPic);
+				  		  	if(json == null){
+			  		  			return;
+			  		  		}
+			  		  		//alert(currentSeqNumber)
+			  		  		meetingName = json.MeetingName;
+			  		  		console.log(json);
+				  		  	if(json.send == 1){
+				  		  		  meetingContextSequence = json.recSequenceNo;
+			  		  		}else if(json.meetingContextSequence != null && json.meetingContextSequence != ''){
+			  		  			// draft message
+				  		  		  meetingContextSequence = json.meetingContextSequence;
+				  		  	}
+				  		  	
+							//alert("meetingContextSequence:::"+meetingContextSequence);
+							//alert(document.getElementById("meetingName").value);
+							if(json.RecFname!= null){
+								recordingFilePath = json.RecFname;
+							}
+			  		  		initDataStruture();
+			  		  		if(json.PageList != null){
+			  		  			parseMeetingJSON(json.PageList,sequenceNum);
+			  		  		}
+							createNewMeeting();
+							pageObjTable.moveFirst();
+							var pageNum;
+							if(pageObjTable.next()){
+								pageNum = pageObjTable.getKey();
+							}else{
+								pageNum = 1;
+							}
+							document.getElementById("pagenum").value = pageNum;
+							document.getElementById("pagenumdiv").innerHTML = "Page "+pageNum;
+							if(recordingFilePath != null){
+								getAudioFileForPlay();
+							}
+							if(textImgObjTable.size() == 0 && mediaIconTable.size() == 0  && imgObjTable.size() == 0){
+								 showObjectOnCanvas();
+							}
+							var obj = document.getElementById("msg_"+json.recSequenceNo);
+							if(obj != null){
+								setCurrentMessageActive(obj);	
+							}
+									  		  		
+							/*if(filename.length >0){
+								myVid=document.getElementById("audio1");
+								myVid.src = "http://"+window.location.host+"/"+filename;
+								if(isAutoPlay == "true"){
+									//alert("startttttttttttttttt");
+									var playButObj = document.getElementById("playpause")
+									playButObj.className  = "pause";
+									playObject();
+									isAutoPlay = "false";
+									 $('#openRecord').click();
+								}
+								
+								myVid.addEventListener("loadedmetadata", function(_event) {
+										var duration = myVid.duration;
+										recFileDuration = duration * 1000;
+										//console.log("duration:"+recFileDuration);
+								
+								});
+							}*/
+							
+							//var obj =document.getElementById("pt");
+							//document.getElementById("petrol").innerHTML= "BYEEEEEEE";
+							//fireEvent(obj,'click');
+			  		  		//drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3],imageUrl);	
+			  		  		//showChild(msg.parentId,msg.childList,false);
+			  		  	}
+			  			
+			  	}});
+	}
 
-function parseGroupObjectList(pageNum,grpObjectList){
-	if(grpObjectList != null){
-		var grpObjTable = new Hashtable();
-		jQuery.each(grpObjectList, function(i, obj) {
-			var isActive= true;
-			if(obj.active != null){
-				isActive = obj.active;
+	function showObjectOnCanvas(){
+		var pageNum = document.getElementById("pagenum").value;
+		drawNonRecordingObject(pageNum);
+		restoreAllRecordedObj(pageNum);
+	}
+
+	function getCanvasObject(sequenceNum){
+		//$('#save-Modal').modal('show');
+		//var jsonData = createJSON();
+		//console.log("jsonData:::"+jsonData);
+		var jsondata = '{"participantId":'+sequenceNum+'}' 
+		var meetingName = document.getElementById("meetingName").value;
+		//alert("meetingName -:::- "+meetingName);
+		 jQuery.ajax({
+			  	type:	"get",
+		  		url: 	"getmeetingjson.action",
+		  		data: "meetingName="+meetingName+"&status="+true+"&channel_id="+channel_id+"&participantId= "+sequenceNum+"&userId="+user_Id,
+		  		contentType: 'application/json; charset=utf-8',
+		  		dataType: 'json',
+			  		success:function(msg) {
+			  			//alert(msg.parentId);
+			  			 //$('#save-Modal').modal('hide');
+			  			if(msg.actionErrors != null)
+			  			{
+			  				//alert("error");
+							//showSaveModal('error');
+			  		  	}else{
+			  		  		//console.log("showchild"+msg.jsonContent);
+			  		  		var json = JSON.parse(msg.jsonContent);
+			  		  		//alert(json);
+			  		  		if(json == null){
+			  		  			return;
+			  		  		}
+			  		  		meetingName = json.MeetingName;
+			  		  		recSequenceNo = json.recSequenceNo;
+			  		  		console.log("recSequenceNo :: "+recSequenceNo);
+							//alert(document.getElementById("meetingName").value);
+			  		  		filename ='';
+							/*if(json.RecFname!= null){
+								var fname = json.RecFname;
+								var pos = fname.lastIndexOf('/');
+								var recFileName;
+								if(pos != -1){		
+									 recFileName = fname.substring(pos+1,fname.length);
+								}
+								console.log("Recording recFileName::"+recFileName);
+								filename = json.TempRecFile;
+								recCount = 1;
+								var pos2 = filename.lastIndexOf('/');
+								if(pos2 != -1){		
+									filename = filename.substring(0,pos2+1) + recFileName;
+								}
+								console.log("Recording file name::"+filename);
+								
+							}*/
+							
+							if(json.RecFname!= null){
+								recordingFilePath = json.RecFname;
+							}
+			  		  		initDataStruture();
+			  		  		if(json.PageList != null){
+			  		  			parseMeetingJSON(json.PageList,sequenceNum);
+			  		  		}
+			  		  			
+							createNewMeeting();
+							pageObjTable.moveFirst();
+							var pageNum;
+							if(pageObjTable.next()){
+								pageNum = pageObjTable.getKey();
+							}else{
+								pageNum = 1;
+							}
+							document.getElementById("pagenum").value = pageNum;
+							document.getElementById("pagenumdiv").innerHTML = "Page "+pageNum;
+							//alert("start showing object");
+							if(recordingFilePath != null){
+								getAudioFileForPlay();
+							}
+			  		  		drawNonRecordingObject(pageNum, false);
+			  		     	//alert("start showing object");
+							restoreAllRecordedObj(pageNum, false);
+							//console.log("---------------filename----------------------------"+filename);
+							//myVid = '';
+							if(filename.length >0){
+								myVid=document.getElementById("audio1");
+								myVid.src = "http://"+window.location.host+"/"+filename;
+								if(isAutoPlay == "true"){
+									//alert("startttttttttttttttt");
+									var playButObj = document.getElementById("playpause")
+									playButObj.className  = "pause";
+									playObject();
+									isAutoPlay = "false";
+									 $('#openRecord').click();
+								}
+								
+								/*
+								myVid.addEventListener("loadedmetadata", function(_event) {
+										var duration = myVid.duration;
+										recFileDuration = duration * 1000;
+										//console.log("duration:"+recFileDuration);
+								
+								});*/
+							}else{
+								recFileDuration = 0;
+								filename = "";
+								recCount = 0;
+								//document.getElementById("eTime").innerHTML = "<b>00:00</b>";				
+								//document.getElementById("cTime").innerHTML = "<b>00:00</b>";
+								//clearRecordedObjectTime();	
+							}
+							
+							//var obj =document.getElementById("pt");
+							//document.getElementById("petrol").innerHTML= "BYEEEEEEE";
+							//fireEvent(obj,'click');
+			  		  		//drawImage(tempArray[0],tempArray[1],tempArray[2],tempArray[3],imageUrl);	
+			  		  		//showChild(msg.parentId,msg.childList,false);
+			  		  	}
+			  			/* if (eventType =='exit'){
+			  		   		window.location.href = "userlectures";
+			  			} */
+			  			//getToOrGroupId();
+			  }});
+	}
+
+	function parseMeetingJSON(pageList,seqNum){
+		//console.log(pageList);
+		jQuery.each(pageList, function(i, obj) {
+			if(obj != null){
+				parseGraphicsObjectList(obj.pagenumber,obj.graphicsObject,seqNum);
+				parseGroupObjectList(obj.pagenumber,obj.groupObject);
+				var pageBg = obj.pagebg;
+				if(pageBg!=null){
+					pageBgTable.put(obj.pagenumber,pageBg);
+				}
 			}
-			var groupObj = new GroupObject(obj.id,obj.ObjectRefList,isActive);
-			if(grpObjCount <= parseInt(obj.id)){
-				grpObjCount = obj.id;
-			}
-			grpObjTable.put(obj.id,groupObj);
+			
+		
 		});
-		pageGrpObjTable.put(pageNum,grpObjTable);
-	}
-}
-
-function checkAndAddPonitsForNewVersion(graphicsObject){
-	var ptsArray = graphicsObject.pointsArray;
-	if(ptsArray.length == 4){
-		var tmpArray = new Array();
-		tmpArray[0] = ptsArray[0];
-		tmpArray[1] = ptsArray[1];
-		tmpArray[2] = ptsArray[2];
-		tmpArray[3] = ptsArray[3];
-		
-		ptsArray[2] = tmpArray[0];
-		ptsArray[3] = tmpArray[3];
-		
-		ptsArray[4] = tmpArray[2];
-		ptsArray[5] = tmpArray[3];
-		
-		ptsArray[6] = tmpArray[2];
-		ptsArray[7] = tmpArray[1];
-		graphicsObject.pointsArray = ptsArray;
+		//console.log("done");
 	}
 
-}
-
-
-function detectmob() { 
- if( navigator.userAgent.match(/Android/i)
- || navigator.userAgent.match(/webOS/i)
- || navigator.userAgent.match(/iPhone/i)
- || navigator.userAgent.match(/iPad/i)
- || navigator.userAgent.match(/iPod/i)
- || navigator.userAgent.match(/BlackBerry/i)
- || navigator.userAgent.match(/Windows Phone/i)
- ){
-    return true;
-  }
- else {
-    return false;
-  }
-}
-
-
-
-
-function createEditor(tempPointsArray,textObj,textData,color){
-	//console.log("create editor"+tempPointsArray);
-	var div_elm = document.getElementById("meetingDiv");
-	div_elm.style.left = (tempPointsArray[0] ) +'px';
-	div_elm.style.top = (tempPointsArray[1] ) +'px';
-	div_elm.style.backgroundColor = '#FFFFFF';
-	document.getElementById("meetingDiv").style.display = "block";
-	//console.log("meetingDiv::"+meetingDiv);
-	if(textObj != null){
-		document.getElementById("editorFontType").value = textObj.fontType;
-		document.getElementById("editorFontSize").value = textObj.fontSize;
-		document.getElementById("area1").style.fontSize = textObj.fontSize+"px";
-		document.getElementById("area1").style.fontFamily =  textObj.fontType;
-		document.getElementById("area1").value = textData;
-		document.getElementById("area1").style.color = color;
-		document.getElementById("textColorAttr").value = color;
-		textFontSize = textObj.fontSize;
-		textFontType = textObj.fontType;
-	}else{
-		document.getElementById("area1").value = "";
+	function initDataStruture(){
+		pageObjTable =  null;
+		nonRecordinPageObjTable = null;
+		timeRefTable = null;
+		objectTimeTable = null;
+		selObjArray = null;
+		count = 0;
+		pageObjTable =  new Hashtable();
+		nonRecordinPageObjTable =  new Hashtable();
+		timeRefTable = new Hashtable();
+		objectTimeTable = new Hashtable();
+		selObjArray = new Array();
+		selObjRotatable = true;
+		nextPlayingObjKey = null;
 	}
-	setCaretPosition("area1",5);
-	//nicEditors.allTextAreas() ;
+	function parseGraphicsObjectList(pageNum,gObjectList,seqNum){
+		var objectTable = new Hashtable();
+		var nonRecordingObjArray = new Array();
+		jQuery.each(gObjectList, function(i, obj) {
+		    //console.log("text object:::"+obj.text);
+			var textObj;
+			var mediaObj;
+			var imageObj;
+			if(obj.imageLoaded != null){
+				imageObj= new Image();
+			}else if(obj.text != null){
+				textObj= new Text(obj.text.textData,null);
+			}
+			else if(obj.media != null){
+				mediaObj= new Media(obj.media.mediaType,null,obj.media.mediaPath,obj.media.fileName,null);
+			}
+			if(obj.type == 4 || obj.type == 25){
+				var pathObj = new paper.Path();
+				var pointList = obj.pointsList;
+				for(i=0;i<pointList.length;i=i+2){
+					var point = new paper.Point(pointList[i],pointList[i+1]);
+					pathObj.add(point);
+				}
+				pathObj.simplify(10);
+				pathObj.fullySelected = false;
 
-}
-function setCaretPosition(elemId, caretPos) {
-    var elem = document.getElementById(elemId);
-
-    if(elem != null) {
-        if(elem.createTextRange) {
-            var range = elem.createTextRange();
-            range.move('character', caretPos);
-            range.select();
-        }
-        else {
-            if(elem.selectionStart) {
-                elem.focus();
-                elem.setSelectionRange(caretPos, caretPos);
-            }
-            else
-                elem.focus();
-        }
-    }
-}
-function getPointsOnPointerPath(x1,y1,x2,y2,pointsDelta){
-	var dx = x2 -x1;
-	var dy = y2 -y1;
-	//console.log("dx:::"+dx+"::dy:::"+dy);
-	var pathArr = new Array();
-	pathArr[pathArr.length] = x1;
-	pathArr[pathArr.length] = y1;
-	if(Math.abs(dx) > Math.abs(dy)){
-		var interval = Math.abs(dx) / pointsDelta;
-		if(x2 > x1 ){
-			interval = interval;
-		}else{
-			interval = - interval;
-
-		}
-		x = x1;
-		for(var ctr = 0;ctr<pointsDelta;ctr++){
-			x = x + interval;
-			y = ((y2 - y1)/(x2 -x1))*(x -x1) + y1;
-			pathArr[pathArr.length] = x;
-			pathArr[pathArr.length] = y;
+				var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref,obj.isDraft, obj.sequenceNo,pathObj);
+			}else{
+				var gObj = new GraphicsObject(obj.id,obj.type,obj.pointsList,obj.lineWidth,obj.lineColor,obj.src,obj.isFilled,obj.fillColor,obj.opacity,obj.imageLoaded,textObj,obj.ref,obj.isDraft, obj.sequenceNo);
+				if(imageObj != null){
+					createImageObject(imageObj,obj.src,gObj);
+					imgObjTable.put(obj.id,false);
+				}else if(textObj != null){
+					createTextImageObject(textObj,gObj)
+					textImgObjTable.put(obj.id,false);
+				}else if(mediaObj != null){
+					if(mediaObj.mediaType == "pin"){
+						createPinObjectIcon(mediaObj,gObj)
+					}else if(mediaObj.mediaType == "url"){
+						createInsertedUrlIcon(mediaObj,gObj)
+					}else{
+						createUploadFileIcon(mediaObj,gObj)
+					}
+					mediaIconTable.put(obj.id,false);
+				}
+			}
+			//count++;
+			if((gObj.type == 1 || gObj.type == 2 || gObj.type == 23) && (obj.pointsList.length == 4)){
+				checkAndAddPonitsForNewVersion(gObj);
+			}
+			if(count < parseInt(obj.id)){
+				count = obj.id;
+			}
+			if(obj.attachment != null){
+				//alert("Attachement found"+obj.id);
+				gObj.attachment = obj.attachment;
+			}
+			//console.log("44444444:::"+count);
+			objectTable.put(obj.id, gObj);
+			objectPageRefTable.put(obj.id,pageNum);
+			//console.log("obj.timeStamp::::"+obj.timeStamp);
+			if(obj.timeStamp != null){
+				if(seqNum != -1  &&  obj.sequenceNo < seqNum){
+					nonRecordingObjArray[nonRecordingObjArray.length] = obj.id;
+				}else{
+					var pageObject = new PageObject(pageNum,obj.id);
+					objectTimeTable.put(obj.id,obj.timeStamp);
+					
+					var recordedObjArr = timeRefTable.get(obj.timeStamp);
+					if(recordedObjArr ==  null){
+						recordedObjArr = new Array();
+					}
+					recordedObjArr[recordedObjArr.length] = pageObject;
+					timeRefTable.put(obj.timeStamp,recordedObjArr);
+					
+					var seqBasedPageTable = seqBasedPageRecObjTable.get(obj.sequenceNo);
+					if(seqBasedPageTable == null){
+						seqBasedPageTable = new Hashtable(); 
+						seqBasedPageRecObjTable.put(obj.sequenceNo,seqBasedPageTable);
+					}
+					var recObjArrayOnPage = seqBasedPageTable.get(pageNum);
+					if(recObjArrayOnPage == null){
+						recObjArrayOnPage = new Array();
+					}
+					recObjArrayOnPage[recObjArrayOnPage.length] = pageObject;
+					seqBasedPageTable.put(pageNum,recObjArrayOnPage);
+					
+				}
+					
+				//timeRefTable.put(obj.timeStamp,pageObject);
+			}else{
+				 nonRecordingObjArray[nonRecordingObjArray.length] = obj.id;
+			}
+					
 			
-		}
-	}else{
-		var interval = Math.abs(dy) / pointsDelta;
-		if(y2 > y1 ){
-			interval = interval;
-		}else{
-			interval = - interval;
+		});
+		nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+		pageObjTable.put(pageNum,objectTable);
+		console.log("timeRefTable:::::"+timeRefTable);
+	}
 
+	function parseGroupObjectList(pageNum,grpObjectList){
+		if(grpObjectList != null){
+			var grpObjTable = new Hashtable();
+			jQuery.each(grpObjectList, function(i, obj) {
+				var isActive= true;
+				if(obj.active != null){
+					isActive = obj.active;
+				}
+				var groupObj = new GroupObject(obj.id,obj.ObjectRefList,isActive);
+				if(grpObjCount <= parseInt(obj.id)){
+					grpObjCount = obj.id;
+				}
+				grpObjTable.put(obj.id,groupObj);
+			});
+			pageGrpObjTable.put(pageNum,grpObjTable);
 		}
-		y = y1;
-		for(var ctr = 0;ctr<pointsDelta;ctr++){
-			y = y + interval;
-			x = ((x2 -x1)/(y2 -y1))*(y -y1) + x1;
-			pathArr[pathArr.length] = x;
-			pathArr[pathArr.length] = y;
+	}
+
+	function checkAndAddPonitsForNewVersion(graphicsObject){
+		var ptsArray = graphicsObject.pointsArray;
+		if(ptsArray.length == 4){
+			var tmpArray = new Array();
+			tmpArray[0] = ptsArray[0];
+			tmpArray[1] = ptsArray[1];
+			tmpArray[2] = ptsArray[2];
+			tmpArray[3] = ptsArray[3];
 			
+			ptsArray[2] = tmpArray[0];
+			ptsArray[3] = tmpArray[3];
+			
+			ptsArray[4] = tmpArray[2];
+			ptsArray[5] = tmpArray[3];
+			
+			ptsArray[6] = tmpArray[2];
+			ptsArray[7] = tmpArray[1];
+			graphicsObject.pointsArray = ptsArray;
+		}
+
+	}
+
+
+	function detectmob() { 
+	 if( navigator.userAgent.match(/Android/i)
+	 || navigator.userAgent.match(/webOS/i)
+	 || navigator.userAgent.match(/iPhone/i)
+	 || navigator.userAgent.match(/iPad/i)
+	 || navigator.userAgent.match(/iPod/i)
+	 || navigator.userAgent.match(/BlackBerry/i)
+	 || navigator.userAgent.match(/Windows Phone/i)
+	 ){
+	    return true;
+	  }
+	 else {
+	    return false;
+	  }
+	}
+
+
+
+
+	function createEditor(tempPointsArray,textObj,textData,color){
+		//console.log("create editor"+tempPointsArray);
+		/*var div_elm = document.getElementById("meetingDiv");
+		div_elm.style.left = (tempPointsArray[0] + 50) +'px';
+		div_elm.style.top = (tempPointsArray[1] ) +'px';*/
+		var canvas_width = canvasWidth;
+	    var editor_tools_width = 650;
+		var e_left = tempPointsArray[0] + 36;
+		var e_top  = tempPointsArray[1] - 42;
+		var notexceed = canvas_width - e_left;
+		var caretPos = 0; 
+		//document.getElementById("meetingDiv").style.display = "block";
+		//console.log("meetingDiv::"+meetingDiv);
+		if(textObj != null){
+			/*document.getElementById("editorFontType").value = textObj.fontType;
+			document.getElementById("editorFontSize").value = textObj.fontSize;
+			
+			document.getElementById("editor").style.fontSize = textObj.fontSize+"px";
+			document.getElementById("editor").style.fontFamily =  textObj.fontType;
+			document.getElementById("editor").value = textData;
+			document.getElementById("editor").style.color = color;
+			
+			document.getElementById("textColorAttr").value = color;
+			textFontSize = textObj.fontSize;
+			textFontType = textObj.fontType;
+			caretPos = textData.length;
+			e_top = e_top+43;*/
+			//setEditorContent(textObj.text);
+		}else{
+			console.log(document.getElementById("editor").style.fontFamily);
+			document.getElementById("editor").value = "";
+		}
+		
+		/*document.getElementById("area1").style.width = (canvasWidth - tempPointsArray[0]) + "px"
+		document.getElementById("area1").style.height = (canvasHeight - tempPointsArray[1]) + "px"
+		*/
+		/*document.getElementById("area1").style.width = 50 + "px"
+		document.getElementById("area1").style.height = 100 + "px"
+		
+		
+		document.getElementById("checkImg").style.left = (canvasWidth+30 -30) +"px";
+		document.getElementById("checkImg").style.top =  tempPointsArray[1]-30+"px";
+		document.getElementById("cancelImg").style.left = (canvasWidth+30 -15)+ "px";
+		document.getElementById("cancelImg").style.top = tempPointsArray[1]-30+ "px";*/
+		//nicEditors.allTextAreas() ;
+		tinyMCE.get("editor").focus();
+		 $(".editor_parent").removeClass("inactive");
+		
+		 if(notexceed < editor_tools_width){
+			 
+				 
+			   if(e_top < 100){
+				 
+				   $("#editor_ifr").css({
+		                  "display":"block",
+		                  "position" : "fixed",
+		                  "width":(canvas_width - e_left) ,
+		                  "min-width":"auto",
+		                  top: e_top+130,
+		                  right:20,
+		                  left:e_left,
+		              });
+				   
+			   $(".mce-top-part").css({
+						   
+						   "display":"block",
+			               "position" : "fixed",
+			               "width":"auto",
+			               right:20,
+			               top: e_top+60,
+			               "min-width":"auto",
+					   });
+			   }
+			   else{
+			 
+			   $("#editor_ifr").css({
+	                  "display":"block",
+	                  "position" : "fixed",
+	                  "width":(canvas_width - e_left) + 36 ,
+	                  "min-width":"auto",
+	                  top: e_top-50,
+	                  right:20,
+	                  left:e_left,
+	              });
+			   
+		   $(".mce-top-part").css({
+					   
+					   "display":"block",
+		               "position" : "fixed",
+		               "width":"auto",
+		               right:20,
+		               top: e_top-110,
+		               "min-width":"auto",
+				   });
+			   }
+			   
+			   $(".mce-resizehandle").hide();
+			 
+		 
+			 
+	      }else{
+	    	
+	    	  $("#editor_ifr").css({
+	    		  "position" : "static",
+				   right: "unset",
+				   "width":"100%",
+				   "min-width":"572px",
+			   });
+	    	  
+	   $(".mce-top-part").css({
+				   
+				   "display":"block",
+	               "position" : "static",
+	               "width":"552px",
+	               right:"unset",
+	               top: 0,
+	               
+			   });
+	   
+	   
+	   $(".mce-resizehandle").show();
+	    	  
+	    		   $("#editor").keyup(function(){
+	    		   var val_e = $(this).val().length;
+	    	 
+	    		   var width_e = $(this).outerWidth() + 10;
+	    		  
+	    		   if(val_e > 45){
+	    			   if( (notexceed+36) < (width_e)){
+	    				   console.log('exceed');
+	    				   $(this).css({
+	    					   
+	    					   right : 0
+	    				   });
+	        		   }else{
+	        			   console.log('not exceed');
+			    			 $(this).css({
+			    				   "width" : width_e
+			    				   
+			    			   });
+	        		   }
+	    			 
+	    		   } 
+	    		 
+	    	   }); 
+	   
+	      }
+
+		 if(e_top < 100){
+			 console.log('a');
+			 $(".editor_parent").css({
+				  "display": "block",
+				  top: e_top+70,
+				  left:e_left+10
+				});
+			 
+		 }else if(e_top > (canvasHeight - 150)){
+			 console.log('b');
+			 $(".editor_parent").css({
+				  "display": "block",
+				  top: e_top-100,
+				  left:e_left+10
+				});
+		 }else{
+			 console.log(e_top + " " + canvasHeight);
+		$(".editor_parent").css({
+		  "display": "block",
+		  top: e_top+10,
+		  left:e_left+10
+		});
+		
+		 }
+ 
+		 
+		  $("#editor_ifr" ).contents().find("body").css({
+			  'display':'block',
+			'min-height':'77px !important'  
+		  });
+		 
+	 
+		tinyMCE.get("editor").focus();
+		setCaretPosition("editor",caretPos);
+		
+		
+	}
+	function setCaretPosition(elemId, caretPos) {
+	    var elem = document.getElementById(elemId);
+
+	    if(elem != null) {
+	    	
+	        if(elem.createTextRange) {
+	            var range = elem.createTextRange();
+	            range.move('character', caretPos);
+	            range.select();
+	        }
+	        else {
+	            if(elem.selectionStart) {
+	                elem.focus();
+	                elem.setSelectionRange(caretPos, caretPos);
+	            }
+	            else
+	                elem.focus();
+	        }
+	    }
+	}
+	function getPointsOnPointerPath(x1,y1,x2,y2,pointsDelta){
+		var dx = x2 -x1;
+		var dy = y2 -y1;
+		//console.log("dx:::"+dx+"::dy:::"+dy);
+		var pathArr = new Array();
+		pathArr[pathArr.length] = x1;
+		pathArr[pathArr.length] = y1;
+		if(Math.abs(dx) > Math.abs(dy)){
+			var interval = Math.abs(dx) / pointsDelta;
+			if(x2 > x1 ){
+				interval = interval;
+			}else{
+				interval = - interval;
+
+			}
+			x = x1;
+			for(var ctr = 0;ctr<pointsDelta;ctr++){
+				x = x + interval;
+				y = ((y2 - y1)/(x2 -x1))*(x -x1) + y1;
+				pathArr[pathArr.length] = x;
+				pathArr[pathArr.length] = y;
+				
+			}
+		}else{
+			var interval = Math.abs(dy) / pointsDelta;
+			if(y2 > y1 ){
+				interval = interval;
+			}else{
+				interval = - interval;
+
+			}
+			y = y1;
+			for(var ctr = 0;ctr<pointsDelta;ctr++){
+				y = y + interval;
+				x = ((x2 -x1)/(y2 -y1))*(y -y1) + x1;
+				pathArr[pathArr.length] = x;
+				pathArr[pathArr.length] = y;
+				
+			}
+		}
+		return pathArr;
+	}
+	var pointCtr = 0;
+	var pointerTimerId;
+
+	function drawPointerPath(){
+	//console.log("drawPointerPath::::"+currentPointerPath);
+		if(pointCtr < currentPointerPath.length){
+	 		pointerX = currentPointerPath[pointCtr];
+			pointerY = currentPointerPath[pointCtr+1];
+			pointerImg.style.left = offsetX + pointerX +"px";
+			pointerImg.style.top = offsetY + pointerY+ "px";
+			pointCtr = pointCtr +2;
+			pointerTimerId = setTimeout('drawPointerPath()',10);
 		}
 	}
-	return pathArr;
-}
-var pointCtr = 0;
-var pointerTimerId;
 
-function drawPointerPath(){
-//console.log("drawPointerPath::::"+currentPointerPath);
-	if(pointCtr < currentPointerPath.length){
- 		pointerX = currentPointerPath[pointCtr];
-		pointerY = currentPointerPath[pointCtr+1];
-		pointerImg.style.left = offsetX + pointerX +"px";
-		pointerImg.style.top = offsetY + pointerY+ "px";
-		pointCtr = pointCtr +2;
-		pointerTimerId = setTimeout('drawPointerPath()',10);
-	}
-}
-
-function setplayingTimeInPlayer(){
-	var duration = getDurationInMinAndSec(myVid.currentTime*1000);
-	//console.log("setplayingTimeInPlayer::"+duration);
-/* 
- //console.log("current audio time::"+myVid.currentTime );
-  var audioTime = ""+myVid.currentTime ;
-  //console.log("current audio time::"+audioTime);
-  var pos= audioTime.indexOf(".");
-  //console.log("current audio pos::"+pos);
-  var timeinSec = audioTime.substring(0,pos);
-  var min = parseInt(timeinSec / 60);
-  var sec = ''+timeinSec % 60;
-  //console.log("current audio pos::"+sec.length);
-  if(sec.length == 1){
-	sec = '0'+sec;
-  }*/
-  document.getElementById("cTime").innerHTML = "<b>"+duration+"</b>";
-  //console.log("min::"+min+"::sec::"+sec);
-  playerTimer = setTimeout('setplayingTimeInPlayer()',500);
-}
-
-function ShowSelectionInsideTextarea(){
- var textComponent = document.getElementById('area1');
-
-  var selectedText;
-  // IE version
-  if (document.selection != undefined)
-  {
-    textComponent.focus();
-    var sel = document.selection.createRange();
-    selectedText = sel.text;
-  }
-  // Mozilla version
-  else if (textComponent.selectionStart != undefined)
-  {
-    var startPos = textComponent.selectionStart;
-    var endPos = textComponent.selectionEnd;
-    selectedText = textComponent.value.substring(startPos, endPos)
-  }
-  return selectedText;
-    //alert("You selected: " + selectedText);
-}
-function boldSelectdText(){
-	if(isBold){
-		isBold = false;
-		document.getElementById("area1").style.fontWeight='normal';
-	}else{
-		isBold = true;
-		document.getElementById("area1").style.fontWeight='bold';
-	}
-	
-}
-
-function italicSelectedText(){
-//console.log("italic;;;;");
-	if(isItalic){
-		isItalic = false;
-		document.getElementById("area1").style.fontStyle='normal';
-	}else{
-		isItalic = true;
-		document.getElementById("area1").style.fontStyle='italic';
-	}
-}
-
-function underLineSelectedText(){
-	if(isUnderLine){
-		isUnderLine = false;
-			document.getElementById("area1").style.textDecoration='none';
-	}else{
-		isUnderLine = true;
-		document.getElementById("area1").style.textDecoration='underline';
-	}
-
-}
-
-function startBlink(){
-	//console.log("start blink::");
-	var recordButton = document.getElementById("recordButton");
-	if(recordButton.className == "recording"){
-		recordButton.className = "record";
-	}else{
-		recordButton.className = "recording";
-	}
-		
-	showRecordingTime();
-	clearTimeout(blinkTimer);
-	blinkTimer = setTimeout('startBlink()',500);
-}
-function showRecordingTime(){
-	  var currentTime = new Date().getTime();
-	 // //console.log("current startTime ::"+startTime+"::currentTime::"+currentTime);
-	  currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
-	  var duration = getDurationInMinAndSec(currentMiliSec);
-	/*
-	  var recordTime = ""+(currentMiliSec / 1000);
-	 // //console.log("current recordTime ::"+recordTime);
-	  var pos= recordTime.indexOf(".");
-	  var timeinSec = recordTime.substring(0,pos);
+	function setplayingTimeInPlayer(){
+		var duration = getDurationInMinAndSec(myVid.currentTime*1000);
+		//console.log("setplayingTimeInPlayer::"+duration);
+	/* 
+	 //console.log("current audio time::"+myVid.currentTime );
+	  var audioTime = ""+myVid.currentTime ;
+	  //console.log("current audio time::"+audioTime);
+	  var pos= audioTime.indexOf(".");
+	  //console.log("current audio pos::"+pos);
+	  var timeinSec = audioTime.substring(0,pos);
 	  var min = parseInt(timeinSec / 60);
 	  var sec = ''+timeinSec % 60;
 	  //console.log("current audio pos::"+sec.length);
 	  if(sec.length == 1){
 		sec = '0'+sec;
 	  }*/
-	document.getElementById("cTime").innerHTML = "<b>"+duration+"</b>";
-}
+	  document.getElementById("cTime").innerHTML = "<b>"+duration+"</b>";
+	  //console.log("min::"+min+"::sec::"+sec);
+	  playerTimer = setTimeout('setplayingTimeInPlayer()',500);
+	}
 
-function getDurationInMinAndSec(duration){
+	function ShowSelectionInsideTextarea(){
+	 var textComponent = document.getElementById('editor');
 
-	  var recordTime = ""+(duration / 1000);
-	 // //console.log("current recordTime ::"+recordTime);
-	  var pos= recordTime.indexOf(".");
-	  var timeinSec = recordTime.substring(0,pos);
-	  var min = ""+parseInt(timeinSec / 60);
-	  var sec = ''+timeinSec % 60;
-	  //console.log("current audio pos::"+sec.length);
-	  if(min.length == 1){
-		min = '0'+min;
+	  var selectedText;
+	  // IE version
+	  if (document.selection != undefined)
+	  {
+	    textComponent.focus();
+	    var sel = document.selection.createRange();
+	    selectedText = sel.text;
 	  }
-	  if(sec.length == 1){
-		sec = '0'+sec;
+	  // Mozilla version
+	  else if (textComponent.selectionStart != undefined)
+	  {
+	    var startPos = textComponent.selectionStart;
+	    var endPos = textComponent.selectionEnd;
+	    selectedText = textComponent.value.substring(startPos, endPos)
 	  }
-	  return (min+":"+sec);
-}
+	  return selectedText;
+	    //alert("You selected: " + selectedText);
+	}
+	function boldSelectdText(){
+		if(isBold){
+			isBold = false;
+			document.getElementById("editor").style.fontWeight='normal';
+		}else{
+			isBold = true;
+			document.getElementById("editor").style.fontWeight='bold';
+		}
+		
+	}
 
-function enableDisableRelationOptions(state){
-	//console.log("enableDisableRelationOptions ::"+state+"::selObjRotatable::"+selObjRotatable);
-	if(state){
-		//console.log("hiii");
-		//document.getElementById("rotateButton").className = "btn btn-default active"
-		if(selObjRotatable ){
-			//console.log("Innnn");
+	function italicSelectedText(){
+	//console.log("italic;;;;");
+		if(isItalic){
+			isItalic = false;
+			document.getElementById("editor").style.fontStyle='normal';
+		}else{
+			isItalic = true;
+			document.getElementById("editor").style.fontStyle='italic';
+		}
+	}
+
+	function underLineSelectedText(){
+		if(isUnderLine){
+			isUnderLine = false;
+				document.getElementById("editor").style.textDecoration='none';
+		}else{
+			isUnderLine = true;
+			document.getElementById("editor").style.textDecoration='underline';
+		}
+
+	}
+
+	function startBlink(){
+		//console.log("start blink::");
+		var recordButton = document.getElementById("recordButton");
+		if(recordButton.className == "recording"){
+			recordButton.className = "record";
+		}else{
+			recordButton.className = "recording";
+		}
+			
+		showRecordingTime();
+		clearTimeout(blinkTimer);
+		blinkTimer = setTimeout('startBlink()',500);
+	}
+	function showRecordingTime(){
+		  var currentTime = new Date().getTime();
+		 // //console.log("current startTime ::"+startTime+"::currentTime::"+currentTime);
+		  currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
+		  var duration = getDurationInMinAndSec(currentMiliSec);
+		/*
+		  var recordTime = ""+(currentMiliSec / 1000);
+		 // //console.log("current recordTime ::"+recordTime);
+		  var pos= recordTime.indexOf(".");
+		  var timeinSec = recordTime.substring(0,pos);
+		  var min = parseInt(timeinSec / 60);
+		  var sec = ''+timeinSec % 60;
+		  //console.log("current audio pos::"+sec.length);
+		  if(sec.length == 1){
+			sec = '0'+sec;
+		  }*/
+		document.getElementById("cTime").innerHTML = "<b>"+duration+"</b>";
+	}
+
+	function getDurationInMinAndSec(duration){
+
+		  var recordTime = ""+(duration / 1000);
+		 // //console.log("current recordTime ::"+recordTime);
+		  var pos= recordTime.indexOf(".");
+		  var timeinSec = recordTime.substring(0,pos);
+		  var min = ""+parseInt(timeinSec / 60);
+		  var sec = ''+timeinSec % 60;
+		  //console.log("current audio pos::"+sec.length);
+		  if(min.length == 1){
+			min = '0'+min;
+		  }
+		  if(sec.length == 1){
+			sec = '0'+sec;
+		  }
+		  return (min+":"+sec);
+	}
+
+	function enableDisableRelationOptions(state){
+		//console.log("enableDisableRelationOptions ::"+state+"::selObjRotatable::"+selObjRotatable);
+		if(state){
+			//console.log("hiii");
+			//document.getElementById("rotateButton").className = "btn btn-default active"
+			if(selObjRotatable ){
+				//console.log("Innnn");
+				document.getElementById("rotateButton").disabled = true;
+			}else{
+				//console.log("Out");
+				 document.getElementById("rotateButton").disabled = false;
+			}
+			   
+			document.getElementById("delObjButton").disabled = false;	
+			var id = objectTimeTable.get(selObjArray[0]);
+			if(id != null){		
+				//document.getElementById("playFrObjButton").className = "btn btn-default active"
+				document.getElementById("playFrObjButton").disabled = false;
+			}
+
+			//document.getElementById("delObjButton").className = "btn btn-default active"
+			//document.getElementById("delObjButton").disabled = false;
+		}else{
+			//console.log("byeee");
+			document.getElementById("rotateButton").className = "btn btn-default"
 			document.getElementById("rotateButton").disabled = true;
+			isRotaionEnable = false;
+
+			document.getElementById("playFrObjButton").className = "btn btn-default"
+			document.getElementById("playFrObjButton").disabled = true;
+
+			document.getElementById("delObjButton").className = "btn btn-default"
+			document.getElementById("delObjButton").disabled = true;
+		}
+	}			
+	function setRotationActive(){
+		isRotaionEnable = true;
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		if(selObjArray.length >0){
+			for(i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				showSelectedObject(graphicsObject);
+				//console.log("2222")
+				enableDisableRelationOptions(true);
+			}
+		}
+	}	
+	function setZoomEnableDisable(state){
+		/*
+		isZoomEnable = state;
+		handleZoomButton(state);
+		if(state){
+			// show button zoomIn zoomOut
+			document.getElementById("zoomOptions").style.display = "inline-block";
+			if(zoomType == 2){
+				document.getElementById("zoomOut").className = "btn btn-default active"
+				document.getElementById("zoomIn").className = "btn btn-default";
+			}else{
+				document.getElementById("zoomIn").className = "btn btn-default active"
+				document.getElementById("zoomOut").className = "btn btn-default";
+			}
 		}else{
-			//console.log("Out");
-			 document.getElementById("rotateButton").disabled = false;
-		}
-		   
-		document.getElementById("delObjButton").disabled = false;	
-		var id = objectTimeTable.get(selObjArray[0]);
-		if(id != null){		
-			//document.getElementById("playFrObjButton").className = "btn btn-default active"
-			document.getElementById("playFrObjButton").disabled = false;
-		}
-
-		//document.getElementById("delObjButton").className = "btn btn-default active"
-		//document.getElementById("delObjButton").disabled = false;
-	}else{
-		//console.log("byeee");
-		document.getElementById("rotateButton").className = "btn btn-default"
-		document.getElementById("rotateButton").disabled = true;
-		isRotaionEnable = false;
-
-		document.getElementById("playFrObjButton").className = "btn btn-default"
-		document.getElementById("playFrObjButton").disabled = true;
-
-		document.getElementById("delObjButton").className = "btn btn-default"
-		document.getElementById("delObjButton").disabled = true;
-	}
-}			
-function setRotationActive(){
-	isRotaionEnable = true;
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	if(selObjArray.length >0){
-		for(i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			showSelectedObject(graphicsObject);
-			//console.log("2222")
-			enableDisableRelationOptions(true);
-		}
-	}
-}	
-function setZoomEnableDisable(state){
-	isZoomEnable = state;
-	handleZoomButton(state);
-	if(state){
-		// show button zoomIn zoomOut
-		document.getElementById("zoomOptions").style.display = "inline-block";
-		if(zoomType == 2){
-			document.getElementById("zoomOut").className = "btn btn-default active"
-			document.getElementById("zoomIn").className = "btn btn-default";
-		}else{
+			// hide button zoomIn zoomOut
+			document.getElementById("zoomOptions").style.display = "none";
 			document.getElementById("zoomIn").className = "btn btn-default active"
 			document.getElementById("zoomOut").className = "btn btn-default";
 		}
-	}else{
-		// hide button zoomIn zoomOut
-		document.getElementById("zoomOptions").style.display = "none";
-		document.getElementById("zoomIn").className = "btn btn-default active"
-		document.getElementById("zoomOut").className = "btn btn-default";
+		*/
+		//console.log("setZoomEnable::2");
+		//setZoomType(2);
 	}
-	//console.log("setZoomEnable::2");
-	//setZoomType(2);
-}
-function clearRecordedObjectTime(){
-	//console.log("clearRecordedObjectTime------------------");
-	timeRefTable.moveFirst();
-	while(timeRefTable.next()){
-		var objRecTime = timeRefTable.getKey();
-		var recordedObjArr = timeRefTable.getValue();
-			for(var i=0;i< recordedObjArr.length;i++){
-			var pageObj = recordedObjArr[i];
-				if(pageObj != null){
-					var pageNum = pageObj.num;
-					var objId = pageObj.objectId;
-					var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
-					if(nonRecordingObjArray == null){
-						nonRecordingObjArray = new Array();
-						nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+	function clearRecordedObjectTime(){
+		//console.log("clearRecordedObjectTime------------------");
+		timeRefTable.moveFirst();
+		while(timeRefTable.next()){
+			var objRecTime = timeRefTable.getKey();
+			var recordedObjArr = timeRefTable.getValue();
+				for(var i=0;i< recordedObjArr.length;i++){
+				var pageObj = recordedObjArr[i];
+					if(pageObj != null){
+						var pageNum = pageObj.num;
+						var objId = pageObj.objectId;
+						var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+						if(nonRecordingObjArray == null){
+							nonRecordingObjArray = new Array();
+							nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+						}
+						nonRecordingObjArray[nonRecordingObjArray.length] = objId;
 					}
-					nonRecordingObjArray[nonRecordingObjArray.length] = objId;
 				}
-			}
+		}
+		reInitRecordingDS();
+		
 	}
-	reInitRecordingDS();
-	
-}
-function RemoveRecordedObject(){
-	//console.log("RemoveRecordedObject------------------");
-	timeRefTable.moveFirst();
-	while(timeRefTable.next()){
-		var objRecTime = timeRefTable.getKey();
-		var recordedObjArr = timeRefTable.getValue();
-			for(var i=0;i< recordedObjArr.length;i++){
-			var pageObj = recordedObjArr[i];
-				if(pageObj != null){
-					var pageNum = pageObj.num;
-					var objId = pageObj.objectId;
-					var objectTable = pageObjTable.get(pageNum);
-					objectTable.remove(objId);
+	function RemoveRecordedObject(){
+		//console.log("RemoveRecordedObject------------------");
+		timeRefTable.moveFirst();
+		while(timeRefTable.next()){
+			var objRecTime = timeRefTable.getKey();
+			var recordedObjArr = timeRefTable.getValue();
+				for(var i=0;i< recordedObjArr.length;i++){
+				var pageObj = recordedObjArr[i];
+					if(pageObj != null){
+						var pageNum = pageObj.num;
+						var objId = pageObj.objectId;
+						var objectTable = pageObjTable.get(pageNum);
+						objectTable.remove(objId);
+					}
 				}
-			}
+		}
+		reInitRecordingDS();
+		showPageObject();
 	}
-	reInitRecordingDS();
-	showPageObject();
-}
 
+			
+	function reInitRecordingDS(){
+		 timeRefTable = null;
+		 objectTimeTable = null;
+		 timeRefTable = new Hashtable();
+		 objectTimeTable = new Hashtable();
 		
-function reInitRecordingDS(){
-	 timeRefTable = null;
-	 objectTimeTable = null;
-	 timeRefTable = new Hashtable();
-	 objectTimeTable = new Hashtable();
-	
 
-}
-function editObject(graphicsObject,startx,starty,mouseX,mouseY,endX,endY,text){
-	//console.log("Stroke color::"+ctx.strokeStyle);
-	/*
-	if(graphicsObject.opacity != null){
-		ctx.globalAlpha = graphicsObject.opacity;
-	}else{
-		ctx.globalAlpha = 1.0;
-	} */
-	ctx.setLineDash([0]);
-	
-	switch(graphicsObject.type){
-		case 1:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			ctx.lineCap = 'butt';
-			ctx.lineJoin = 'miter';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
+	}
+	function editObject(graphicsObject,startx,starty,mouseX,mouseY,endX,endY,text){
+		//console.log("Stroke color::"+ctx.strokeStyle);
+		/*
+		if(graphicsObject.opacity != null){
 			ctx.globalAlpha = graphicsObject.opacity;
-			var cx = startx; 
-			var cy = mouseY;
-			var dx = mouseX;
-			var dy = starty;
-			tempCirclePointsArray[0] = startx;
-			tempCirclePointsArray[1] = starty;
-			tempCirclePointsArray[2] = cx;
-			tempCirclePointsArray[3] = cy;
-			tempCirclePointsArray[4] = mouseX;
-			tempCirclePointsArray[5] = mouseY;
-			tempCirclePointsArray[6] = dx;
-			tempCirclePointsArray[7] = dy;
-			
-			
-			createRectangleNew(startx, starty, cx, cy, mouseX , mouseY , dx, dy);
-			if(graphicsObject.isFilled == true){
-				ctx.fillStyle = graphicsObject.fillColor;
-			    ctx.fill();
-				ctx.save();
-			}
-			
-			ctx.closePath();
-			ctx.stroke();
-			break;
-		case 2:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			ctx.lineCap = 'butt';
-			ctx.lineJoin = 'miter';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
-			ctx.globalAlpha = graphicsObject.opacity;
-			var cx = startx; 
-			var cy = mouseY;
-			var dx = mouseX;
-			var dy = starty;
-			tempCirclePointsArray[0] = startx;
-			tempCirclePointsArray[1] = starty;
-			tempCirclePointsArray[2] = cx;
-			tempCirclePointsArray[3] = cy;
-			tempCirclePointsArray[4] = mouseX;
-			tempCirclePointsArray[5] = mouseY;
-			tempCirclePointsArray[6] = dx;
-			tempCirclePointsArray[7] = dy;
-			
-			
-			createOvalNew(startx, starty, cx, cy, mouseX , mouseY , dx, dy);
-			if(graphicsObject.isFilled == true){
-				ctx.fillStyle = graphicsObject.fillColor;
-			    ctx.fill();
-				ctx.save();
-			}
-			
-			ctx.closePath();
-			ctx.stroke();
-			break;
-		case 3:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			ctx.lineCap = 'butt';
-			ctx.lineJoin = 'miter';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
-			ctx.globalAlpha = graphicsObject.opacity;
-			createLine(startx, starty, mouseX , mouseY );
-			ctx.stroke();
-			break;
-		case 4:
-			ctx.beginPath();
-			ctx.lineCap = 'round';
-			ctx.lineJoin = 'round';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
-			ctx.globalAlpha = graphicsObject.opacity;
-			createLine(startx, starty, mouseX , mouseY );
-			ctx.stroke(); 
-			break;
-		case 5:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			ctx.lineCap = 'butt';
-			ctx.lineJoin = 'miter';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
-			ctx.globalAlpha = graphicsObject.opacity;
-			if(endX != null && endY != null){
-				createTriangle(startx,starty,mouseX,mouseY,endX,endY);
-			}else{
-				createLine(startx, starty, mouseX , mouseY );
-			}
-			if(graphicsObject.isFilled == true){
-				ctx.fillStyle = graphicsObject.fillColor;
-			    ctx.fill();
-				ctx.save();
-			}
-			ctx.closePath();
-			ctx.stroke();
-			break;
-		case 6:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			ctx.lineCap = 'butt';
-			ctx.lineJoin = 'miter';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
-			ctx.globalAlpha = graphicsObject.opacity;
-			createArrow(startx, starty, mouseX , mouseY );
-			ctx.closePath();
-			ctx.stroke();
-			break;
-		case 7:
-			// Code for dotted rectangle for selection
+		}else{
+			ctx.globalAlpha = 1.0;
+		} */
+		ctx.setLineDash([0]);
 		
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.save();
-			ctx.beginPath();
-			ctx.strokeStyle = "#000000";
-			ctx.lineWidth= 2;
-			ctx.globalAlpha = globalAlpha;
-			ctx.setLineDash([3]);
-			createRectangle(startx, starty, mouseX , mouseY );
-			ctx.closePath();
-			ctx.stroke();
-			ctx.restore();
-			break;
-		case 8:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			drawImage(startx, starty, mouseX , mouseY );
-			ctx.closePath();
-			ctx.stroke();
-			break;
-		case 9:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.beginPath();
-			createLine(startx, starty, mouseX , mouseY );
-			//points_is_onLine(startx, starty, mouseX , mouseY );
-			ctx.closePath();
-			ctx.stroke();
-			break;
-		case 10:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.save();
-			ctx.beginPath();
-			ctx.strokeStyle = "#000000";
-			ctx.lineWidth= 2;
-			ctx.setLineDash([3]);
-			createRectangle(startx, starty, mouseX , mouseY );
-			ctx.closePath();
-			ctx.stroke();
-			ctx.restore();
-			break;
-			
-		case 11:
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			restore();
-			ctx.save();
-			ctx.beginPath();
-			ctx.lineCap = 'butt';
-			ctx.lineJoin = 'miter';
-			ctx.strokeStyle = graphicsObject.color;
-			ctx.lineWidth = graphicsObject.lineWidth;
-			ctx.globalAlpha = graphicsObject.opacity;
-			if(endX != null && endY != null){
-				createArc(startx,starty,mouseX,mouseY,endX,endY);
-			 }else{
-				createLine(startx, starty, mouseX , mouseY );
-			}
-			//ctx.closePath();
-			ctx.stroke();
-			
-			break;
-			
-		case 12:
-		
-			if(checkPointsInCanvas(startx, starty, mouseX , mouseY)){
+		switch(graphicsObject.type){
+			case 1:
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				restore();
-				tempCirclePointsArray[0] = startx;
-				tempCirclePointsArray[1] = starty;
-				tempCirclePointsArray[2] = mouseX;
-				tempCirclePointsArray[3] = mouseY;
-				isCircleCreated = true;
 				ctx.beginPath();
 				ctx.lineCap = 'butt';
 				ctx.lineJoin = 'miter';
 				ctx.strokeStyle = graphicsObject.color;
 				ctx.lineWidth = graphicsObject.lineWidth;
 				ctx.globalAlpha = graphicsObject.opacity;
-				createOval(startx, starty, mouseX , mouseY);
+				var cx = startx; 
+				var cy = mouseY;
+				var dx = mouseX;
+				var dy = starty;
+				tempCirclePointsArray[0] = startx;
+				tempCirclePointsArray[1] = starty;
+				tempCirclePointsArray[2] = cx;
+				tempCirclePointsArray[3] = cy;
+				tempCirclePointsArray[4] = mouseX;
+				tempCirclePointsArray[5] = mouseY;
+				tempCirclePointsArray[6] = dx;
+				tempCirclePointsArray[7] = dy;
+				
+				
+				createRectangleNew(startx, starty, cx, cy, mouseX , mouseY , dx, dy);
 				if(graphicsObject.isFilled == true){
 					ctx.fillStyle = graphicsObject.fillColor;
-					ctx.fill();
+				    ctx.fill();
 					ctx.save();
 				}
-				ctx.closePath() ;
-				ctx.stroke() ;
-			}else{
-				isCircleCreated = false;
-			}
+				
+				ctx.closePath();
+				ctx.stroke();
+				break;
+			case 2:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.beginPath();
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
+				ctx.strokeStyle = graphicsObject.color;
+				ctx.lineWidth = graphicsObject.lineWidth;
+				ctx.globalAlpha = graphicsObject.opacity;
+				var cx = startx; 
+				var cy = mouseY;
+				var dx = mouseX;
+				var dy = starty;
+				tempCirclePointsArray[0] = startx;
+				tempCirclePointsArray[1] = starty;
+				tempCirclePointsArray[2] = cx;
+				tempCirclePointsArray[3] = cy;
+				tempCirclePointsArray[4] = mouseX;
+				tempCirclePointsArray[5] = mouseY;
+				tempCirclePointsArray[6] = dx;
+				tempCirclePointsArray[7] = dy;
+				
+				
+				createOvalNew(startx, starty, cx, cy, mouseX , mouseY , dx, dy);
+				if(graphicsObject.isFilled == true){
+					ctx.fillStyle = graphicsObject.fillColor;
+				    ctx.fill();
+					ctx.save();
+				}
+				
+				ctx.closePath();
+				ctx.stroke();
+				break;
+			case 3:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.beginPath();
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
+				ctx.strokeStyle = graphicsObject.color;
+				ctx.lineWidth = graphicsObject.lineWidth;
+				ctx.globalAlpha = graphicsObject.opacity;
+				createLine(startx, starty, mouseX , mouseY );
+				ctx.stroke();
+				break;
+			case 4:
+				ctx.beginPath();
+				ctx.lineCap = 'round';
+				ctx.lineJoin = 'round';
+				ctx.strokeStyle = graphicsObject.color;
+				ctx.lineWidth = graphicsObject.lineWidth;
+				ctx.globalAlpha = graphicsObject.opacity;
+				createLine(startx, starty, mouseX , mouseY );
+				ctx.stroke(); 
+				break;
+			case 5:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.beginPath();
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
+				ctx.strokeStyle = graphicsObject.color;
+				ctx.lineWidth = graphicsObject.lineWidth;
+				ctx.globalAlpha = graphicsObject.opacity;
+				if(endX != null && endY != null){
+					createTriangle(startx,starty,mouseX,mouseY,endX,endY);
+				}else{
+					createLine(startx, starty, mouseX , mouseY );
+				}
+				if(graphicsObject.isFilled == true){
+					ctx.fillStyle = graphicsObject.fillColor;
+				    ctx.fill();
+					ctx.save();
+				}
+				ctx.closePath();
+				ctx.stroke();
+				break;
+			case 6:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.beginPath();
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
+				ctx.strokeStyle = graphicsObject.color;
+				ctx.lineWidth = graphicsObject.lineWidth;
+				ctx.globalAlpha = graphicsObject.opacity;
+				createArrow(startx, starty, mouseX , mouseY );
+				ctx.closePath();
+				ctx.stroke();
+				break;
+			case 7:
+				// Code for dotted rectangle for selection
 			
-			break;
-		case 13:
-		
-				var thirdPoint = getEquilateralTriangletThirdPoint(startx, starty, mouseX , mouseY);
-				if(checkEqTriangleBoundryInCanvas(startx, starty, mouseX , mouseY,thirdPoint.x3,thirdPoint.y3)){
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.save();
+				ctx.beginPath();
+				ctx.strokeStyle = "#000000";
+				ctx.lineWidth= 2;
+				ctx.globalAlpha = globalAlpha;
+				ctx.setLineDash([3]);
+				createRectangle(startx, starty, mouseX , mouseY );
+				ctx.closePath();
+				ctx.stroke();
+				ctx.restore();
+				break;
+			case 8:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.beginPath();
+				drawImage(startx, starty, mouseX , mouseY,graphicsObject.imageLoaded);
+				ctx.closePath();
+				ctx.stroke();
+				break;
+			case 9:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.beginPath();
+				createLine(startx, starty, mouseX , mouseY );
+				//points_is_onLine(startx, starty, mouseX , mouseY );
+				ctx.closePath();
+				ctx.stroke();
+				break;
+			case 10:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.save();
+				ctx.beginPath();
+				ctx.strokeStyle = "#000000";
+				ctx.lineWidth= 2;
+				ctx.setLineDash([3]);
+				createRectangle(startx, starty, mouseX , mouseY );
+				ctx.closePath();
+				ctx.stroke();
+				ctx.restore();
+				break;
+				
+			case 11:
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				ctx.save();
+				ctx.beginPath();
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
+				ctx.strokeStyle = graphicsObject.color;
+				ctx.lineWidth = graphicsObject.lineWidth;
+				ctx.globalAlpha = graphicsObject.opacity;
+				if(endX != null && endY != null){
+					createArc(startx,starty,mouseX,mouseY,endX,endY);
+				 }else{
+					createLine(startx, starty, mouseX , mouseY );
+				}
+				//ctx.closePath();
+				ctx.stroke();
+				
+				break;
+				
+			case 12:
+			
+				if(checkPointsInCanvas(startx, starty, mouseX , mouseY)){
 					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					restore();
+					tempCirclePointsArray[0] = startx;
+					tempCirclePointsArray[1] = starty;
+					tempCirclePointsArray[2] = mouseX;
+					tempCirclePointsArray[3] = mouseY;
+					isCircleCreated = true;
 					ctx.beginPath();
 					ctx.lineCap = 'butt';
 					ctx.lineJoin = 'miter';
 					ctx.strokeStyle = graphicsObject.color;
 					ctx.lineWidth = graphicsObject.lineWidth;
 					ctx.globalAlpha = graphicsObject.opacity;
-					isEqTriangleCreated = true;
-					createTriangle(startx, starty, mouseX , mouseY,thirdPoint.x3,thirdPoint.y3);
+					createOval(startx, starty, mouseX , mouseY);
 					if(graphicsObject.isFilled == true){
 						ctx.fillStyle = graphicsObject.fillColor;
 						ctx.fill();
@@ -8433,851 +9929,1030 @@ function editObject(graphicsObject,startx,starty,mouseX,mouseY,endX,endY,text){
 					ctx.closePath() ;
 					ctx.stroke() ;
 				}else{
-					isEqTriangleCreated = false;
+					isCircleCreated = false;
 				}
-			break;
-		case 16:
-					//console.log("Create object :"+text);
+				
+				break;
+			case 13:
+			
+					var thirdPoint = getEquilateralTriangletThirdPoint(startx, starty, mouseX , mouseY);
+					if(checkEqTriangleBoundryInCanvas(startx, starty, mouseX , mouseY,thirdPoint.x3,thirdPoint.y3)){
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						restore();
+						ctx.beginPath();
+						ctx.lineCap = 'butt';
+						ctx.lineJoin = 'miter';
+						ctx.strokeStyle = graphicsObject.color;
+						ctx.lineWidth = graphicsObject.lineWidth;
+						ctx.globalAlpha = graphicsObject.opacity;
+						isEqTriangleCreated = true;
+						createTriangle(startx, starty, mouseX , mouseY,thirdPoint.x3,thirdPoint.y3);
+						if(graphicsObject.isFilled == true){
+							ctx.fillStyle = graphicsObject.fillColor;
+							ctx.fill();
+							ctx.save();
+						}
+						ctx.closePath() ;
+						ctx.stroke() ;
+					}else{
+						isEqTriangleCreated = false;
+					}
+				break;
+			case 16:
+						//console.log("Create object :"+text);
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						restore();
+						ctx.beginPath();
+						createText(text,startx,starty,textStyleColor);
+						ctx.closePath() ;
+						ctx.stroke() ;
+					
+				break	
+			case 20:
+				ctx.beginPath();
+				createLine(startx, starty, mouseX , mouseY );
+				ctx.stroke(); 
+				break;
+			case 23:
+				var d = Math.abs(graphicsObject.pointsArray[0] - graphicsObject.pointsArray[4]);
+				var cx = graphicsObject.pointsArray[0] - d/2;
+				var cy = graphicsObject.pointsArray[1] - d/2;
+				var r = distanceBetween(cx,cy, mouseX, mouseY);
+				
+				if(checkSquareBoundryInCanvas(cx + r,cy + r,cx - r,cy + r,cx - r, cy - r,cx + r,cy - r)){
 					ctx.clearRect(0, 0, canvas.width, canvas.height);
 					restore();
+					//console.log("r::"+r);
+					var px = cx+r;
+					var py = cy+r;
+					
+					graphicsObject.pointsArray[0] = cx + r;
+					graphicsObject.pointsArray[1] = cy + r;
+					graphicsObject.pointsArray[2] = cx - r;
+					graphicsObject.pointsArray[3] = cy + r;
+					graphicsObject.pointsArray[4] = cx - r;
+					graphicsObject.pointsArray[5] = cy - r;
+					graphicsObject.pointsArray[6] = cx + r;
+					graphicsObject.pointsArray[7] = cy - r;
+									
 					ctx.beginPath();
-					createText(text,startx,starty,textStyleColor);
-					ctx.closePath() ;
-					ctx.stroke() ;
-				
-			break	
-		case 20:
-			ctx.beginPath();
-			createLine(startx, starty, mouseX , mouseY );
-			ctx.stroke(); 
-			break;
-		case 23:
-			var d = Math.abs(graphicsObject.pointsArray[0] - graphicsObject.pointsArray[4]);
-			var cx = graphicsObject.pointsArray[0] - d/2;
-			var cy = graphicsObject.pointsArray[1] - d/2;
-			var r = distanceBetween(cx,cy, mouseX, mouseY);
-			
-			if(checkSquareBoundryInCanvas(cx + r,cy + r,cx - r,cy + r,cx - r, cy - r,cx + r,cy - r)){
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				restore();
-				//console.log("r::"+r);
-				var px = cx+r;
-				var py = cy+r;
-				
-				graphicsObject.pointsArray[0] = cx + r;
-				graphicsObject.pointsArray[1] = cy + r;
-				graphicsObject.pointsArray[2] = cx - r;
-				graphicsObject.pointsArray[3] = cy + r;
-				graphicsObject.pointsArray[4] = cx - r;
-				graphicsObject.pointsArray[5] = cy - r;
-				graphicsObject.pointsArray[6] = cx + r;
-				graphicsObject.pointsArray[7] = cy - r;
-								
+					ctx.lineCap = 'butt';
+					ctx.lineJoin = 'miter';
+					ctx.strokeStyle = graphicsObject.color;
+					ctx.lineWidth = graphicsObject.lineWidth;
+					ctx.globalAlpha = graphicsObject.opacity;
+					createSquare(graphicsObject.pointsArray[0], graphicsObject.pointsArray[1], graphicsObject.pointsArray[2], graphicsObject.pointsArray[3], graphicsObject.pointsArray[4] , graphicsObject.pointsArray[5] , graphicsObject.pointsArray[6], graphicsObject.pointsArray[7]);
+					if(graphicsObject.isFilled == true){
+						ctx.fillStyle = graphicsObject.fillColor;
+						ctx.fill();
+						ctx.save();
+					}
+					ctx.closePath();
+					ctx.stroke();
+				}	
+				break;
+			case 25:
 				ctx.beginPath();
-				ctx.lineCap = 'butt';
-				ctx.lineJoin = 'miter';
+				ctx.lineCap = 'round';
+				ctx.lineJoin = 'round';
 				ctx.strokeStyle = graphicsObject.color;
 				ctx.lineWidth = graphicsObject.lineWidth;
 				ctx.globalAlpha = graphicsObject.opacity;
-				createSquare(graphicsObject.pointsArray[0], graphicsObject.pointsArray[1], graphicsObject.pointsArray[2], graphicsObject.pointsArray[3], graphicsObject.pointsArray[4] , graphicsObject.pointsArray[5] , graphicsObject.pointsArray[6], graphicsObject.pointsArray[7]);
-				if(graphicsObject.isFilled == true){
-					ctx.fillStyle = graphicsObject.fillColor;
-					ctx.fill();
-					ctx.save();
-				}
-				ctx.closePath();
-				ctx.stroke();
-			}	
-			break;
-	}
-}
-function fastFarward(){
-  /*
-  var currTime = myVid.currentTime;
-  currTime = (currTime + currTime * .1)*1000;
-  */
-  sliderPos =  sliderPos + 10;
-  if(sliderPos < 100){
-		clearTimeout(runningTimerId);	
-		clearTimeout(sliderTimer);
-		playingFrom = 2;
-		//sliderPos =  Math.floor(currTime * 100/recFileDuration);
-		currentAudioTime  = sliderPos*recFileDuration / 100;
-		currentAudioTime =  Math.ceil(currentAudioTime / 1000);
-		myVid.currentTime  = currentAudioTime;
-  }else{
-	sliderPos = 0;
-  }
-   
-}
-
-function rewind(){
-	sliderPos =  sliderPos - 10;
- if(sliderPos > 0){
-		clearTimeout(runningTimerId);	
-		clearTimeout(sliderTimer);
-		playingFrom = 2;
-		//sliderPos =  Math.floor(currTime * 100/recFileDuration);
-		currentAudioTime  = sliderPos*recFileDuration / 100;
-		currentAudioTime =  Math.ceil(currentAudioTime / 1000);
-		myVid.currentTime  = currentAudioTime;
-  }else{
-	sliderPos = 0;
-  }
-}
-
-function setAppendStatus(status){
-$('#player-Modal').modal('hide');
-   if(status == 'Y'){
-		ans = true;
-	$('#appendRecording').click();
-   }else{
-		ans = false;
-	$('#appendRecording').click();
-   }
-}
-
-function polygonCentroid(pointsArr){
-  var x = 0,y = 0,i,j,f,point1,point2;
-
-	for (i = 0, j = pointsArr.length - 1; i < pointsArr.length; j=i,i++) {
-		point1 = pointsArr[i];
-		point2 = this.points[j];
-		f = point1.x * point2.y - point2.x * point1.y;
-		x += (point1.x + point2.x) * f;
-		y += (point1.y + point2.y) * f;
-	}
-
-	f = this.area() * 6;
-	return new Point(x / f, y / f);
-}
-
-function polygonArea(){
-}
-
-function setObjectAttributeMenuOption(graphicsObj){
-
-	if(graphicsObj.type != 8){
-		if(graphicsObj.isFilled){
-			document.getElementById("fillAttr").value = graphicsObj.fillColor;
-			fillColor = graphicsObj.fillColor;
-		}else{
-			document.getElementById("fillAttr").value = "";
-			fillColor = null;
-		}
-		if(graphicsObj.lineWidth == ""){
-			document.getElementById("lineWidthAttr").value = 2;
-			lineWidth = 2;
-		}else{
-			document.getElementById("lineWidthAttr").value = graphicsObj.lineWidth;
-			lineWidth = graphicsObj.lineWidth;
-		}
-		if(graphicsObj.opacity == ""){
-			document.getElementById("opacityCtrl").value = 1;
-			globalAlpha = 1;
-		
-		}else{
-			document.getElementById("opacityCtrl").value = graphicsObj.opacity;
-			globalAlpha = graphicsObj.opacity;
-		}
-		if(graphicsObj.color == ""){
-			document.getElementById("strokeAttr").value = "000000";
-			styleColor = "000000";
-		}else{
-			if(graphicsObj.type != 16){
-				document.getElementById("strokeAttr").value = graphicsObj.color;
-				styleColor = graphicsObj.color;
-			}
-
+				createLine(startx, starty, mouseX , mouseY );
+				ctx.stroke(); 
+				break;	
 		}
 	}
-}
+	function fastFarward(){
+	  /*
+	  var currTime = myVid.currentTime;
+	  currTime = (currTime + currTime * .1)*1000;
+	  */
+	  sliderPos =  sliderPos + 10;
+	  if(sliderPos < 100){
+			clearTimeout(runningTimerId);	
+			clearTimeout(sliderTimer);
+			playingFrom = 2;
+			//sliderPos =  Math.floor(currTime * 100/recFileDuration);
+			currentAudioTime  = sliderPos*recFileDuration / 100;
+			currentAudioTime =  Math.ceil(currentAudioTime / 1000);
+			myVid.currentTime  = currentAudioTime;
+	  }else{
+		sliderPos = 0;
+	  }
+	   
+	}
 
-function deletelecturerecording(){
-	jQuery.ajax({
-			type:	"get",
-			url: 	"deletelecturerecording.action",
-			data: 	"meetingName="+meetingName,
-			success:function(msg) {
-			if(msg.actionErrors != null){
-				alert("error");
-				return;
+	function rewind(){
+		sliderPos =  sliderPos - 10;
+	 if(sliderPos > 0){
+			clearTimeout(runningTimerId);	
+			clearTimeout(sliderTimer);
+			playingFrom = 2;
+			//sliderPos =  Math.floor(currTime * 100/recFileDuration);
+			currentAudioTime  = sliderPos*recFileDuration / 100;
+			currentAudioTime =  Math.ceil(currentAudioTime / 1000);
+			myVid.currentTime  = currentAudioTime;
+	  }else{
+		sliderPos = 0;
+	  }
+	}
+
+	function setAppendStatus(status){
+	$('#player-Modal').modal('hide');
+	   if(status == 'Y'){
+			ans = true;
+		$('#appendRecording').click();
+	   }else{
+			ans = false;
+		$('#appendRecording').click();
+	   }
+	}
+
+	function polygonCentroid(pointsArr){
+	  var x = 0,y = 0,i,j,f,point1,point2;
+
+		for (i = 0, j = pointsArr.length - 1; i < pointsArr.length; j=i,i++) {
+			point1 = pointsArr[i];
+			point2 = this.points[j];
+			f = point1.x * point2.y - point2.x * point1.y;
+			x += (point1.x + point2.x) * f;
+			y += (point1.y + point2.y) * f;
+		}
+
+		f = this.area() * 6;
+		return new Point(x / f, y / f);
+	}
+
+	function polygonArea(){
+	}
+
+	function setObjectAttributeMenuOption(graphicsObj){
+
+		if(graphicsObj.type != 8){
+			if(graphicsObj.isFilled){
+				document.getElementById("fillAttr").value = graphicsObj.fillColor;
+				fillColor = graphicsObj.fillColor;
 			}else{
-				recFileDuration = 0;
-				filename = "";
-				recCount = 0;
-				document.getElementById("eTime").innerHTML = "<b>00:00</b>";				
-				document.getElementById("cTime").innerHTML = "<b>00:00</b>";
-				clearRecordedObjectTime();				
-				//console.log("------Successfully Copied------");
+				document.getElementById("fillAttr").value = "";
+				fillColor = null;
 			}
-	}});
-	$('#close-popover').click();	
-}
-function deleteSlide(){
-	var pageNum = document.getElementById("pagenum").value;
-	//pageObjTable = sortTableByKey(pageObjTable);
-	var updatedPageObjTable =  new Hashtable(); 
-	pageObjTable.moveFirst();
-	while(pageObjTable.next()){
-		if(pageObjTable.getKey() < pageNum){
-			updatedPageObjTable.put(pageObjTable.getKey(),pageObjTable.getValue());
-			continue;
+			if(graphicsObj.lineWidth == ""){
+				document.getElementById("lineWidthAttr").value = 2;
+				lineWidth = 2;
+			}else{
+				document.getElementById("lineWidthAttr").value = graphicsObj.lineWidth;
+				lineWidth = graphicsObj.lineWidth;
+			}
+			if(graphicsObj.opacity == ""){
+				document.getElementById("opacityCtrl").value = 1;
+				globalAlpha = 1;
 			
-		}else if(pageObjTable.getKey() == pageNum){
-				pageRemoved = true;
-				var objectTable = pageObjTable.getValue();
-				objectTable = null;
-				
-		}else if(pageObjTable.getKey() > pageNum){
-				var ctr = (pageObjTable.getKey() - 1);
-				updatedPageObjTable.put(ctr,pageObjTable.getValue());
-				
+			}else{
+				document.getElementById("opacityCtrl").value = graphicsObj.opacity;
+				globalAlpha = graphicsObj.opacity;
+			}
+			if(graphicsObj.color == ""){
+				document.getElementById("strokeAttr").value = "000000";
+				styleColor = "000000";
+			}else{
+				if(graphicsObj.type != 16){
+					document.getElementById("strokeAttr").value = graphicsObj.color;
+					styleColor = graphicsObj.color;
+				}
+
+			}
 		}
 	}
-	pageObjTable = null;
-	pageObjTable = updatedPageObjTable;
-	//console.log("pageObjTable After:;"+pageObjTable);
-	
-	//console.log("nonRecordinPageObjTable before:;"+nonRecordinPageObjTable);
-	//nonRecordinPageObjTable = sortTableByKey(nonRecordinPageObjTable);
-	var updatedNonRecordinPageObjTable =  new Hashtable(); 
-	nonRecordinPageObjTable.moveFirst();
-	while(nonRecordinPageObjTable.next()){
-		if(nonRecordinPageObjTable.getKey() < pageNum ){
-			updatedNonRecordinPageObjTable.put(nonRecordinPageObjTable.getKey(),nonRecordinPageObjTable.getValue());
-			continue;
-		}else if(nonRecordinPageObjTable.getKey() ==  pageNum){
-				pageRemoved = true;
-				var nonRecordingObjArray = nonRecordinPageObjTable.getValue();
-				nonRecordingObjArray = null;
-		}else if(nonRecordinPageObjTable.getKey() >  pageNum){
-				var ctr = nonRecordinPageObjTable.getKey() - 1;
-				updatedNonRecordinPageObjTable.put(ctr,nonRecordinPageObjTable.getValue());
+
+	function deletelecturerecording(){
+		jQuery.ajax({
+				type:	"get",
+				url: 	"deletelecturerecording.action",
+				data: 	"meetingName="+meetingName,
+				success:function(msg) {
+				if(msg.actionErrors != null){
+					alert("error");
+					return;
+				}else{
+					recFileDuration = 0;
+					filename = "";
+					recCount = 0;
+					document.getElementById("eTime").innerHTML = "<b>00:00</b>";				
+					document.getElementById("cTime").innerHTML = "<b>00:00</b>";
+					clearRecordedObjectTime();				
+					//console.log("------Successfully Copied------");
+				}
+		}});
+		$('#close-popover').click();	
+	}
+	function deleteSlide(){
+		var pageNum = document.getElementById("pagenum").value;
+		//pageObjTable = sortTableByKey(pageObjTable);
+		var updatedPageObjTable =  new Hashtable(); 
+		pageObjTable.moveFirst();
+		while(pageObjTable.next()){
+			if(pageObjTable.getKey() < pageNum){
+				updatedPageObjTable.put(pageObjTable.getKey(),pageObjTable.getValue());
+				continue;
+				
+			}else if(pageObjTable.getKey() == pageNum){
+					pageRemoved = true;
+					var objectTable = pageObjTable.getValue();
+					objectTable = null;
+					
+			}else if(pageObjTable.getKey() > pageNum){
+					var ctr = (pageObjTable.getKey() - 1);
+					updatedPageObjTable.put(ctr,pageObjTable.getValue());
+					
+			}
 		}
+		pageObjTable = null;
+		pageObjTable = updatedPageObjTable;
+		//console.log("pageObjTable After:;"+pageObjTable);
 		
-	}
-	nonRecordinPageObjTable = null;
-	nonRecordinPageObjTable = updatedNonRecordinPageObjTable;
-	timeRefTable.moveFirst();
-	while(timeRefTable.next()){
-		var objRecTime = timeRefTable.getKey();
-		var recordedObjArr = timeRefTable.getValue();
-			for(var i=0;i< recordedObjArr.length;i++){
-				var pageObj = recordedObjArr[i];
-				if(pageObj != null){
-					if(pageNum > pageObj.num){
-						continue;
-					}else if(pageNum == pageObj.num){
-						recordedObjArr.splice(i ,1);
-						objectTimeTable.remove(pageObj.objectId);
-						objectPageRefTable.remove(pageObj.objectId);
-					}else if(pageNum < pageObj.num){
-						pageObj.num = (pageObj.num - 1);
-						objectPageRefTable.put(pageObj.objectId,pageObj.num);
+		//console.log("nonRecordinPageObjTable before:;"+nonRecordinPageObjTable);
+		//nonRecordinPageObjTable = sortTableByKey(nonRecordinPageObjTable);
+		var updatedNonRecordinPageObjTable =  new Hashtable(); 
+		nonRecordinPageObjTable.moveFirst();
+		while(nonRecordinPageObjTable.next()){
+			if(nonRecordinPageObjTable.getKey() < pageNum ){
+				updatedNonRecordinPageObjTable.put(nonRecordinPageObjTable.getKey(),nonRecordinPageObjTable.getValue());
+				continue;
+			}else if(nonRecordinPageObjTable.getKey() ==  pageNum){
+					pageRemoved = true;
+					var nonRecordingObjArray = nonRecordinPageObjTable.getValue();
+					nonRecordingObjArray = null;
+			}else if(nonRecordinPageObjTable.getKey() >  pageNum){
+					var ctr = nonRecordinPageObjTable.getKey() - 1;
+					updatedNonRecordinPageObjTable.put(ctr,nonRecordinPageObjTable.getValue());
+			}
+			
+		}
+		nonRecordinPageObjTable = null;
+		nonRecordinPageObjTable = updatedNonRecordinPageObjTable;
+		timeRefTable.moveFirst();
+		while(timeRefTable.next()){
+			var objRecTime = timeRefTable.getKey();
+			var recordedObjArr = timeRefTable.getValue();
+				for(var i=0;i< recordedObjArr.length;i++){
+					var pageObj = recordedObjArr[i];
+					if(pageObj != null){
+						if(pageNum > pageObj.num){
+							continue;
+						}else if(pageNum == pageObj.num){
+							recordedObjArr.splice(i ,1);
+							objectTimeTable.remove(pageObj.objectId);
+							objectPageRefTable.remove(pageObj.objectId);
+						}else if(pageNum < pageObj.num){
+							pageObj.num = (pageObj.num - 1);
+							objectPageRefTable.put(pageObj.objectId,pageObj.num);
+						}
 					}
 				}
-			}
-	}
-	$('#close-popover').click();	
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	restore();
-	
-}
-function sortTableByKey(tableToBeSort){
-	var keyArr = new Array();
-	var sortedTable = new Hashtable();
-	tableToBeSort.moveFirst();
-	var ctr = 0;
-	while(tableToBeSort.next()){
-		keyArr[ctr] = tableToBeSort.getKey();
-		ctr++;
-	}
-	keyArr = keyArr.sort(function(a, b){return a-b});
-	for(var i=0;i<keyArr.length;i++){
-		sortedTable.put(keyArr[i],tableToBeSort.get(keyArr[i]));
-	}
-	return sortedTable;
-}
-function removeNonRotationalObjectFromSel(){
-//console.log("removeNonRotationalObjectFromSel===================="+selObjArray);
-	var isRemoved = false;
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	if(selObjArray.length >0){
-		for(i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			if(graphicsObject.type == 8 || graphicsObject.type == 12 || graphicsObject.type == 16){
-				//console.log("removed");
-				selObjArray.splice(i,1);
-				isRemoved = true;
-			}
 		}
-	}
-	if(isRemoved){
+		$('#close-popover').click();	
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		restore();
+		
 	}
-	//console.log("removeNonRotationalObjectFromSel========After============"+selObjArray);
-}
-
-function closeModal(){
-//console.log("Hiiiii");
-$('#error-Modal').modal('hide');
-canvas.style.cursor  = "default";
-}
-
-function toggleFullScreen() {
-		if ((document.fullScreenElement && document.fullScreenElement !== null) || (!document.mozFullScreen && !document.webkitIsFullScreen)) {
-			if (document.documentElement.requestFullScreen) {
-				document.documentElement.requestFullScreen();
-			} else if (document.documentElement.mozRequestFullScreen) {
-				document.documentElement.mozRequestFullScreen();
-			} else if (document.documentElement.webkitRequestFullScreen) {
-				document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-			}
-		} else {
-			if (document.cancelFullScreen) {
-				document.cancelFullScreen();
-			} else if (document.mozCancelFullScreen) {
-				document.mozCancelFullScreen();
-			} else if (document.webkitCancelFullScreen) {
-				document.webkitCancelFullScreen();
-			}
+	function sortTableByKey(tableToBeSort){
+		var keyArr = new Array();
+		var sortedTable = new Hashtable();
+		tableToBeSort.moveFirst();
+		var ctr = 0;
+		while(tableToBeSort.next()){
+			keyArr[ctr] = tableToBeSort.getKey();
+			ctr++;
 		}
-}
-
-
-
-function windowResize(){
-	 /*
-		var windowW=window.innerWidth;
-		var windowH=window.innerHeight
-	 */
-	 var windowW=1280;
-	 var windowH=720;
-	 
-	 canvas.width = (windowW - 40);
-	 canvas.height = (windowH -200);
-	 canvasOffset = $("#canvas").offset();
-	 offsetX = canvasOffset.left;
-	 offsetY = canvasOffset.top;
-	 canvasBoundedRectanglePoints[0] = 0;
-	 canvasBoundedRectanglePoints[1] = 0;
-	 canvasBoundedRectanglePoints[2] = canvas.width;
-	 canvasBoundedRectanglePoints[3] = canvas.height;
-	 restore();
- }
-
-function fireEvent(obj, evt) {
-    var fireOnThis = obj;
-    if (document.createEvent) {
-        var evObj = document.createEvent('MouseEvents');
-        evObj.initEvent(evt, true, false);
-        fireOnThis.dispatchEvent(evObj);
-    } else if (document.createEventObject) {
-        fireOnThis.fireEvent('on' + evt);
-    }
-}
-
-
-function copySelectedObject(){
-	copiedObjArr = null;
-	copiedObjArr = new Array();
-	if(selObjArray != null && selObjArray.length>0){
-		 for(var i=0;i<selObjArray.length;i++){
-			copiedObjArr[i] = selObjArray[i];
-		 }
+		keyArr = keyArr.sort(function(a, b){return a-b});
+		for(var i=0;i<keyArr.length;i++){
+			sortedTable.put(keyArr[i],tableToBeSort.get(keyArr[i]));
+		}
+		return sortedTable;
 	}
-}
-
-function pasteCopiedObject(){
-	var pageNum = document.getElementById("pagenum").value;
-	var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
-	if(nonRecordingObjArray == null){
-		nonRecordingObjArray = new Array();
-		nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
-	}
-	selObjArray = null;
-	selObjArray = new Array();
-	var isCopiedObjGrp = false;
-	//console.log("copiedObjArr::"+copiedObjArr);
-	var destObjectTable = pageObjTable.get(pageNum);
-	//console.log("objectTable before copying ::;"+destObjectTable+":::count::;"+count);
-	for(var i=0;i<copiedObjArr.length;i++){
-		count++;
-		 var srcObjpageNum = objectPageRefTable.get(copiedObjArr[i]);
-		 var srcObjectTable = pageObjTable.get(srcObjpageNum);
-		 var graphicsObject = srcObjectTable.get(copiedObjArr[i]);
-		 //console.log("graphicsObject::"+graphicsObject.type);
-		var newObjPtsArray = new Array();
-		var pointsArray = graphicsObject.pointsArray;
-		for(var j=0;j<pointsArray.length;j++){
-			newObjPtsArray[j] = pointsArray[j];
-		}
-		var textObj;
-		if(graphicsObject.type == 16){
-			textObj= new Text(graphicsObject.text.textData,graphicsObject.text.fontType,graphicsObject.text.fontSize,graphicsObject.text.isBold,graphicsObject.text.isUnderLine,graphicsObject.text.isItalic);
-		}
-		var newGraphicsObject = new GraphicsObject(count,graphicsObject.type,newObjPtsArray,graphicsObject.lineWidth,graphicsObject.color,graphicsObject.src,graphicsObject.isFilled,graphicsObject.fillColor,graphicsObject.opacity,graphicsObject.imageLoaded,textObj,graphicsObject.ref);
-	
-	
-		if(destObjectTable == null){
-			destObjectTable = new Hashtable();
-			pageObjTable.put(pageNum,destObjectTable);
-		}
-		destObjectTable.put(count, newGraphicsObject);
-		objectPageRefTable.put(count,pageNum);
-	
-		nonRecordingObjArray[nonRecordingObjArray.length] = count ;
-		selObjArray[selObjArray.length] = count;
-		if(!isCopiedObjGrp){
-				var groupObj = checkObjectInGroup(copiedObjArr[i]);
-				if(groupObj!= null && groupObj.refObjectList != null){
-					isCopiedObjGrp = true;
-				}
-		}
-	}
-	//console.log("objectTable After copying ::;"+destObjectTable);
-	var dx = 10; 
-	var dy = 10; 
-	//console.log("pasted object------------"+selObjArray);
-	shiftSelectedObject(destObjectTable,dx,dy);
-	// If one copied objects are part of any group the after paste create a group of all new created object
-	//console.log(":;pasteCopiedObject::isCopiedObjGrp::"+isCopiedObjGrp+"::selObjArray::"+selObjArray);
-	if(isCopiedObjGrp){
-		groupSelectedObjects();
-	}
-	//console.log("groupObj::"+groupObj);
-	
-	
-}
-
-function replace(target,source) {
-	document.getElementById(target).innerHTML  = document.getElementById(source).innerHTML;
-  }
-	  
-
-function OpenInNewTab(url) {
-//console.log("url::::"+url);
-  var win = window.open(url, '_blank');
-  win.focus();
-}
-
-function showAttach(){
-	document.getElementById("attachtxt").style.display = "inline-block";
-	document.getElementById("attachBut").style.display ="none";
-}
-
-function attachReference(){
-	var refUrl = document.getElementById("refTxt").value;
-	//alert("refUrl::"+refUrl);
-
-	//console.log("Ref Ataached::::url::"+refUrl+"::selObjArray::"+selObjArray);
-	if(refUrl != ""){
-		//alert("no http"+refUrl.indexOf("http://"));
-		if(refUrl.indexOf("www.") == -1 ){
-			refUrl = "www." + refUrl;
-		//	alert("no http:::"+refUrl);
-		}
-	    if(refUrl.indexOf("http://") == -1 && refUrl.indexOf("https://") == -1){
-			refUrl = "http://" + refUrl;
-			//alert("no http:::"+refUrl);
-		}
-		if(selObjArray != null && selObjArray.length >0){
-					var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-					for(var i=0;i<selObjArray.length;i++){
-						var graphicsObject = objectTable.get(selObjArray[0]);
-						//console.log("Ref Ataached::"+graphicsObject.id+"::url::"+refUrl);
-						graphicsObject.ref = refUrl;
-						graphicsObject.color = "#0000FF";
-					}
-		}
-	}
-	document.getElementById("attachtxt").style.display = "none";
-	document.getElementById("attachBut").style.display ="inline-block";
-	selObjArray = null;
-	selObjArray = new Array();
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	restore();
-	document.getElementById("refTxt").value = "";
-}
-
-function showDocAttach(){
-	document.getElementById("attachDoc").style.display = "inline-block";
-	document.getElementById("attachButton").style.display ="none";
-}
-
-
-function createDropZone(){
-	ctx.save();
-	ctx.beginPath();
-	ctx.strokeStyle = "#D3D3D3";
-	ctx.lineWidth= 3;
-	ctx.setLineDash([7]);
-	createRectangle(0, 0, canvas.width , canvas.height );
-	ctx.fillStyle= "#FF0000";
-	ctx.font="50px Georgia";
-	ctx.fillText("Drop Files Here...",100,100);
-	ctx.globalAlpha= 0.8;
-	ctx.fillStyle= "#000000";
-	ctx.fillRect(0, 0, canvas.width , canvas.height);
-	//createRectangle(10, 10, 1270 , 600 );
-	ctx.closePath();
-	ctx.stroke();
-	ctx.restore();
-}
-function clearDropZone(){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	restore();
-}	
-
-function createWaitZone(){
-	ctx.save();
-	ctx.beginPath();
-	ctx.strokeStyle = "#000000";
-	ctx.lineWidth= 3;
-	ctx.setLineDash([7]);
-	createRectangle(0, 0, canvas.width , canvas.height);
-	ctx.font="50px Georgia";
-	ctx.fillText("Loading Document...",100,100);
-	ctx.globalAlpha= 0.8;
-	ctx.fillStyle= "#5F6466";
-	ctx.fillRect(0, 0, canvas.width , canvas.height);
-	//createRectangle(10, 10, 1270 , 600 );
-	ctx.closePath();
-	ctx.stroke();
-	ctx.restore();
-}
-function clearWaitZone(){
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	restoreAllExceptImage();
-}
-
-function handleMouseClick(e){
-	var x = parseInt(e.clientX - offsetX);
-	var y = parseInt(e.clientY - offsetY);	
-	if(isTxtModeEnable && currentObjId == 16){
-		var ptsArr = new Array();
-		ptsArr[0] = x;
-		ptsArr[1] = y;
-		startX = x;
-		startY = y;
-		//console.log("createEditor:"+startX+"::startY:;"+startY);
-		createEditor(ptsArr,null,null,textStyleColor);
-	}
-	//getMetadataToFront(x,y);	
-}
-function getMetadataToFront(x,y){
-	//console.log("x::"+x+"::y::"+y);
-	//alert(point_in_rectagnle(x,y,350,35,850,435));
-	if(point_in_rectagnle(x,y,350,35,850,435)){
-		document.getElementById("div1").style.zIndex = 5;
-	}else{
-		document.getElementById("div1").style.zIndex = -1;
-	}
-}
-
-function getMinMax(pointsArray){
-	var ponitXarr = new Array();
-	var ponitYarr = new Array();
-	for(var i=0;i<pointsArray.length;i=i+1){
-		if(i % 2==0)
-			ponitXarr[ponitXarr.length] = pointsArray[i];
-		else
-			ponitYarr[ponitYarr.length] = pointsArray[i];
-		}
-	ponitXarr = ponitXarr.sort(function(a, b){return a-b});	
-	ponitYarr = ponitYarr.sort(function(a, b){return a-b})
-	//console.log("Xarray::"+ponitXarr);	
-	//console.log("YArray::"+ponitYarr);	
-	return {minX:ponitXarr[0],minY:ponitYarr[0],maxX:ponitXarr[ponitXarr.length-1],maxY:ponitYarr[ponitYarr.length-1]};
- 
-}
-
-
- function dist(x1,y1,x2,y2) { 
-		var x = x1-x2; 
-		var y = y1-y2; 
-		return x*x+y*y;
-} 
-
-
-function exSmooth_1(ps) { 
-	// //console.log("exSmooth:::"+ps);
-	  var a = 0.2; 
-	  var x1 = ps[ps.length-2];
-	  var y1 = ps[ps.length-1];
-	  var x2 = ps[ps.length-4];
-	  var y2 = ps[ps.length-3];
-	  
-	  var p = ps[ps.length-1] 
-	  var p1 = ps[ps.length-2]; 
-	  
-	  ps[ps.length-2] = x1 * a + x2 * (1-a);
-	  ps[ps.length-1] = y1 * a + y2 * (1-a);
-  
- // ps[ps.length-1] = {x:p.x * a + p1.x * (1-a), y:p.y * a + p1.y * (1-a) } 
-}
-
-
-function exSmooth(x1,y1,x2,y2) { 
-	 //console.log("exSmooth:::x::"+x1+":::y::"+y1);
-	  var a = 0.2; 
-	  /*
-	  var x1 = ps[ps.length-2];
-	  var y1 = ps[ps.length-1];
-	  var x2 = ps[ps.length-4];
-	  var y2 = ps[ps.length-3];
-	  
-	  var p = ps[ps.length-1] 
-	  var p1 = ps[ps.length-2]; 
-	  */
-	 /* ps[ps.length-2] = x1 * a + x2 * (1-a);
-	  ps[ps.length-1] = y1 * a + y2 * (1-a);
-  */
-	//console.log("x::"+(x1 * a + x2 * (1-a))+"::y::"+(y1 * a + y2 * (1-a)));
-     return {x:x1 * a + x2 * (1-a), y:y1 * a + y2 * (1-a)} 
-}
-
- function drawFreeHandLine(points) { 
-  //console.log("drawLine::;"+points);
-  ctx.moveTo(points[0], points[1]); 
-  for(var i = 2; i < points.length; i=i+2) { 
-	ctx.lineTo(points[i], points[i+1]); 
-  } 
-} 
-function gloWObject(){
-	ctx.save();
-	ctx.shadowColor = '#00ff00';
-	ctx.shadowBlur = 20;
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = 0;
-	ctx.stroke();
-	ctx.restore();
-}
-function checkObjectInGroup(objId){
-    var grp;
-	var pageNum = document.getElementById("pagenum").value;
-	var grpObjTable = pageGrpObjTable.get(pageNum);
-	//console.log("checkObjectInGroup::"+objId+":;pageGrpObjTable::"+pageGrpObjTable);
-	if(grpObjTable != null){
-		grpObjTable.moveFirst();
-		while(grpObjTable.next()){
-			var groupObj = grpObjTable.getValue();
-			//console.log("groupObj::"+groupObj);
-			if(groupObj.active && groupObj.refObjectList != null){
-			  var refList = groupObj.refObjectList;
-			 for(var i=0;i<refList.length;i++){
-				if(objId == refList[i]){
-					grp = groupObj;
-					break; 
-				}
-			  }
-			}
-		}
-	}
-	return grp;
-}
-function getTextData(){
-	var textData;
-	if(selObjArray != null && selObjArray.length >0){
-		textData = '';
+	function removeNonRotationalObjectFromSel(){
+	//console.log("removeNonRotationalObjectFromSel===================="+selObjArray);
+		var isRemoved = false;
 		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		for(var i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			textData = textData + graphicsObject.text.textData;
+		if(selObjArray.length >0){
+			for(i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				if(graphicsObject.type == 8 || graphicsObject.type == 12 || graphicsObject.type == 16){
+					//console.log("removed");
+					selObjArray.splice(i,1);
+					isRemoved = true;
+				}
+			}
 		}
-	}
-	return textData;
-}
-function groupSelectedObjects(){
-	//console.log("groupSelectedObjects::"+selObjArray+"::grpObjCount::"+grpObjCount);
-	if(selObjArray != null && selObjArray.length >0){
-		var grpObjectRefArray = new Array();
-		for(var i = 0;i<selObjArray.length;i++){
-			grpObjectRefArray[grpObjectRefArray.length] = selObjArray[i];
-		}
-		var pageNum = document.getElementById("pagenum").value;
-		grpObjCount++;
-		var id = grpObjCount
-		//console.log("groupSelectedObjects::id::"+id);
-		var groupObject = new GroupObject(id,grpObjectRefArray,true);
-		var grpObjTable = pageGrpObjTable.get(pageNum);
-		if(grpObjTable ==  null){
-			grpObjTable = new Hashtable();
-			pageGrpObjTable.put(pageNum,grpObjTable);
-		}
-		grpObjTable.put(id,groupObject);
-		//console.log("groupSelectedObjects::grpObjTable::"+grpObjTable);
-		if(selGroupObjArray.indexOf(groupObject.id) == -1){
-			selGroupObjArray[selGroupObjArray.length] = groupObject.id;
-			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-			selObjArray = null;
-			selObjArray = new Array();
+		if(isRemoved){
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			restore();
-			showGroupSelection(grpObjectRefArray,objectTable);
+		}
+		//console.log("removeNonRotationalObjectFromSel========After============"+selObjArray);
+	}
+
+	function closeModal(){
+	//console.log("Hiiiii");
+	$('#error-Modal').modal('hide');
+	canvas.style.cursor  = "default";
+	}
+
+	function toggleFullScreen() {
+			if ((document.fullScreenElement && document.fullScreenElement !== null) || (!document.mozFullScreen && !document.webkitIsFullScreen)) {
+				if (document.documentElement.requestFullScreen) {
+					document.documentElement.requestFullScreen();
+				} else if (document.documentElement.mozRequestFullScreen) {
+					document.documentElement.mozRequestFullScreen();
+				} else if (document.documentElement.webkitRequestFullScreen) {
+					document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+				}
+			} else {
+				if (document.cancelFullScreen) {
+					document.cancelFullScreen();
+				} else if (document.mozCancelFullScreen) {
+					document.mozCancelFullScreen();
+				} else if (document.webkitCancelFullScreen) {
+					document.webkitCancelFullScreen();
+				}
+			}
+	}
+
+
+
+	function windowResize(){
+		 /*
+			var windowW=window.innerWidth;
+			var windowH=window.innerHeight
+		 */
+		 var windowW=1280;
+		 var windowH=720;
+		 
+		 canvas.width = (windowW - 40);
+		 canvas.height = (windowH -200);
+		 canvasOffset = $("#canvas").offset();
+		 offsetX = canvasOffset.left;
+		 offsetY = canvasOffset.top;
+		 canvasBoundedRectanglePoints[0] = 0;
+		 canvasBoundedRectanglePoints[1] = 0;
+		 canvasBoundedRectanglePoints[2] = canvas.width;
+		 canvasBoundedRectanglePoints[3] = canvas.height;
+		 restore();
+	 }
+
+	function fireEvent(obj, evt) {
+	    var fireOnThis = obj;
+	    if (document.createEvent) {
+	        var evObj = document.createEvent('MouseEvents');
+	        evObj.initEvent(evt, true, false);
+	        fireOnThis.dispatchEvent(evObj);
+	    } else if (document.createEventObject) {
+	        fireOnThis.fireEvent('on' + evt);
+	    }
+	}
+
+
+	function copySelectedObject(){
+		copiedObjArr = null;
+		copiedObjArr = new Array();
+		if(selObjArray != null && selObjArray.length>0){
+			 for(var i=0;i<selObjArray.length;i++){
+				copiedObjArr[i] = selObjArray[i];
+			 }
+		}
+		if(copiedObjArr.length >0){
+			showPasteIcon(true);
 		}
 	}
 
-}
-
-function unGroupSelectedGroup(){
-	if(selGroupObjArray != null && selGroupObjArray.length > 0 ){
-		selObjArray = null;
-		selObjArray = new Array();
+	function pasteCopiedObject(){
 		var pageNum = document.getElementById("pagenum").value;
-		var selGroupObjId = selGroupObjArray[0];
-		var selGrpObjTable = pageGrpObjTable.get(pageNum);
-		var selGroupObj = selGrpObjTable.get(selGroupObjId);
-		var objectTable = pageObjTable.get(pageNum);
-		selGroupObj.active = false;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		var refList = selGroupObj.refObjectList;
-		for(var i=0;i<refList.length;i++){
-			selObjArray[selObjArray.length] = refList[i];
+		var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+		if(nonRecordingObjArray == null){
+			nonRecordingObjArray = new Array();
+			nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
 		}
-		handleSelectedObject(objectTable);
-		selGroupObjArray = null;
-		selGroupObjArray = new Array();
+		/*selObjArray = null;
+		selObjArray = new Array();*/
+		resetSelObjArray()
+		var isCopiedObjGrp = false;
+		//console.log("copiedObjArr::"+copiedObjArr);
+		var destObjectTable = pageObjTable.get(pageNum);
+		//console.log("objectTable before copying ::;"+destObjectTable+":::count::;"+count);
+		for(var i=0;i<copiedObjArr.length;i++){
+			count++;
+			 var srcObjpageNum = objectPageRefTable.get(copiedObjArr[i]);
+			 var srcObjectTable = pageObjTable.get(srcObjpageNum);
+			 var graphicsObject = srcObjectTable.get(copiedObjArr[i]);
+			 //console.log("graphicsObject::"+graphicsObject.type);
+			var newObjPtsArray = new Array();
+			var pointsArray = graphicsObject.pointsArray;
+			for(var j=0;j<pointsArray.length;j++){
+				newObjPtsArray[j] = pointsArray[j];
+			}
+			var textObj;
+			if(graphicsObject.type == 16){
+				textObj= new Text(graphicsObject.text.textData,graphicsObject.text.fontType,graphicsObject.text.fontSize,graphicsObject.text.isBold,graphicsObject.text.isUnderLine,graphicsObject.text.isItalic);
+			}		
+			var newGraphicsObject = new GraphicsObject(count,graphicsObject.type,newObjPtsArray,graphicsObject.lineWidth,graphicsObject.color,graphicsObject.src,graphicsObject.isFilled,graphicsObject.fillColor,graphicsObject.opacity,graphicsObject.imageLoaded,textObj,graphicsObject.ref,graphicsObject.isDraft,graphicsObject.sequenceNo,graphicsObject.path);
+		
+		
+			if(destObjectTable == null){
+				destObjectTable = new Hashtable();
+				pageObjTable.put(pageNum,destObjectTable);
+			}
+			destObjectTable.put(count, newGraphicsObject);
+			objectPageRefTable.put(count,pageNum);
+		
+			nonRecordingObjArray[nonRecordingObjArray.length] = count ;
+			selObjArray[selObjArray.length] = count;
+			if(!isCopiedObjGrp){
+					var groupObj = checkObjectInGroup(copiedObjArr[i]);
+					if(groupObj!= null && groupObj.refObjectList != null){
+						isCopiedObjGrp = true;
+					}
+			}
+		}
+		//console.log("objectTable After copying ::;"+destObjectTable);
+		var dx = 10; 
+		var dy = 10; 
+		//console.log("pasted object------------"+selObjArray);
+		shiftSelectedObject(destObjectTable,dx,dy);
+		// If one copied objects are part of any group the after paste create a group of all new created object
+		//console.log(":;pasteCopiedObject::isCopiedObjGrp::"+isCopiedObjGrp+"::selObjArray::"+selObjArray);
+		if(isCopiedObjGrp){
+			groupSelectedObjects();
+		}
+		//console.log("groupObj::"+groupObj);
+		
 		
 	}
-	
-}
-function reGroupSelectedGroup(){
-	//console.log("selGroupObj::"+selGroupObjArray);	
-	var selGrpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
-	if(selGroupObjArray != null && selGroupObjArray.length > 0){
-		var selGroupObjId = selGroupObjArray[0];
-	
-		var selGroupObj = selGrpObjTable.get(selGroupObjId);
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		var refList = selGroupObj.refObjectList;
-		var objAdd = new Array();
-		//console.log("selObjArray::"+selObjArray);
-		if(selObjArray != null && selObjArray.length > 0){
-			for(var i=0;i<selObjArray.length;i++){
-				var objId = selObjArray[i];
-				//console.log("refList.indexOf(objId)::"+refList.indexOf(objId));
-				if(refList.indexOf(objId) == -1){
-					objAdd[objAdd.length] = objId;
+
+	function replace(target,source) {
+		document.getElementById(target).innerHTML  = document.getElementById(source).innerHTML;
+	  }
+		  
+
+	function OpenInNewTab(url) {
+	//console.log("url::::"+url);
+	  var win = window.open(url, '_blank');
+	  win.focus();
+	}
+
+	function showAttach(){
+		document.getElementById("attachtxt").style.display = "inline-block";
+		document.getElementById("attachBut").style.display ="none";
+	}
+
+	function attachReference(){
+		var refUrl = document.getElementById("refTxt").value;
+		//alert("refUrl::"+refUrl);
+
+		//console.log("Ref Ataached::::url::"+refUrl+"::selObjArray::"+selObjArray);
+		if(refUrl != ""){
+			//alert("no http"+refUrl.indexOf("http://"));
+			if(refUrl.indexOf("www.") == -1 ){
+				refUrl = "www." + refUrl;
+			//	alert("no http:::"+refUrl);
+			}
+		    if(refUrl.indexOf("http://") == -1 && refUrl.indexOf("https://") == -1){
+				refUrl = "http://" + refUrl;
+				//alert("no http:::"+refUrl);
+			}
+			if(selObjArray != null && selObjArray.length >0){
+						var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+						for(var i=0;i<selObjArray.length;i++){
+							var graphicsObject = objectTable.get(selObjArray[0]);
+							//console.log("Ref Ataached::"+graphicsObject.id+"::url::"+refUrl);
+							graphicsObject.ref = refUrl;
+							graphicsObject.color = "#0000FF";
+						}
+			}
+		}
+		document.getElementById("attachtxt").style.display = "none";
+		document.getElementById("attachBut").style.display ="inline-block";
+		/*selObjArray = null;
+		selObjArray = new Array();*/
+		resetSelObjArray()
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		restore();
+		document.getElementById("refTxt").value = "";
+	}
+
+	function showDocAttach(){
+		document.getElementById("attachDoc").style.display = "inline-block";
+		document.getElementById("attachButton").style.display ="none";
+	}
+
+
+	function createDropZone(){
+		ctx.save();
+		ctx.beginPath();
+		ctx.strokeStyle = "#D3D3D3";
+		ctx.lineWidth= 3;
+		ctx.setLineDash([7]);
+		createRectangle(0, 0, canvas.width , canvas.height );
+		ctx.fillStyle= "#FF0000";
+		ctx.font="50px Georgia";
+		ctx.fillText("Drop Files Here...",100,100);
+		ctx.globalAlpha= 0.8;
+		ctx.fillStyle= "#000000";
+		ctx.fillRect(0, 0, canvas.width , canvas.height);
+		//createRectangle(10, 10, 1270 , 600 );
+		ctx.closePath();
+		ctx.stroke();
+		ctx.restore();
+	}
+	function clearDropZone(){
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		restore();
+	}	
+
+	function createWaitZone(){
+		ctx.save();
+		ctx.beginPath();
+		ctx.strokeStyle = "#000000";
+		ctx.lineWidth= 3;
+		ctx.setLineDash([7]);
+		createRectangle(0, 0, canvas.width , canvas.height);
+		ctx.font="50px Georgia";
+		ctx.fillText("Loading Document...",100,100);
+		ctx.globalAlpha= 0.8;
+		ctx.fillStyle= "#5F6466";
+		ctx.fillRect(0, 0, canvas.width , canvas.height);
+		//createRectangle(10, 10, 1270 , 600 );
+		ctx.closePath();
+		ctx.stroke();
+		ctx.restore();
+	}
+	function clearWaitZone(){
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		restoreAllExceptImage();
+	}
+
+	function handleMouseClick(e){
+		var x = parseInt(e.clientX - offsetX);
+		var y = parseInt(e.clientY - offsetY);	
+		//closeEditor(true);
+		if(isTxtModeEnable && currentObjId == 16){
+			//closeEditor(true);
+			var ptsArr = new Array();
+			ptsArr[0] = x;
+			ptsArr[1] = y;
+			startX = x;
+			startY = y;
+			//console.log("createEditor:"+startX+"::startY:;"+startY);
+			var grpObjArr = checkTextObject(x,y);	
+			if(selObjArray != null && selObjArray.length >0){
+				var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+				var graphicsObject = objectTable.get(selObjArray[0]);
+				var textData = getTextData();
+				init();
+				//console.log("::::::textData::::"+textData);
+				if(graphicsObject.type == 16){
+					selectedTxtObj = graphicsObject;
+					createEditor(graphicsObject.pointsArray,graphicsObject.text,textData,graphicsObject.color);
+					setEditorContent(textData)
+				}
+			}else{
+				createEditor(ptsArr,null,null,textStyleColor);	
+			}
+		}
+		//getMetadataToFront(x,y);	
+	}
+	function getMetadataToFront(x,y){
+		//console.log("x::"+x+"::y::"+y);
+		//alert(point_in_rectagnle(x,y,350,35,850,435));
+		if(point_in_rectagnle(x,y,350,35,850,435)){
+			document.getElementById("div1").style.zIndex = 5;
+		}else{
+			document.getElementById("div1").style.zIndex = -1;
+		}
+	}
+
+	function getMinMax(pointsArray){
+		var ponitXarr = new Array();
+		var ponitYarr = new Array();
+		for(var i=0;i<pointsArray.length;i=i+1){
+			if(i % 2==0)
+				ponitXarr[ponitXarr.length] = pointsArray[i];
+			else
+				ponitYarr[ponitYarr.length] = pointsArray[i];
+			}
+		ponitXarr = ponitXarr.sort(function(a, b){return a-b});	
+		ponitYarr = ponitYarr.sort(function(a, b){return a-b})
+		//console.log("Xarray::"+ponitXarr);	
+		//console.log("YArray::"+ponitYarr);	
+		return {minX:ponitXarr[0],minY:ponitYarr[0],maxX:ponitXarr[ponitXarr.length-1],maxY:ponitYarr[ponitYarr.length-1]};
+	 
+	}
+
+
+	 function dist(x1,y1,x2,y2) { 
+			var x = x1-x2; 
+			var y = y1-y2; 
+			return x*x+y*y;
+	} 
+
+
+	function exSmooth_1(ps) { 
+		// //console.log("exSmooth:::"+ps);
+		  var a = 0.2; 
+		  var x1 = ps[ps.length-2];
+		  var y1 = ps[ps.length-1];
+		  var x2 = ps[ps.length-4];
+		  var y2 = ps[ps.length-3];
+		  
+		  var p = ps[ps.length-1] 
+		  var p1 = ps[ps.length-2]; 
+		  
+		  ps[ps.length-2] = x1 * a + x2 * (1-a);
+		  ps[ps.length-1] = y1 * a + y2 * (1-a);
+	  
+	 // ps[ps.length-1] = {x:p.x * a + p1.x * (1-a), y:p.y * a + p1.y * (1-a) } 
+	}
+
+
+	function exSmooth(x1,y1,x2,y2) { 
+		var a = 0.35;
+		return {x:x1 * a + x2 * (1-a), y:y1 * a + y2 * (1-a)} 
+		 /* console.log("exSmooth:::x::"+x1+":::y::"+y1);
+		  var a = 0; 
+		  
+		  var x1 = ps[ps.length-2];
+		  var y1 = ps[ps.length-1];
+		  var x2 = ps[ps.length-4];
+		  var y2 = ps[ps.length-3];
+		  
+		  var p = ps[ps.length-1] 
+		  var p1 = ps[ps.length-2]; 
+		  
+		  ps[ps.length-2] = x1 * a + x2 * (1-a);
+		  ps[ps.length-1] = y1 * a + y2 * (1-a);
+	  
+		//console.log("x::"+(x1 * a + x2 * (1-a))+"::y::"+(y1 * a + y2 * (1-a)));
+		var pointArray = new Array();
+	    for(var i=0;i<5;i++){
+	    	a = a + 0.2; 
+	    	var point = {x:x1 * a + x2 * (1-a), y:y1 * a + y2 * (1-a)};
+	    	console.log("point:::"+point.x+"::"+point.y);
+	    	pointArray[pointArray.length]= point;
+	    }
+	    console.log("exSmooth:::pointArray::"+pointArray[4].x +"::"+pointArray[4].y);  
+		return pointArray; */
+	}
+
+	 function drawFreeHandLine(points) { 
+	  //console.log("drawLine::;"+points);
+	/*  ctx.lineWidth= 10;
+	  ctx.globalAlpha = 0.5;*/
+	  ctx.moveTo(ratio*points[0], ratio*points[1]); 
+	  for(var i = 2; i < points.length; i=i+2) { 
+		ctx.lineTo(ratio*points[i], ratio*points[i+1]); 
+	  } 
+	} 
+	function gloWObject(){
+		ctx.save();
+		ctx.shadowColor = '#00ff00';
+		ctx.shadowBlur = 20;
+		ctx.shadowOffsetX = 0;
+		ctx.shadowOffsetY = 0;
+		ctx.stroke();
+		ctx.restore();
+	}
+	function checkObjectInGroup(objId){
+	    var grp;
+		var pageNum = document.getElementById("pagenum").value;
+		var grpObjTable = pageGrpObjTable.get(pageNum);
+		//console.log("checkObjectInGroup::"+objId+":;pageGrpObjTable::"+pageGrpObjTable);
+		if(grpObjTable != null){
+			grpObjTable.moveFirst();
+			while(grpObjTable.next()){
+				var groupObj = grpObjTable.getValue();
+				//console.log("groupObj::"+groupObj);
+				if(groupObj.active && groupObj.refObjectList != null){
+				  var refList = groupObj.refObjectList;
+				 for(var i=0;i<refList.length;i++){
+					if(objId == refList[i]){
+						grp = groupObj;
+						break; 
+					}
+				  }
 				}
 			}
 		}
-		//console.log("refList:Before:"+refList+"::objAdd::"+objAdd);
-		refList = refList.concat(objAdd);
-		selGroupObj.refObjectList = refList;
-		selGroupObj.active = true;
-		//console.log("refList:After:"+refList);
-		selObjArray = null;
-		selObjArray = new Array();
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		for(var i= 1;i < selGroupObjArray.length;i++){
-			var groupObjId = selGroupObjArray[i];
-			//console.log("reGroupSelectedGroup:::groupObjId::"+groupObjId);
-			var groupObj = selGrpObjTable.get(groupObjId);
-			groupObj.active = false;
-		}
-		showGroupSelection(refList,objectTable);
-	}else{
-		alert("No Group selected for re regrouping");
+		return grp;
 	}
-}
-function hAlignSelectedObjects(){
-	//alert("hAlignSelectedObjects");
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		hAlignSelectedGroups();
-	}else if(selObjArray != null && selObjArray.length >0){
-		var IstObjId = selObjArray[0];
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		var IstObj = objectTable.get(IstObjId);
-		var pointsArr = IstObj.pointsArray;
-		var refPoint = pointsArr[1];
-		for(var i=1;i < selObjArray.length ; i++){
-			var graphicsObj = objectTable.get(selObjArray[i]);
-			//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
-			var ptsArray = graphicsObj.pointsArray;
-			//console.log("ptsArray::::::::::::::"+ptsArray);
-			var dy =  ptsArray[1] - refPoint;
-			ptsArray[1] = refPoint;
- 			for(var j = 3 ;j < ptsArray.length ; j = j + 2){
-				ptsArray[j] = ptsArray[j] - dy;
+	function getTextData(){
+		var textData;
+		if(selObjArray != null && selObjArray.length >0){
+			textData = '';
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				textData = textData + graphicsObject.text.textData;
 			}
 		}
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		for(var i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			drawObject(objectTable,selObjArray[i],false);
-			showSelectedObject(graphicsObject);
-		}
-		
+		return textData;
 	}
-}
+	function groupSelectedObjects(){
+		//console.log("groupSelectedObjects::"+selObjArray+"::grpObjCount::"+grpObjCount);
+		if(selObjArray != null && selObjArray.length >0){
+			var grpObjectRefArray = new Array();
+			for(var i = 0;i<selObjArray.length;i++){
+				grpObjectRefArray[grpObjectRefArray.length] = selObjArray[i];
+			}
+			var pageNum = document.getElementById("pagenum").value;
+			grpObjCount++;
+			var id = grpObjCount
+			//console.log("groupSelectedObjects::id::"+id);
+			var groupObject = new GroupObject(id,grpObjectRefArray,true);
+			var grpObjTable = pageGrpObjTable.get(pageNum);
+			if(grpObjTable ==  null){
+				grpObjTable = new Hashtable();
+				pageGrpObjTable.put(pageNum,grpObjTable);
+			}
+			grpObjTable.put(id,groupObject);
+			//console.log("groupSelectedObjects::grpObjTable::"+grpObjTable);
+			if(selGroupObjArray.indexOf(groupObject.id) == -1){
+				selGroupObjArray[selGroupObjArray.length] = groupObject.id;
+				var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+				/*selObjArray = null;
+				selObjArray = new Array();*/
+				resetSelObjArray()
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				restore();
+				showGroupSelection(grpObjectRefArray,objectTable);
+			}
+		}
 
-function hAlignSelectedGroups(){
-	//alert("hAlignSelectedGroups");
-	var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		var IstGrpObjId = selGroupObjArray[0];
-		var IstroupObj = grpObjTable.get(IstGrpObjId);
-		var refList = IstroupObj.refObjectList
-		var ptsArray = new Array();
-		for(var i=0;i<refList.length;i++){
-			var graphicsObject = objectTable.get(refList[i]);
-			var pointsArray = graphicsObject.pointsArray;
-			for(var ctr=0;ctr<pointsArray.length;ctr++){
-				ptsArray[ptsArray.length] = pointsArray[ctr];
+	}
+
+	function unGroupSelectedGroup(){
+		if(selGroupObjArray != null && selGroupObjArray.length > 0 ){
+			/*selObjArray = null;
+			selObjArray = new Array();*/
+			resetSelObjArray()
+			var pageNum = document.getElementById("pagenum").value;
+			var selGroupObjId = selGroupObjArray[0];
+			var selGrpObjTable = pageGrpObjTable.get(pageNum);
+			var selGroupObj = selGrpObjTable.get(selGroupObjId);
+			var objectTable = pageObjTable.get(pageNum);
+			selGroupObj.active = false;
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			var refList = selGroupObj.refObjectList;
+			for(var i=0;i<refList.length;i++){
+				selObjArray[selObjArray.length] = refList[i];
 			}
+			handleSelectedObject(objectTable);
+			selGroupObjArray = null;
+			selGroupObjArray = new Array();
+			showUnGroupWidget(false);
 		}
-		var pt = getMinMax(ptsArray);
-		var refPoint = pt.minY;
 		
-		for(var i=1;i < selGroupObjArray.length ; i++){
-			var grpObj = grpObjTable.get(selGroupObjArray[i]);
-			var grpObjRefList = grpObj.refObjectList;
-			ptsArray = new Array();
-			for(var k=0;k<grpObjRefList.length;k++){
-				var graphicsObject = objectTable.get(grpObjRefList[k]);
+	}
+	function reGroupSelectedGroup(){
+		//console.log("selGroupObj::"+selGroupObjArray);	
+		var selGrpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+		if(selGroupObjArray != null && selGroupObjArray.length > 0){
+			var selGroupObjId = selGroupObjArray[0];
+		
+			var selGroupObj = selGrpObjTable.get(selGroupObjId);
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			var refList = selGroupObj.refObjectList;
+			var objAdd = new Array();
+			//console.log("selObjArray::"+selObjArray);
+			if(selObjArray != null && selObjArray.length > 0){
+				for(var i=0;i<selObjArray.length;i++){
+					var objId = selObjArray[i];
+					//console.log("refList.indexOf(objId)::"+refList.indexOf(objId));
+					if(refList.indexOf(objId) == -1){
+						objAdd[objAdd.length] = objId;
+					}
+				}
+			}
+			//console.log("refList:Before:"+refList+"::objAdd::"+objAdd);
+			refList = refList.concat(objAdd);
+			selGroupObj.refObjectList = refList;
+			selGroupObj.active = true;
+			//console.log("refList:After:"+refList);
+			/*selObjArray = null;
+			selObjArray = new Array();*/
+			resetSelObjArray()
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			for(var i= 1;i < selGroupObjArray.length;i++){
+				var groupObjId = selGroupObjArray[i];
+				//console.log("reGroupSelectedGroup:::groupObjId::"+groupObjId);
+				var groupObj = selGrpObjTable.get(groupObjId);
+				groupObj.active = false;
+			}
+			showGroupSelection(refList,objectTable);
+		}else{
+			alert("No Group selected for re regrouping");
+		}
+	}
+	function hAlignSelectedObjects(){
+		//alert("hAlignSelectedObjects");
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			hAlignSelectedGroups();
+		}else if(selObjArray != null && selObjArray.length >0){
+			var IstObjId = selObjArray[0];
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			var IstObj = objectTable.get(IstObjId);
+			var pointsArr = IstObj.pointsArray;
+			var refPoint = pointsArr[1];
+			for(var i=1;i < selObjArray.length ; i++){
+				var graphicsObj = objectTable.get(selObjArray[i]);
+				//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
+				var ptsArray = graphicsObj.pointsArray;
+				//console.log("ptsArray::::::::::::::"+ptsArray);
+				var dy =  ptsArray[1] - refPoint;
+				ptsArray[1] = refPoint;
+	 			for(var j = 3 ;j < ptsArray.length ; j = j + 2){
+					ptsArray[j] = ptsArray[j] - dy;
+				}
+			}
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				drawObject(objectTable,selObjArray[i],false);
+				showSelectedObject(graphicsObject);
+			}
+			
+		}
+	}
+
+	function hAlignSelectedGroups(){
+		//alert("hAlignSelectedGroups");
+		var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			var IstGrpObjId = selGroupObjArray[0];
+			var IstroupObj = grpObjTable.get(IstGrpObjId);
+			var refList = IstroupObj.refObjectList
+			var ptsArray = new Array();
+			for(var i=0;i<refList.length;i++){
+				var graphicsObject = objectTable.get(refList[i]);
 				var pointsArray = graphicsObject.pointsArray;
 				for(var ctr=0;ctr<pointsArray.length;ctr++){
 					ptsArray[ptsArray.length] = pointsArray[ctr];
 				}
 			}
-			var points = getMinMax(ptsArray);
-			var dy =  points.minY - refPoint;
+			var pt = getMinMax(ptsArray);
+			var refPoint = pt.minY;
 			
-			for(var l=0;l<grpObjRefList.length;l++){
-				var graphicsObject = objectTable.get(grpObjRefList[l]);
-				var ptsArray = graphicsObject.pointsArray;
-				for(var j = 1 ;j < ptsArray.length ; j = j + 2){
+			for(var i=1;i < selGroupObjArray.length ; i++){
+				var grpObj = grpObjTable.get(selGroupObjArray[i]);
+				var grpObjRefList = grpObj.refObjectList;
+				ptsArray = new Array();
+				for(var k=0;k<grpObjRefList.length;k++){
+					var graphicsObject = objectTable.get(grpObjRefList[k]);
+					var pointsArray = graphicsObject.pointsArray;
+					for(var ctr=0;ctr<pointsArray.length;ctr++){
+						ptsArray[ptsArray.length] = pointsArray[ctr];
+					}
+				}
+				var points = getMinMax(ptsArray);
+				var dy =  points.minY - refPoint;
+				
+				for(var l=0;l<grpObjRefList.length;l++){
+					var graphicsObject = objectTable.get(grpObjRefList[l]);
+					var ptsArray = graphicsObject.pointsArray;
+					for(var j = 1 ;j < ptsArray.length ; j = j + 2){
+						ptsArray[j] = ptsArray[j] - dy;
+					}
+					
+				}
+			}
+					
+			var retVal = getShowableSelObject();
+			//console.log("retVal::"+retVal);
+			for(var i=0;i < retVal.length ; i++){
+				var graphicsObj = objectTable.get(retVal[i]);
+				//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
+				var ptsArray = graphicsObj.pointsArray;
+				//console.log("ptsArray::::::::::::::"+ptsArray);
+				var dy =  ptsArray[1] - refPoint;
+				ptsArray[1] = refPoint;
+	 			for(var j = 3 ;j < ptsArray.length ; j = j + 2){
 					ptsArray[j] = ptsArray[j] - dy;
 				}
-				
 			}
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			showGroupAndObjectSelection();
+			/*
+				for(var i=0;i<selObjArray.length;i++){
+					var graphicsObject = objectTable.get(selObjArray[i]);
+					drawObject(objectTable,selObjArray[i],false);
+					
+				}
+				for(var ctr=0;ctr<selGroupObjArray.length;ctr++){
+					var selGroupObjId = selGroupObjArray[ctr];
+					var selGroupObj = grpObjTable.get(selGroupObjId);
+					showGroupSelection(selGroupObj.refObjectList,objectTable);
+				}
+			*/
 		}
-				
-		var retVal = getShowableSelObject();
-		//console.log("retVal::"+retVal);
-		for(var i=0;i < retVal.length ; i++){
-			var graphicsObj = objectTable.get(retVal[i]);
-			//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
-			var ptsArray = graphicsObj.pointsArray;
-			//console.log("ptsArray::::::::::::::"+ptsArray);
-			var dy =  ptsArray[1] - refPoint;
-			ptsArray[1] = refPoint;
- 			for(var j = 3 ;j < ptsArray.length ; j = j + 2){
-				ptsArray[j] = ptsArray[j] - dy;
+	}
+
+	function vAlignSelectedObjects(){
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			vAlignSelectedGroups();
+		}else if(selObjArray != null && selObjArray.length >0){
+			var IstObjId = selObjArray[0];
+			var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			var IstObj = objectTable.get(IstObjId);
+			var pointsArr = IstObj.pointsArray;
+			var refPoint = pointsArr[0];
+			for(var i=1;i < selObjArray.length ; i++){
+				var graphicsObj = objectTable.get(selObjArray[i]);
+				//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
+				var ptsArray = graphicsObj.pointsArray;
+				//console.log("ptsArray::::::::::::::"+ptsArray);
+				var dx =  ptsArray[0] - refPoint;
+				ptsArray[0] = refPoint;
+	 			for(var j = 2 ;j < ptsArray.length ; j = j + 2){
+					ptsArray[j] = ptsArray[j] - dx;
+				}
 			}
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				drawObject(objectTable,selObjArray[i],false);
+				showSelectedObject(graphicsObject);
+			}
+			
 		}
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		showGroupAndObjectSelection();
-		/*
+	}
+
+	function vAlignSelectedGroups(){
+		//alert("hAlignSelectedGroups");
+		var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		//console.log("vAlignSelectedGroups::grpObjTable:"+grpObjTable);
+		//console.log("selGroupObjArray:::"+selGroupObjArray);
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			var IstGrpObjId = selGroupObjArray[0];
+			var IstroupObj = grpObjTable.get(IstGrpObjId);
+			var refList = IstroupObj.refObjectList
+			var ptsArray = new Array();
+			for(var i=0;i<refList.length;i++){
+				var graphicsObject = objectTable.get(refList[i]);
+				var pointsArray = graphicsObject.pointsArray;
+				for(var ctr=0;ctr<pointsArray.length;ctr++){
+					ptsArray[ptsArray.length] = pointsArray[ctr];
+				}
+			}
+			var pt = getMinMax(ptsArray);
+			var refPoint = pt.minX;
+			
+			for(var i=1;i<selGroupObjArray.length ; i++){
+				//console.log("changed object:::"+selGroupObjArray[i]);
+				var grpObj = grpObjTable.get(selGroupObjArray[i]);
+				var grpObjRefList = grpObj.refObjectList;
+				ptsArray = new Array();
+				for(var k=0;k<grpObjRefList.length;k++){
+					var graphicsObject = objectTable.get(grpObjRefList[k]);
+					var pointsArray = graphicsObject.pointsArray;
+					for(var ctr=0;ctr<pointsArray.length;ctr++){
+						ptsArray[ptsArray.length] = pointsArray[ctr];
+					}
+				}
+				var points = getMinMax(ptsArray);
+				var dx =  points.minX - refPoint;
+				
+				for(var l=0;l<grpObjRefList.length;l++){
+					var graphicsObject = objectTable.get(grpObjRefList[l]);
+					var ptsArray = graphicsObject.pointsArray;
+					for(var j = 0 ;j < ptsArray.length ; j = j + 2){
+						ptsArray[j] = ptsArray[j] - dx;
+					}
+					
+				}
+			}
+			var retVal = getShowableSelObject();
+			//console.log("retVal::"+retVal);
+			for(var i=0;i < retVal.length ; i++){
+				var graphicsObj = objectTable.get(retVal[i]);
+				//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
+				var ptsArray = graphicsObj.pointsArray;
+				//console.log("ptsArray::::::::::::::"+ptsArray);
+				var dx =  ptsArray[0] - refPoint;
+				ptsArray[0] = refPoint;
+	 			for(var j = 2 ;j < ptsArray.length ; j = j + 2){
+					ptsArray[j] = ptsArray[j] - dx;
+				}
+			}
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			showGroupAndObjectSelection();
+			/*
 			for(var i=0;i<selObjArray.length;i++){
 				var graphicsObject = objectTable.get(selObjArray[i]);
 				drawObject(objectTable,selObjArray[i],false);
@@ -9287,321 +10962,1742 @@ function hAlignSelectedGroups(){
 				var selGroupObjId = selGroupObjArray[ctr];
 				var selGroupObj = grpObjTable.get(selGroupObjId);
 				showGroupSelection(selGroupObj.refObjectList,objectTable);
-			}
-		*/
+			}*/
+		}
 	}
-}
 
-function vAlignSelectedObjects(){
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		vAlignSelectedGroups();
-	}else if(selObjArray != null && selObjArray.length >0){
-		var IstObjId = selObjArray[0];
-		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-		var IstObj = objectTable.get(IstObjId);
-		var pointsArr = IstObj.pointsArray;
-		var refPoint = pointsArr[0];
-		for(var i=1;i < selObjArray.length ; i++){
-			var graphicsObj = objectTable.get(selObjArray[i]);
-			//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
-			var ptsArray = graphicsObj.pointsArray;
-			//console.log("ptsArray::::::::::::::"+ptsArray);
-			var dx =  ptsArray[0] - refPoint;
-			ptsArray[0] = refPoint;
- 			for(var j = 2 ;j < ptsArray.length ; j = j + 2){
-				ptsArray[j] = ptsArray[j] - dx;
-			}
-		}
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		for(var i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			drawObject(objectTable,selObjArray[i],false);
-			showSelectedObject(graphicsObject);
-		}
-		
-	}
-}
 
-function vAlignSelectedGroups(){
-	//alert("hAlignSelectedGroups");
-	var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	//console.log("vAlignSelectedGroups::grpObjTable:"+grpObjTable);
-	//console.log("selGroupObjArray:::"+selGroupObjArray);
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		var IstGrpObjId = selGroupObjArray[0];
-		var IstroupObj = grpObjTable.get(IstGrpObjId);
-		var refList = IstroupObj.refObjectList
-		var ptsArray = new Array();
-		for(var i=0;i<refList.length;i++){
-			var graphicsObject = objectTable.get(refList[i]);
-			var pointsArray = graphicsObject.pointsArray;
-			for(var ctr=0;ctr<pointsArray.length;ctr++){
-				ptsArray[ptsArray.length] = pointsArray[ctr];
-			}
-		}
-		var pt = getMinMax(ptsArray);
-		var refPoint = pt.minX;
-		
-		for(var i=1;i<selGroupObjArray.length ; i++){
-			//console.log("changed object:::"+selGroupObjArray[i]);
-			var grpObj = grpObjTable.get(selGroupObjArray[i]);
-			var grpObjRefList = grpObj.refObjectList;
-			ptsArray = new Array();
-			for(var k=0;k<grpObjRefList.length;k++){
-				var graphicsObject = objectTable.get(grpObjRefList[k]);
+
+	function showGroupSelection(refList,objectTable){
+		//console.log("showGroupSelection::;"+refList);
+			var ptsArray = new Array();
+			for(var i=0;i<refList.length;i++){
+				var graphicsObject = objectTable.get(refList[i]);
 				var pointsArray = graphicsObject.pointsArray;
 				for(var ctr=0;ctr<pointsArray.length;ctr++){
 					ptsArray[ptsArray.length] = pointsArray[ctr];
 				}
 			}
-			var points = getMinMax(ptsArray);
-			var dx =  points.minX - refPoint;
 			
-			for(var l=0;l<grpObjRefList.length;l++){
-				var graphicsObject = objectTable.get(grpObjRefList[l]);
-				var ptsArray = graphicsObject.pointsArray;
-				for(var j = 0 ;j < ptsArray.length ; j = j + 2){
-					ptsArray[j] = ptsArray[j] - dx;
-				}
-				
-			}
-		}
-		var retVal = getShowableSelObject();
-		//console.log("retVal::"+retVal);
-		for(var i=0;i < retVal.length ; i++){
-			var graphicsObj = objectTable.get(retVal[i]);
-			//console.log("ptsArray::::::graphicsObj::::::::"+graphicsObj);
-			var ptsArray = graphicsObj.pointsArray;
-			//console.log("ptsArray::::::::::::::"+ptsArray);
-			var dx =  ptsArray[0] - refPoint;
-			ptsArray[0] = refPoint;
- 			for(var j = 2 ;j < ptsArray.length ; j = j + 2){
-				ptsArray[j] = ptsArray[j] - dx;
-			}
-		}
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		showGroupAndObjectSelection();
-		/*
-		for(var i=0;i<selObjArray.length;i++){
-			var graphicsObject = objectTable.get(selObjArray[i]);
-			drawObject(objectTable,selObjArray[i],false);
+			var selectionColor = "#3D0079";
+			ctx.fillStyle = "#3D0079";
+			ctx.globalAlpha = 1;		
+			ctx.beginPath();
+			ctx.strokeStyle = selectionColor;
+			ctx.lineWidth= 2;
+			//console.log("pts Array::"+ptsArray);
+			var pt = getMinMax(ptsArray);
+			//console.log("pts MinX::"+pt.minX+"::pt.minY::"+pt.minY+":MaxX::"+pt.maxX+":maxY::"+pt.maxY);		
+			var arr = null;
+			arr =  new Array();
+			arr[0] = pt.minX;
+			arr[1] = pt.minY;
+			arr[2] = pt.maxX;
+			arr[3] = pt.maxY;
+			createOval(ratio*arr[0]- selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[0]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[0]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[1]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[1]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[1]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[2]+selCircleRedius,ratio*arr[3]);
+			createOval(ratio*arr[2]-selCircleRedius,ratio*arr[3]-selCircleRedius,ratio*arr[2]+selCircleRedius,ratio*arr[3]+selCircleRedius);
+			ctx.fill();
+			ctx.closePath() ;
+			ctx.moveTo(ratio*arr[0],ratio*arr[1]);
 			
-		}
-		for(var ctr=0;ctr<selGroupObjArray.length;ctr++){
-			var selGroupObjId = selGroupObjArray[ctr];
-			var selGroupObj = grpObjTable.get(selGroupObjId);
-			showGroupSelection(selGroupObj.refObjectList,objectTable);
-		}*/
+			// ctx.closePath() ;
+			ctx.stroke() ;
 	}
-}
+	function checkAndPopulateSelObjArray(){
+		var retVal = true;
+		//console.log("checkAndPopulateSelObjArray:selGroupObjArray.length:"+selGroupObjArray.length);
+		 if(selGroupObjArray.length == 1){
+			var selGroupObjId = selGroupObjArray[0];
+			var selGrpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+			var selGroupObj = selGrpObjTable.get(selGroupObjId);
+			/*selObjArray = null;
+			selObjArray = new Array();*/
+			resetSelObjArray()
+			var refList = selGroupObj.refObjectList;
+			for(var i=0;i<refList.length;i++){
+				var pageNum = document.getElementById("pagenum").value;
+				var objectTable = pageObjTable.get(pageNum);
+				var graphicsObj = objectTable.get(refList[i]);
+				if(graphicsObj.type != 16 ){
+					retVal = false;
+					break;
+				}
+				selObjArray[selObjArray.length] = refList[i];
+			}
+		}else{
+			retVal = false;
+		}
+		return retVal;
+	}
 
-
-
-function showGroupSelection(refList,objectTable){
-	//console.log("showGroupSelection::;"+refList);
-		var ptsArray = new Array();
-		for(var i=0;i<refList.length;i++){
-			var graphicsObject = objectTable.get(refList[i]);
-			var pointsArray = graphicsObject.pointsArray;
-			for(var ctr=0;ctr<pointsArray.length;ctr++){
-				ptsArray[ptsArray.length] = pointsArray[ctr];
+	function moveToTop(){
+		var pageNum = document.getElementById("pagenum").value;
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			var grpObjTable = pageGrpObjTable.get(pageNum);
+			if(grpObjTable != null && grpObjTable.size() > 0 ){
+				var movedGrpObjTable = new Hashtable();
+				for(var i=0;i<selGroupObjArray.length;i++){
+					var obj = grpObjTable.get(selGroupObjArray[i]);
+					movedGrpObjTable.put(selGroupObjArray[i],obj);
+					grpObjTable.remove(selGroupObjArray[i]);
+				}
+				grpObjTable.add(movedGrpObjTable);
 			}
 		}
-		
-		var selectionColor = "#3D0079";
-		ctx.fillStyle = "#3D0079";
-		ctx.globalAlpha = 1;		
-		ctx.beginPath();
-		ctx.strokeStyle = selectionColor;
-		ctx.lineWidth= 2;
-		//console.log("pts Array::"+ptsArray);
-		var pt = getMinMax(ptsArray);
-		//console.log("pts MinX::"+pt.minX+"::pt.minY::"+pt.minY+":MaxX::"+pt.maxX+":maxY::"+pt.maxY);		
-		var arr = null;
-		arr =  new Array();
-		arr[0] = pt.minX;
-		arr[1] = pt.minY;
-		arr[2] = pt.maxX;
-		arr[3] = pt.maxY;
-		createOval(arr[0]- selCircleRedius,arr[1]-selCircleRedius,arr[0]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0]+selCircleRedius,arr[3]);
-		createOval(arr[0]-selCircleRedius,arr[3]-selCircleRedius,arr[0]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[1]);
-		createOval(arr[2]-selCircleRedius,arr[1]-selCircleRedius,arr[2]+selCircleRedius,arr[1]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[2]+selCircleRedius,arr[3]);
-		createOval(arr[2]-selCircleRedius,arr[3]-selCircleRedius,arr[2]+selCircleRedius,arr[3]+selCircleRedius);
-		ctx.fill();
-		ctx.closePath() ;
-		ctx.moveTo(arr[0],arr[1]);
-		
-		// ctx.closePath() ;
-		ctx.stroke() ;
-}
-function checkAndPopulateSelObjArray(){
-	var retVal = true;
-	//console.log("checkAndPopulateSelObjArray:selGroupObjArray.length:"+selGroupObjArray.length);
-	 if(selGroupObjArray.length == 1){
-		var selGroupObjId = selGroupObjArray[0];
-		var selGrpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
-		var selGroupObj = selGrpObjTable.get(selGroupObjId);
-		selObjArray = null;
-		selObjArray = new Array();
-		
-		var refList = selGroupObj.refObjectList;
-		for(var i=0;i<refList.length;i++){
-			var pageNum = document.getElementById("pagenum").value;
+		if(selObjArray != null && selObjArray.length >0){
 			var objectTable = pageObjTable.get(pageNum);
-			var graphicsObj = objectTable.get(refList[i]);
-			if(graphicsObj.type != 16 ){
-				retVal = false;
+			var movedObjTable = new Hashtable();
+			for(var i=0;i<selObjArray.length;i++){
+				var obj = objectTable.get(selObjArray[i]);
+				movedObjTable.put(selObjArray[i],obj);
+				objectTable.remove(selObjArray[i]);
+			}
+			objectTable.add(movedObjTable);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				if(graphicsObject.type != 16){
+					showSelectedObject(graphicsObject);
+				}
+			}
+		}
+	}
+
+	function moveToBottom(){
+		var pageNum = document.getElementById("pagenum").value;
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			var grpObjTable = pageGrpObjTable.get(pageNum);
+			if(grpObjTable != null && grpObjTable.size() > 0 ){
+				var movedGrpObjTable = new Hashtable();
+				for(var i=0;i<selGroupObjArray.length;i++){
+					var obj = grpObjTable.get(selGroupObjArray[i]);
+					movedGrpObjTable.put(selGroupObjArray[i],obj);
+					grpObjTable.remove(selGroupObjArray[i]);
+				}
+				movedGrpObjTable.add(grpObjTable);
+				pageGrpObjTable.put(pageNum,movedGrpObjTable);
+			}
+		}
+		if(selObjArray != null && selObjArray.length >0){
+			var objectTable = pageObjTable.get(pageNum);
+			var movedObjTable = new Hashtable();
+			for(var i=0;i<selObjArray.length;i++){
+				var obj = objectTable.get(selObjArray[i]);
+				movedObjTable.put(selObjArray[i],obj);
+				objectTable.remove(selObjArray[i]);
+			}
+			movedObjTable.add(objectTable);
+			pageObjTable.put(pageNum,movedObjTable);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = movedObjTable.get(selObjArray[i]);
+				if(graphicsObject.type != 16){
+						showSelectedObject(graphicsObject);
+				}
+			}
+		}
+	}
+
+	function getShowableSelObject(){
+		if(selGroupObjArray != null && selGroupObjArray.length >0){
+			var grpObjectArray = new Array();
+			var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+			for(var i=0;i < selGroupObjArray.length ; i++){
+				var grpObj = grpObjTable.get(selGroupObjArray[i]);
+				var grpObjRefList = grpObj.refObjectList;
+				for(var k=0;k<grpObjRefList.length;k++){
+					grpObjectArray[grpObjectArray.length] = grpObjRefList[k];
+				}
+			}
+			var retArray = arrayDifference(grpObjectArray,selObjArray);
+			return retArray;
+		}else{
+			return selObjArray;
+		}
+	}
+	function showGroupAndObjectSelection(){
+		var isEnable = false;
+		var retVal = getShowableSelObject();
+		console.log("showGroupAndObjectSelection retVal:::;"+retVal);
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+		if(selGroupObjArray != null && selGroupObjArray.length>0){
+			for(var ctr=0;ctr<selGroupObjArray.length;ctr++){
+				var selGroupObjId = selGroupObjArray[ctr];
+				var selGroupObj = grpObjTable.get(selGroupObjId);
+				showGroupSelection(selGroupObj.refObjectList,objectTable);
+			}
+			isEnable = true;
+		}
+		if(retVal != null && retVal.length >0){
+			for(var i=0;i<retVal.length;i++){
+				var graphicsObject = objectTable.get(retVal[i]);
+					//console.log("graphicsObject:;"+graphicsObject+":;width:;"+width);
+					//if(graphicsObject.type != 16){
+						//drawObject(objectTable,selObjArray[i],false);
+						showSelectedObject(graphicsObject);
+					//}
+			}
+			isEnable = true;
+		}
+		enableDisableRelationOptions(isEnable);
+	}
+	function arrayDifference(array1,array2){
+		//var array1 = [1, 2, 3, 4, 5, 6,11];
+		//var array2 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+		//console.log("array1:::::"+array1);
+		//console.log("array2:::::"+array2);
+		var difference = [];
+
+		jQuery.grep(array2, function(el) {
+				if(jQuery.inArray(el, array1) == -1){ 
+					difference.push(el);
+					//console.log("difference:::"+difference);
+				}
+		});
+		
+		//console.log("difference::"+difference);
+		return difference;
+	}
+
+	function startRecordingFromApp(prevRecordFileDuration){
+		console.log("startRecordingFromApp");
+		recFileDuration = prevRecordFileDuration;
+		clock();
+	}
+
+	function stopRecordingFromApp(){
+		console.log("stopRecordingFromApp");
+		startTime = 0;
+		createPinObjectImages();
+	}
+
+
+
+	function getAudioFileForPlay(){
+		//alert("getAudioFileForPlay"+recordingFilePath);
+		Jockey.send("FetchAudioFilePath", {
+			msg:""+recordingFilePath
+		});
+		recordingFilePath = "";
+	}
+
+
+	function playObjectFromApp(){
+		console.log("playObjectFromApp::::"+nextPlayingObjKey);
+		isPaused = false;
+		//stopObjectPlaying();
+		if(nextPlayingObjKey != null){
+			//console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+				runningTimerId = setTimeout('checkPageAndDrawObj('+nextPlayingObjKey+')',nextPlayingObjtime);
+		}else{
+			canvas.style.cursor  = "default";
+			//console.log("Play file name:::"+myVid.src);
+			selObjArray =  null;
+			selObjArray = new Array();
+			selObjRotatable = true;
+			//console.log("@@@@@");
+			enableDisableRelationOptions(false);
+			/*myVid.controls = false;
+			myVid.play();*/
+			//document.getElementById("recordButton").className = "recinactive";
+			checkAndMergeTimeRefTable();
+			timeRefTable = sortObjectTimeTable(timeRefTable);
+			//console.log("3333333333333333333333333333"+timeRefTable);
+			console.log("recSequenceNo11 :: "+recSequenceNo);
+			drawNonRecordingObject("1");
+			//alert("play rewcorded object")
+			restoreRecordedObjWithSeq("1",recSequenceNo);
+			timeRefTable.moveFirst();
+			//console.log("timeRefTable::::playing:"+timeRefTable);
+			playCount = 0;
+			console.log(timeRefTable);
+			if(timeRefTable.next()){
+				//alert(timeRefTable.getKey());
+				//alert(timeRefTable.getValue());
+				//console.log("Object1:::"+timeRefTable.getKey()+":Time::::"+timeRefTable.getValue().num);
+				
+				//var pageObj = timeRefTable.getValue();
+				timeDuration = timeRefTable.getKey();;
+				startTime = new Date().getTime();
+				nextPlayingObjKey = timeRefTable.getKey();
+				//console.log("###########################");
+				runningTimerId = setTimeout('checkPageAndDrawObj('+timeRefTable.getKey()+')',timeRefTable.getKey());
+			}
+		/*	sliderMoveTime = Math.floor(recFileDuration / 100);
+			//console.log("-----sliderMoveTime-------"+sliderMoveTime);
+			startSlide();*/
+			
+		}
+	}
+
+	function pauseObject(){
+		/*isPaused = true;
+		myVid.pause();
+		clearTimeout(runningTimerId);
+		//console.log(" clearTimeout(sliderTimer)333333333333");	
+		clearTimeout(sliderTimer);
+		clearTimeout(playerTimer);	*/
+		isPaused = true;
+		clearTimeout(runningTimerId);
+		var currentTime = new Date().getTime();
+		nextPlayingObjtime = Math.ceil(currentTime - startTime);
+	}
+
+	function setRecordingFilePath(recfilePath){
+		recordingFilePath = recfilePath;
+	}
+
+	function convertRecordedToNonrecordedObject(sequenceNum){
+		objectTimeTable.moveFirst();
+		while(objectTimeTable.next()){
+			var pageNum = null;
+			var val = objectTimeTable.getKey();
+			var recordedObjArr = timeRefTable.get(objectTimeTable.getValue());
+			for(var i=0;i< recordedObjArr.length;i++){
+				var pageObj = recordedObjArr[i];
+					if(pageObj != null){
+						pageNum = pageObj.num;
+						var objId = pageObj.objectId;
+						if(objId == val)
+							break;
+						}
+			}
+			var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+			if(nonRecordingObjArray == null){
+				nonRecordingObjArray = new Array();
+				nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+			}
+			//console.log("------convert recorded to non recorded------"+val);
+			nonRecordingObjArray[nonRecordingObjArray.length] = val;
+		   //console.log("------convert recorded to non recorded------"+nonRecordingObjArray.length);
+	 }
+	}
+	function setZoomTypeNew(type){
+		//alert("zoom type::"+type)
+		zoomType = type;
+		zoomImageObject();
+		console.log("zoomType::"+zoomType)
+	}
+
+	function zoomImageObject(){
+		if(selObjArray != null && selObjArray.length > 0){
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+			for(var i=0;i<selObjArray.length;i++){
+				var graphicsObject = objectTable.get(selObjArray[i]);
+				if(graphicsObject.type == 8){
+					zoomImage(graphicsObject);
+				}
+			}
+			
+		}
+	}
+
+	function setStreamTimeForPlayfromObject(){
+		if(!isRecRunning){
+			if(selObjArray!= null){
+					var id = objectTimeTable.get(selObjArray[0]);
+					//console.log("id:%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"+id);
+					if(id== null){
+						alert("------Selcted Object is not playable----------");
+					}else{
+						playingFrom = 3;
+						var selectedObjectTime = id;
+						// call code here to set Audio Stream time for play
+					}
+			}else{
+				alert("pls select object");
+			}
+		}
+	}
+
+	function playfromObjectMobileApp(){
+		var id = objectTimeTable.get(selObjArray[0]);
+		isPlayingStoped = false;
+		checkAndMergeTimeRefTable();
+		timeRefTable = sortObjectTimeTable(timeRefTable);
+		restoreAndPlayObject(id);
+		selObjArray =  null;
+		selObjArray = new Array();
+		selObjRotatable = true;
+		//console.log("!!!!");
+		//enableDisableRelationOptions(false);
+		playingFrom = -1;
+		
+	}
+
+	function convertRecordedObjectToNonRecorded(){
+		recFileDuration = 0;
+		objectTimeTable.moveFirst();
+		while(objectTimeTable.next()){
+			var pageNum = null;
+			var val = objectTimeTable.getKey();
+			var recordedObjArr = timeRefTable.get(objectTimeTable.getValue());
+			for(var i=0;i< recordedObjArr.length;i++){
+				var pageObj = recordedObjArr[i];
+					if(pageObj != null){
+						pageNum = pageObj.num;
+						var objId = pageObj.objectId;
+						if(objId == val)
+							break;
+						}
+			}
+			
+			var nonRecordingObjArray = nonRecordinPageObjTable.get(pageNum);
+			if(nonRecordingObjArray == null){
+				nonRecordingObjArray = new Array();
+				nonRecordinPageObjTable.put(pageNum,nonRecordingObjArray);
+			}
+			//console.log("------convert recorded to non recorded------"+val);
+			nonRecordingObjArray[nonRecordingObjArray.length] = val;
+		   //console.log("------convert recorded to non recorded------"+nonRecordingObjArray.length);
+	 }
+	 timeRefTable= null;
+	 objectTimeTable = null;
+	 timeRefTable = new Hashtable();
+	 objectTimeTable = new Hashtable();
+
+	}
+
+	function stopPlayingfromApp(){
+		isPlayingStoped = true;
+		nextPlayingObjKey = null;
+		 startTime = 0;
+		//console.log(" clearTimeout(sliderTimer)444444444444444");
+		//clearTimeout(sliderTimer);
+		clearTimeout(playerTimer);
+		if(runningTimerId != null){
+			clearTimeout(runningTimerId);
+		}
+		//console.log("myVid::::"+myVid);
+		
+		isPaused = false;
+		pointerImg.style.left = -50 +"px";
+		pointerImg.style.top = -50 + "px";
+		pointerX = 0;
+		pointerY = 0;
+		checkAndMergeTimeRefTable();
+		timeRefTable = sortObjectTimeTable(timeRefTable);
+		//checkAndMergeTimeRefTable();
+		var pageNumber = document.getElementById("pagenum").value;
+		//console.log("6666666666666666666666666666666");
+		drawNonRecordingObject(pageNumber);
+		restoreAllRecordedObj(pageNumber);
+		//document.getElementById("playpause").className  = "play";
+		//jQuery('#ex1').slider('setValue',sliderPos)
+	}
+
+	function playWhenSliderMovefromApp(playingStartTime){
+		 ctx.clearRect(0, 0, canvas.width, canvas.height);
+		 restore();
+		timeRefTable.moveFirst();
+		//console.log("timeRefTable:::::"+timeRefTable);
+		var currentPage = document.getElementById("pagenum").value;
+		//console.log("33333333333333333333333");
+		drawNonRecordingObject(currentPage);
+		var objectTable = pageObjTable.get(currentPage);
+		playCount = 0;
+		while(timeRefTable.next()){
+			playCount++;
+			if(timeRefTable.getKey()<playingStartTime){
+				var recordedObjArr = timeRefTable.getValue();
+				for(var i=0;i<recordedObjArr.length;i++){
+					var pageObj = recordedObjArr[i];
+					if(pageObj.num == currentPage){
+						drawObject(objectTable,pageObj.objectId,false);
+					}else{
+						continue;
+					}
+				}
+			}else{
+				var nextObjTime = timeRefTable.getKey();
+				playCount--;
+				runningTimerId = setTimeout('checkPageAndDrawObj('+nextObjTime+')',(nextObjTime - playingStartTime));
+				
 				break;
 			}
-			selObjArray[selObjArray.length] = refList[i];
 		}
-	}else{
-		retVal = false;
-	}
-	return retVal;
-}
+		
+		isPlayingStoped = false;
+		/*document.getElementById("playpause").className  = "pause";
+		currentAudioTime = null;
+		//console.log("::::::::::sliderMoveTime:::::::::"+sliderMoveTime);
+		if(sliderMoveTime ==  null){
+			sliderMoveTime = Math.floor(recFileDuration / 100);
+		}
+		startSlide();*/
+		playingFrom = -1;
+		
+	} 
 
-function moveToTop(){
-	var pageNum = document.getElementById("pagenum").value;
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		var grpObjTable = pageGrpObjTable.get(pageNum);
-		if(grpObjTable != null && grpObjTable.size() > 0 ){
-			var movedGrpObjTable = new Hashtable();
-			for(var i=0;i<selGroupObjArray.length;i++){
-				var obj = grpObjTable.get(selGroupObjArray[i]);
-				movedGrpObjTable.put(selGroupObjArray[i],obj);
-				grpObjTable.remove(selGroupObjArray[i]);
-			}
-			grpObjTable.add(movedGrpObjTable);
+	function setsize(obj){
+		var value= obj.value;
+		console.log(obj.value);
+		document.getElementById("editor").style.width = value.length*50 + "px"
+		document.getElementById("editor").style.height = 100 + "px"
+	}
+
+	function getToOrGroupId(){
+		//alert("getToOrGroupId");
+		Jockey.send("RequestForToID");
+	}
+
+	function setToOrGroupId(id,userId){
+		//alert("setToOrGroupId::"+id+":::userId::"+userId);
+		user_Id = userId;
+		if(id.indexOf('to') != -1){
+		  toId = id.substring(id.indexOf('to')+3,id.length);
+		}else{
+		 grId = id.substring(id.indexOf('gr')+3,id.length);
+		}
+		//alert("toId::"+toId+"::grId"+grId);
+	}
+
+	function showGroupAndAlignWidget(displayType){
+		if(displayType){
+			  $(".groupicons").css({
+	              "display": "inline-block",
+	              
+	          });
+		}else{
+			  $(".groupicons").css({
+	              "display": "none",
+	              
+	          });
+		}
+		
+	}
+
+	function showUnGroupWidget(displayType){
+		if(displayType){
+			  $(".ungroupicons").css({
+	              "display": "inline-block",
+	              
+	          });
+		}else{
+			  $(".ungroupicons").css({
+	              "display": "none",
+	              
+	          });
+		}
+		
+	}
+	function showCopyIcon(displayType){
+		if(displayType){
+			  $(".copyicons").css({
+	              "display": "inline-block",
+	              
+	          });
+		}else{
+			  $(".copyicons").css({
+	              "display": "none",
+	              
+	          });
+		}
+		
+	}
+	
+	function showPasteIcon(displayType){
+		if(displayType){
+			  $(".pasteicons").css({
+	              "display": "inline-block",
+	              
+	          });
+		}else{
+			  $(".pasteicons").css({
+	              "display": "none",
+	              
+	          });
 		}
 	}
-	if(selObjArray != null && selObjArray.length >0){
-		var objectTable = pageObjTable.get(pageNum);
-		var movedObjTable = new Hashtable();
-		for(var i=0;i<selObjArray.length;i++){
-			var obj = objectTable.get(selObjArray[i]);
-			movedObjTable.put(selObjArray[i],obj);
-			objectTable.remove(selObjArray[i]);
+	function checkTextObject(x,y){
+		var grpObjArr = checkPointsInAllGroups(x,y);	
+		var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
+		if(grpObjArr.length >0){
+			var groupObj = grpObjArr[0];
+			if(!isControlPressed){
+				selObjArray =  null;
+				selObjArray = new Array();
+				selGroupObjArray = null;
+				selGroupObjArray = new Array();
+			}
+			//console.log("-------------selGroupObjArray------------------"+selGroupObjArray);
+			//console.log("groupObj.id>>>>>>"+groupObj.id);
+			if(selGroupObjArray.indexOf(groupObj.id) == -1){
+				selGroupObjArray[selGroupObjArray.length] = groupObj.id;
+				var refList = groupObj.refObjectList;
+				return checkGroupObjectIsText(refList);
+			}
 		}
-		objectTable.add(movedObjTable);
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
+	}
+
+	function checkGroupObjectIsText(refList){
+		var pageNum = document.getElementById("pagenum").value;
+		var objectTable = pageObjTable.get(pageNum);
+		var isTextObj = true;
+		for(var i=0;i<refList.length;i++){
+			var graphicsObject = objectTable.get(refList[i]);
+			selObjArray[selObjArray.length] = refList[i];
+			if(graphicsObject.type != 16){
+				selObjArray =  null;
+				selObjArray = new Array();
+				isTextObj = false;
+				break;
+			}
+		}
+		return isTextObj;
+	}
+
+	 function resetSelObjArray(){
+		 selObjArray = null;
+		 selObjArray = new Array();
+		 showGroupAndAlignWidget(false);
+		 showCopyIcon(false);
+		 showviewEditIcon(false);
+	 }
+	 
+	 function drawSmoothCurve(path,type){
+		 	ctx.clearRect(0, 0, canvas.width, canvas.height);
+			restore();
+			ctx.beginPath();
+			ctx.lineCap = 'round';
+			ctx.lineJoin = 'round';
+			if(type == 4){
+				ctx.strokeStyle = styleColor;
+				ctx.lineWidth= lineWidth;
+				ctx.globalAlpha = globalAlpha;
+			}else if(type == 25){
+				ctx.strokeStyle = heighlighterColor ;
+				ctx.lineWidth= highlighterLineWidth;
+				ctx.globalAlpha = heighlighterOpacity;
+			}
+			
+			drawSegments(path );
+			ctx.stroke(); 
+	 }
+	 
+	 function drawSegments(path) {
+			var segments = path._segments,
+				length = segments.length,
+				coords = new Array(6),
+				first = true,
+				curX, curY,
+				prevX, prevY,
+				inX, inY,
+				outX, outY;
+
+			function drawSegment(segment) {
+				
+				var point = segment._point;
+				curX = ratio*point._x;
+				curY = ratio*point._y;
+				
+				if (first) {
+					ctx.moveTo(curX, curY);
+					first = false;
+				} else {
+					
+					var handle = segment._handleIn;
+					inX = curX + ratio*handle._x;
+					inY = curY + ratio*handle._y;
+					if (inX === curX && inY === curY
+							&& outX === prevX && outY === prevY) {
+						ctx.lineTo(curX, curY);
+					} else {
+					
+						ctx.bezierCurveTo(outX, outY, inX, inY, curX, curY);
+					}
+				}
+				prevX = curX;
+				prevY = curY;
+				
+				var handle = segment._handleOut;
+				outX = prevX + ratio*handle._x;
+				outY = prevY + ratio*handle._y;
+			}
+
+			for (var i = 0; i < length; i++)
+				drawSegment(segments[i]);
+				
+		}
+	 
+	 function getPointsArray(pathObj){
+			var segments = pathObj.segments;
+			var pointsArr = new Array();
+			for(i = 0; i< segments.length;i++){
+				pointsArr[pointsArr.length] = segments[i].point.x
+				pointsArr[pointsArr.length] = segments[i].point.y
+			 }
+			return pointsArr;
+	 }
+	 
+	 function setToFrom(tofromdata){
+		/* var res = tofromdata.split(":");
+		 document.getElementById("toFrom").innerHTML = res[0] +" : ";
+		 document.getElementById("userEmail").innerHTML = res[1];*/
+	 }
+	 
+	 function validatePoints(event){
+		    var returnArr = new Array();
+			var reqTouch;
+			//alert("validatePoints::"+event.changedTouches.length);
+			for (var i = 0; i < event.changedTouches.length; i++){
+			   var touch =  event.changedTouches[i];
+			   if(touch.radiusX> 21  ||  touch.radiusY> 21)
+				continue;
+				else
+				  returnArr[returnArr.length] = touch;
+			}
+			if(returnArr.length != 0){
+				for(var i = 0; i <returnArr.length;i++){
+				 if(reqTouch == null)
+				   reqTouch = returnArr[i];
+				   else{
+					if(reqTouch.pageY > returnArr[i].pageY){
+						reqTouch = returnArr[i];
+					}
+				  }
+				}
+			}
+			//alert("reqTouch::"+reqTouch.pageX +":::"+reqTouch.pageY);
+			return reqTouch;
+		}
+
+	/* function update(jscolor) {
+		 
+		    // 'jscolor' instance can be used as a string
+		    document.getElementById('stroke_color').style.backgroundColor = '#' + jscolor
+	}
+	 function updateFill(jscolor) {
+		 
+		    // 'jscolor' instance can be used as a string
+		    document.getElementById('filled_color').style.backgroundColor = '#' + jscolor
+	}*/
+	 
+	 var img2; 
+	 
+	function generateImage(htmlData,width,height){
+		console.log("generateImage::"+htmlData)
+		$('#testdiv').html(htmlData).css({
+			'width':width
+		});
+		
+		html2canvas($("#testdiv"), {
+	        onrendered: function(canvas) {
+	            // canvas is the final rendered <canvas> element
+	            var myImage = canvas.toDataURL("image/png");
+				var src = encodeURI(myImage);
+	            //document.body.appendChild(canvas);
+				//document.getElementById('screenshot').src = src;
+
+				var img = new Image();
+				img.src = src;
+				img.onload = function() {
+		  	    	var textObj = new Text(htmlData,img);
+		  			createObject(currentObjId,startX,startY,null,null,null,null,textObj);
+		  			saveTextAsImageInGraphicsObject(textObj);                
+		  	    };
+		    	 
+
+	        }
+			
+	    });
+		
+		
+		
+		
+		 /*img.onload = function() {
+	  	    	
+	  	    	var textObj = new Text(htmlData,img);
+	  			createObject(currentObjId,startX,startY,null,null,null,null,textObj);
+	  			saveTextAsImageInGraphicsObject(textObj);                
+	  	    };*/
+		
+		
+	/*    
+	    setTimeout(function(){
+		
+		var data = document.querySelector('#svgfeedback');
+		// get svg data
+	
+		var xml = new XMLSerializer().serializeToString(data);
+
+		// make it base64
+		var svg64 = btoa(unescape(encodeURIComponent(xml)));
+		var b64Start = 'data:image/svg+xml;base64,';
+		
+
+		// prepend a "header"
+		var image64 = b64Start + svg64;
+
+		
+		img = new Image();
+		  
+		  
+		// set it as the source of the img 
+		img.src = image64;
+
+
+		
+		
+		
+     
+
+	   // img2.src = data;
+	 
+	 
+	   
+	    $(img).load(function(){
+	    	
+	    
+	    	var textObj = new Text(htmlData,img);
+			createObject(currentObjId,startX,startY,null,null,null,null,textObj);
+			saveTextAsImageInGraphicsObject(textObj);                
+	    });
+	
+	    	
+	    	  img.onload = function() {
+	  	    	
+	  	    	var textObj = new Text(htmlData,img);
+	  			createObject(currentObjId,startX,startY,null,null,null,null,textObj);
+	  			saveTextAsImageInGraphicsObject(textObj);                
+	  	    };
+	    	 
+	    },1500);*/
+
+	     
+	/*     var data   = '<svg xmlns="http://www.w3.org/2000/svg" width="'+width+ '" height="'+height+'">' +
+	     '<foreignObject width="100%" height="100%">' +
+	     '<div xmlns="http://www.w3.org/1999/xhtml" >' +
+	       htmlData +
+			'</div>' +
+			'</foreignObject>' +
+			'</svg>'; 
+	     
+		var DOMURL = window.URL || window.webkitURL || window;
+		
+		var img = new Image();
+		var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+		var url = DOMURL.createObjectURL(svg);
+		
+		img.onload = function () {
+			//ctx.drawImage(img, 0, 0);	
+			var textObj = new Text(htmlData,img);
+			createObject(currentObjId,startX,startY,null,null,null,null,textObj);
+			saveTextAsImageInGraphicsObject(textObj);
+			DOMURL.revokeObjectURL(url);
+		}
+
+		img.src = url;*/
+	} 
+
+
+	function createTextImageObject(textObj,graphicsObj){
+		var data = "data:image/svg+xml,"+"<svg width='200' height='200'>" +
+	    "<foreignObject width='200' height='550'>" +
+	      "<body xmlns='http://www.w3.org/1999/xhtml'><div xmlns='http://www.w3.org/1999/xhtml' style='font-size:40px'>" +
+	        "<div xmlns='http://www.w3.org/1999/xhtml'>"+textObj.textData+"</div>" +
+	      "</div></body>" +
+	    "</foreignObject>" +
+	  "</svg>"
+	    
+	   var img = new Image();
+
+	   img.src = data;
+
+	   img.onload = function() {
+		    textObj.imageObject = img
+			graphicsObj.text = textObj;
+			textImgObjTable.put(graphicsObj.id,true);
+			checkAllTextObjImageCreated();               
+	   };
+		
+		
+		
+		
+		/* var data   = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">' +
+				       '<foreignObject width="100%" height="100%">' +
+				       '<div xmlns="http://www.w3.org/1999/xhtml" >' +
+				         htmlData +
+						'</div>' +
+						'</foreignObject>' +
+						'</svg>';
+
+		var DOMURL = window.URL || window.webkitURL || window;
+		
+		var img = new Image();
+		var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+		var url = DOMURL.createObjectURL(svg);
+		
+		img.onload = function () {
+			//ctx.drawImage(img, 0, 0);	
+			//var textObj = new Text(htmlData,img);
+			textObj.imageObject = img
+			graphicsObj.text = textObj;
+			textImgObjTable.put(graphicsObj.id,true);
+			checkAllTextObjImageCreated();
+			DOMURL.revokeObjectURL(url);
+		}
+
+		img.src = url;*/
+	}
+
+	function showUploadFileIcon(uploadFileName,fileType,httpPath){
+		//alert("fileType:::"+fileType)
+		var iconImg = new Image();
+		var img = new Image();
+		var mediaType;
+		var mediaIconLoaded = false;
+		var genImgLoaded = false;
+		/*if(fileType == 'application/pdf'){
+			iconImg.src = 'images/docicons/pdf.png'; 
+			mediaType = 'pdf';
+		}else if(fileType == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+			iconImg.src  = 'images/docicons/excel.png'; 
+			mediaType = 'excel';
+		}
+		else if(fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'){
+			iconImg.src = 'images/docicons/msword.png'; 
+			mediaType = 'doc';
+		}else if(fileType == 'application/vnd.ms-powerpoint'){
+			iconImg.src = 'images/docicons/powerpoint.png'; 
+			mediaType = 'ppt';
+		}*/
+		if(fileType == 'pdf'){
+			iconImg.src = 'images/docicons/pdf.png'; 
+			mediaType = 'pdf';
+		}else if(fileType == 'xls' || fileType == 'xlsx'){
+			iconImg.src  = 'images/docicons/excel.png'; 
+			mediaType = 'excel';
+		}
+		else if(fileType == 'doc' || fileType == 'docx'){
+			iconImg.src = 'images/docicons/msword.png'; 
+			mediaType = 'doc';
+		}else if(fileType == 'ppt' || fileType == 'pptx'){
+			iconImg.src = 'images/docicons/powerpoint.png'; 
+			mediaType = 'ppt';
+		}
+		
+		
+		
+		/*var data = "data:image/svg+xml,"+"<svg xmlns='http://www.w3.org/2000/svg' width='200' height='50'>" +
+				    "<foreignObject width='100%' height='100%'>" +
+				      "<div xmlns='http://www.w3.org/1999/xhtml'>" +
+				        "<div xmlns='http://www.w3.org/1999/xhtml'>"+uploadFileName+"</div>" +
+				      "</div>" +
+				    "</foreignObject>" +
+				  "</svg>";
+		
+		img.src = data;*/
+		
+		iconImg.onload = function () {
+			mediaIconLoaded = true;
+			iconImg.width = 25;
+			iconImg.height = 25;
+			if(mediaIconLoaded && genImgLoaded)
+				showAndSaveMediaObjIcon(mediaType,iconImg,httpPath,uploadFileName,img);
+		}
+		
+		
+		$('#doc_title').html(uploadFileName);
+		console.log($('#doc_title').html());
+		html2canvas($("#doc_info"), {
+	        onrendered: function(canvas) {
+	            // canvas is the final rendered <canvas> element
+	            var myImage = canvas.toDataURL("image/png");
+				var src = encodeURI(myImage);
+
+  			img.src = src;
+	  			img.onload = function () {
+	  				genImgLoaded = true;
+	  				if(mediaIconLoaded && genImgLoaded)
+	  					showAndSaveMediaObjIcon(mediaType,iconImg,httpPath,uploadFileName,img);
+	  			}
+	        }
+			
+	    });
+		
+		
+		
+	}
+
+	function showAndSaveMediaObjIcon(mediaType,iconImg,httpPath,fileName,img){
+		var xPos = 100;
+		var yPos = 100;
+		var mediaObj = new Media(mediaType,iconImg,httpPath,fileName,img);
+		createObject(currentObjId,xPos,yPos,null,null,null,null,mediaObj);
+		saveMediaObjectInGraphicsObject(mediaObj,xPos,yPos);
+	}
+
+	function createUploadFileIcon(mediaObj,graphicsObj){
+		var iconImg = new Image();
+		var img = new Image();
+		var mediaIconLoaded = false;
+		var genImgLoaded = false;
+		
+
+		var data = "data:image/svg+xml,"+"<svg xmlns='http://www.w3.org/2000/svg' width='200' height='50'>" +
+				    "<foreignObject width='100%' height='100%'>" +
+				      "<div xmlns='http://www.w3.org/1999/xhtml'>" +
+				        "<div xmlns='http://www.w3.org/1999/xhtml'>"+uploadFileName+"</div>" +
+				      "</div>" +
+				    "</foreignObject>" +
+				  "</svg>";
+		
+		iconImg.src = 'images/docicons/'+mediaObj.mediaType+'.png'; 
+		img.src = data;
+		
+		iconImg.onload = function () {
+			mediaIconLoaded = true;
+			mediaObj.mediaIconObj = iconImg
+			if(mediaIconLoaded && genImgLoaded){
+				graphicsObj.media = mediaObj;
+				mediaIconTable.put(graphicsObj.id,true);
+				checkAllMediaIconCreated();
+			}
+		}
+		
+		img.onload = function () {
+			genImgLoaded = true;
+			mediaObj.fileNameImg = img
+			if(mediaIconLoaded && genImgLoaded){
+				graphicsObj.media = mediaObj;
+				mediaIconTable.put(graphicsObj.id,true);
+				checkAllMediaIconCreated();
+			}
+		}
+		
+	}
+
+	function checkAllObjImageCreated(){
+		imgObjTable.moveFirst();
+		var allImgLoaded= true;
+		while(imgObjTable.next()){
+			console.log("::::"+imgObjTable.getValue());
+			if(!imgObjTable.getValue()){
+				allImgLoaded = false;
+				break;
+			}
+		}
+		if(allImgLoaded){
+			 showObjectOnCanvas();
+		}
+	}
+	
+	function checkAllTextObjImageCreated(){
+		textImgObjTable.moveFirst();
+		var allTextImgCreated= true;
+		while(textImgObjTable.next()){
+			console.log("::::"+textImgObjTable.getValue());
+			if(!textImgObjTable.getValue()){
+				allTextImgCreated = false;
+				break;
+			}
+		}
+		if(allTextImgCreated){
+			 showObjectOnCanvas();
+		}
+	}
+
+	function checkAllMediaIconCreated(){
+		mediaIconTable.moveFirst();
+		var allMediaIconCreated= true;
+		while(mediaIconTable.next()){
+			if(!mediaIconTable.getValue()){
+				allMediaIconCreated = false;
+				break;
+			}
+		}
+		if(allMediaIconCreated){
+			 showObjectOnCanvas();
+		}
+	}
+
+	function showShutterIcon(id){
+		openShutterId = id;
+		document.getElementById(id).className = "openshutter";
+	}
+	
+	function hideShutterIcon(){
+		if(openShutterId != null){
+			document.getElementById(openShutterId).className = "openshutter hidden";
+			openShutterId = null;
+		}
+		
+	}
+
+	function checkSelectedObjectType(){
+		var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
+		var obj;
 		for(var i=0;i<selObjArray.length;i++){
 			var graphicsObject = objectTable.get(selObjArray[i]);
-			if(graphicsObject.type != 16){
-				showSelectedObject(graphicsObject);
+			if(obj == null){
+				obj = graphicsObject;
+			}else{
+				if(obj.type != graphicsObject.type)
+					return null;
+					
 			}
 		}
+		return obj;
 	}
-}
 
-function moveToBottom(){
-	var pageNum = document.getElementById("pagenum").value;
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		var grpObjTable = pageGrpObjTable.get(pageNum);
-		if(grpObjTable != null && grpObjTable.size() > 0 ){
-			var movedGrpObjTable = new Hashtable();
-			for(var i=0;i<selGroupObjArray.length;i++){
-				var obj = grpObjTable.get(selGroupObjArray[i]);
-				movedGrpObjTable.put(selGroupObjArray[i],obj);
-				grpObjTable.remove(selGroupObjArray[i]);
-			}
-			movedGrpObjTable.add(grpObjTable);
-			pageGrpObjTable.put(pageNum,movedGrpObjTable);
-		}
+	function openAttachedDocInwebView(httpPath){
+		httpPath = 'https://docs.google.com/a/mscagroup/viewer?url=http://mscagroup.com/admin/AFE_-_India_v8.pdf';
+		alert(httpPath);
+		Jockey.send("OpenWebView", {
+			msg:""+httpPath
+		});
 	}
-	if(selObjArray != null && selObjArray.length >0){
-		var objectTable = pageObjTable.get(pageNum);
-		var movedObjTable = new Hashtable();
-		for(var i=0;i<selObjArray.length;i++){
-			var obj = objectTable.get(selObjArray[i]);
-			movedObjTable.put(selObjArray[i],obj);
-			objectTable.remove(selObjArray[i]);
-		}
-		movedObjTable.add(objectTable);
-		pageObjTable.put(pageNum,movedObjTable);
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		restore();
-		for(var i=0;i<selObjArray.length;i++){
-			var graphicsObject = movedObjTable.get(selObjArray[i]);
-			if(graphicsObject.type != 16){
-					showSelectedObject(graphicsObject);
-			}
-		}
-	}
-}
 
-function getShowableSelObject(){
-	if(selGroupObjArray != null && selGroupObjArray.length >0){
-		var grpObjectArray = new Array();
-		var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
-		for(var i=0;i < selGroupObjArray.length ; i++){
-			var grpObj = grpObjTable.get(selGroupObjArray[i]);
-			var grpObjRefList = grpObj.refObjectList;
-			for(var k=0;k<grpObjRefList.length;k++){
-				grpObjectArray[grpObjectArray.length] = grpObjRefList[k];
-			}
-		}
-		var retArray = arrayDifference(grpObjectArray,selObjArray);
-		return retArray;
-	}else{
-		return selObjArray;
-	}
-}
-function showGroupAndObjectSelection(){
-	var isEnable = false;
-	var retVal = getShowableSelObject();
-	console.log("showGroupAndObjectSelection retVal:::;"+retVal);
-	var objectTable = pageObjTable.get(document.getElementById("pagenum").value);
-	var grpObjTable = pageGrpObjTable.get(document.getElementById("pagenum").value);
-	if(selGroupObjArray != null && selGroupObjArray.length>0){
-		for(var ctr=0;ctr<selGroupObjArray.length;ctr++){
-			var selGroupObjId = selGroupObjArray[ctr];
-			var selGroupObj = grpObjTable.get(selGroupObjId);
-			showGroupSelection(selGroupObj.refObjectList,objectTable);
-		}
-		isEnable = true;
-	}
-	if(retVal != null && retVal.length >0){
-		for(var i=0;i<retVal.length;i++){
-			var graphicsObject = objectTable.get(retVal[i]);
-				//console.log("graphicsObject:;"+graphicsObject+":;width:;"+width);
-				//if(graphicsObject.type != 16){
-					//drawObject(objectTable,selObjArray[i],false);
-					showSelectedObject(graphicsObject);
-				//}
-		}
-		isEnable = true;
-	}
-	enableDisableRelationOptions(isEnable);
-}
-function arrayDifference(array1,array2){
-	//var array1 = [1, 2, 3, 4, 5, 6,11];
-	//var array2 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-	//console.log("array1:::::"+array1);
-	//console.log("array2:::::"+array2);
-	var difference = [];
 
-	jQuery.grep(array2, function(el) {
-			if(jQuery.inArray(el, array1) == -1){ 
-				difference.push(el);
-				//console.log("difference:::"+difference);
-			}
-	});
+	function OpenInApp(httpPath){
+		httpPath = 'https://docs.google.com/a/mscagroup/viewer?url=http://mscagroup.com/admin/AFE_-_India_v8.pdf';
+		alert("OpenInApp:::"+httpPath);
+		Jockey.send("OpenInApp", {
+			msg:""+httpPath
+		});
+	}
+
+
+
+	function OpenInSafari(httpPath){
+		httpPath = 'https://docs.google.com/a/mscagroup/viewer?url=http://mscagroup.com/admin/AFE_-_India_v8.pdf';
+		alert(httpPath);
+		Jockey.send("OpenInSafari", {
+			msg:""+httpPath
+		});
+	}
+	function setHighlighterDefaultStrokeColor(){
+		defHeighlighterColor = "#d9f442";
+		setHighlighterStrokeColorArribute(defHeighlighterColor);
+	}
+	function setHighlighterDefaultLineWidth(){
+		defHighlighterLineWidth = 20;
+		setHighlighterStrokeWidthArribute(defHighlighterLineWidth);
+	}
+	function setDefaultStrokeColor(){
+		defStrokeColor = "#000000";
+		setStrokeColorArribute(defStrokeColor);
+	}
+	function setDefaultLineWidth(){
+		defStrokeWidth = 2;
+		setStrokeWidthArribute(defStrokeWidth);
+	}
 	
-	//console.log("difference::"+difference);
-	return difference;
-}
-//alert("hii");
+	function setDefaultFillType(){
+		defFillType = 1;
+		defFillColor = null;
+		setFillOnOffAttrib(defFillType);
+	}
+	function setDefaultGlobalAlpha(){
+		defGlobalAlpha = 1.0;
+		setOpacityAttrib(defGlobalAlpha);
+	}
+	
+	function setHighlighterDefaultGlobalAlpha(){
+		defHighLighterOpacity = 0.4;
+		setHighlighterOpacityAttrib(defHighLighterOpacity);
+	}
+	
+	function setAttributePanelState(graphicsObj){
+		if(graphicsObj != null){
+			//stroke color
+			defStrokeColor = styleColor;
+			setStrokeColorArribute(graphicsObj.color);
+			// stroke width
+			defStrokeWidth = lineWidth;
+			setStrokeWidthArribute(graphicsObj.lineWidth);
+			document.getElementById('strokewidth_Sel').value = graphicsObj.lineWidth;
+			// fill type
+			defFillType = fillType;
+			if(graphicsObj.isFilled){
+				// fille color 
+				defFillColor = fillColor;
+				document.getElementById('filled_color').style.background = graphicsObj.fillColor;
+				setFillOnOffAttrib(2);
+			}else{
+				setFillOnOffAttrib(1);
+			}
+			
+			// opacity
+			defGlobalAlpha = globalAlpha;
+			setOpacityAttrib(graphicsObj.opacity)
+			// Set Slider value
+			//$("#opacity-slider").slider('setValue',graphicsObj.opacity*100);
+			
+		}
+		
+	}
+	function reSetAttributePanelState(){
+		setStrokeColorArribute(defStrokeColor);
+		setStrokeWidthArribute(defStrokeWidth);
+		setFillOnOffAttrib(defFillType);
+		setOpacityAttrib(defGlobalAlpha);
+	}
+     function selectGraphicsObjAndSetSelection(graphicsObject){
+        setId(7,true);
+		$(".menu_icon.pointer").click();
+		
+		selObjArray[selObjArray.length] =graphicsObject.id;
+		showSelectedObject(graphicsObject);
+    }
+     function setToFromData(toName,toPic,fromName,fromPic){
+    	 document.getElementById('toName').innerHTML = toName
+         document.getElementById('fromName').innerHTML = fromName
+         document.getElementById("fromPic").style.backgroundImage = "url('"+fromPic+"')";
+    	 document.getElementById("toPic").style.backgroundImage = "url('"+toPic+"')";
+     }
+     
+     function setDefaultSelectedId(){
+    	setId(7,true);
+ 		$(".menu_icon.pointer").click();
+     }
+     function checkXYinCanvas(mouseX,mouseY){
+    	 if(mouseX < 0 || mouseY < 0){
+ 			return false;
+    	 }else if(mouseX > canvasWidth || mouseY > canvasHeight){
+    		return false;
+    	 }
+    	 return true;
+     }
+     
+     function setCurrentMessageActive(obj){
+ 		if(prevActiveMsg!= null){
+ 			prevActiveMsg.className = "";	
+ 		}
+ 		obj.className = "active";
+ 		prevActiveMsg = obj
+ 	}
+     
+     function setHighLighterAttributePanelState(graphicsObj){
+ 		if(graphicsObj != null){
+ 			//stroke color
+ 			defHeighlighterColor = heighlighterColor;
+ 			setHighlighterStrokeColorArribute(graphicsObj.color);
+ 			// stroke width
+ 			defHighlighterLineWidth = highlighterLineWidth ;
+ 			setHighlighterStrokeWidthArribute(graphicsObj.lineWidth);
+ 			document.getElementById('strokewidth_Sel').value = graphicsObj.lineWidth;
+ 	
+ 			// opacity
+ 			defHighLighterOpacity = highLighterOpacity;
+ 			setHighlighterOpacityAttrib(graphicsObj.opacity)
+ 			// Set Slider value
+ 			//$("#opacity-slider").slider('setValue',graphicsObj.opacity*100);
+ 		}
+ 		
+ 	}
+ 	function reSetHighLighterAttributePanelState(){
+ 		setHighlighterStrokeColorArribute(defHeighlighterColor);
+ 		setHighlighterStrokeWidthArribute(defHighlighterLineWidth);
+ 		setHighlighterOpacityAttrib(defHighLighterOpacity);
+ 	}
+ 	
+ 	function setOpacitySliderValue(value){
+ 		$("#opacity-slider").slider().slider('destroy');
+ 		$("#opacity-slider").attr('data-slider-value', value);
+ 		$("#opacity-slider").slider().slider('refresh');
+ 	}
+ 	function setHighlighterOpacitySliderValue(value){
+ 		$("#opacity_slider_pen").slider().slider('destroy');
+ 		$("#opacity_slider_pen").attr('data-slider-value', value);
+ 		$("#opacity_slider_pen").slider().slider('refresh');
+ 	}
+     
+ 	
+ 	function setDefaultPageBackground(){
+ 		var pageNum = document.getElementById("pagenum").value;
+ 		setPageBackgroundAttrib(pageNum,defPageBg)
+ 		setActiveBg(defPageBg);
+ 	}
+ 	
+ 	function setPageBackgroundAttrib(pageNum,bgType){
+ 	   switch(bgType){
+	 	 /* case 0:
+			  document.getElementById('canvas').style.backgroundcolor = "#fff";	
+			break;*/
+		  case 1:
+			  document.getElementById('canvas').style.backgroundColor  = "#FFFFFF";	
+			  document.getElementById('canvas').style.backgroundImage = "none";
+			  document.getElementById('redlineruler').style.display = "none";
+			break;
+		  case 2:
+			  document.getElementById('canvas').style.backgroundImage = "url(images/ruler.png)";
+			  document.getElementById('redlineruler').style.display = "block";
+			break;
+		  case 3:
+			  document.getElementById('canvas').style.backgroundImage = "url(images/graph.png)";
+			  document.getElementById('redlineruler').style.display = "none";
+			break;
+ 	   }
+ 	}
+ 	function setPageBgTable(obj){
+ 		 var pageNum = document.getElementById("pagenum").value;
+ 		 var bgType = parseInt(obj.id);
+ 		 setActiveBg(bgType);
+ 		 pageBgTable.put(pageNum,bgType);
+ 		 defPageBg = bgType;
+ 		 setPageBackgroundAttrib(pageNum,bgType);
+ 	}
+ 	function setActiveBg(id){
+ 		 var obj = document.getElementById(id)
+ 		 if(prevActiveBg != null){
+  			prevActiveBg.className = "";
+  		 }
+  		 obj.className = "active";
+  		 prevActiveBg = obj;
+ 	}
+ 	
+ 	function openDocument(httpPath){
+ 		 //httpPath = "http://52.33.173.146//mettingupload//Minutes_of_meeting_Format__1__SEP.xlsx";
+ 		 var src = "https://docs.google.com/gview?url="+httpPath+"&embedded=true";
+ 		 document.getElementById('docViewer').src = src;
+ 		// document.getElementById('documentpopup')
+	     $(".documentpopup").removeClass("hidden");
+    }
+ 	function openUrlinNewWindow(httpPath){
+ 		 var win = window.open(httpPath, '_blank');
+ 		 win.focus();
+ 	}
+ 	function closeDocument(){
+ 		 document.getElementById('docViewer').src = "";
+	     $(".documentpopup").addClass("hidden");
+     }
+ 	function insertUrlRef(){
+ 		var refUrl = document.getElementById('insertUrl').value;
+		if(refUrl != ""){
+			/*if(refUrl.indexOf("www.") == -1 ){
+				refUrl = "www." + refUrl;
+			}*/
+		    if(refUrl.indexOf("http://") == -1 && refUrl.indexOf("https://") == -1){
+				refUrl = "http://" + refUrl;
+			}
+		}
+		document.getElementById('insertUrl').value = "";
+ 		showInsertedUrlIcon(refUrl);
+ 	}
+ 	
+	function showInsertedUrlIcon(httpPath){
+		paramdata = "urlStr="+encodeURIComponent(httpPath);
+		jQuery.ajax({
+		  	type:	"get",
+	  		url: 	"geturlimage.action",
+	  		data: 	 paramdata,
+		  		success:function(msg) {
+		  			//alert(msg);
+		  			if(msg.actionErrors != null){
+		  				alert("Either new message or not found in DB");
+		  		  	}else{
+		  		  		//console.log("showchild"+msg.jsonContent);
+		  		  		var imagePath = msg.imagePath;
+		  		  		var title = msg.title;
+		  		     	var domainName = "www.stackoverflow.com--";
+			  		 
+		  		     	
+		  		     	var mediaIconLoaded = false;
+			  			var genImgLoaded = false;
+			  		  	var iconImg = new Image();
+			  			var img = new Image();
+			  			
+			  			//iconImg.src = 'images/docicons/weblink.png'; 
+			  		   /* iconImg.width = 50;
+			  		    iconImg.height = 50;*/
+			  		  	if(imagePath != null && imagePath.trim() != ""){
+			  		  		iconImg.src = imagePath; 
+			  		  	}else{
+			  		  		iconImg.src = 'images/url_icon.png'; 
+			  		  	}
+			  		  	if(title == null || title.trim() == ""){
+			  		  		title = httpPath; 
+			  		  	}
+			  		  	
+			  		   webLinkImg.src = 'images/bluelink.png';
+			  		  	
+			  		    webLinkImg.onload = function () {
+			  			weblinkImgLoaded = true;
+			  			webLinkImg.width = 32;
+			  			webLinkImg.height = 32;;
+			  				if(mediaIconLoaded && genImgLoaded && weblinkImgLoaded){
+			  					if(imagePath != null){
+				  					setIconInameWidthHeight(iconImg);
+				  				}
+				  				showAndSaveUrlIcon(iconImg,httpPath,title,img);
+			  				}
+			  			}
+			  		  	
+			  			/*var data = "data:image/svg+xml,"+"<svg xmlns='http://www.w3.org/2000/svg' width='200' height='50'>" +
+								    "<foreignObject width='100%' height='100%'>" +
+								      "<div xmlns='http://www.w3.org/1999/xhtml'>" +
+								        "<div xmlns='http://www.w3.org/1999/xhtml'>"+title+"</div>" +
+								      "</div>" +
+								    "</foreignObject>" +
+								    "</svg>";*/
+			  			
+			  		   iconImg.onload = function () {
+			  				mediaIconLoaded = true;
+			  				if(mediaIconLoaded && genImgLoaded && weblinkImgLoaded){
+			  					if(imagePath != null){
+				  					setIconInameWidthHeight(iconImg);
+				  				}
+				  				showAndSaveUrlIcon(iconImg,httpPath,title,img);
+			  				}
+			  			}
+			  		  	
+			  			$('#urltitle').html(title);
+			  			$('#urldomain').html(domainName);
+			  			console.log($('#urlinfo').html());
+			  			html2canvas($("#urlinfo"), {
+			  		        onrendered: function(canvas) {
+			  		            // canvas is the final rendered <canvas> element
+			  		            var myImage = canvas.toDataURL("image/png");
+			  					var src = encodeURI(myImage);
+
+					  			img.src = src;
+					  			img.onload = function () {
+					  				genImgLoaded = true;
+					  				if(mediaIconLoaded && genImgLoaded && weblinkImgLoaded){
+					  					if(imagePath != null){
+						  					setIconInameWidthHeight(iconImg);
+						  				}
+						  				showAndSaveUrlIcon(iconImg,httpPath,title,img);
+					  				}
+					  			}
+
+			  		        }
+			  				
+			  		    });
+			  	   }
+		  	}});
+	}
+
+	function showAndSaveUrlIcon(iconImg,httpPath,title,img){
+		currentObjId = 26;
+		var xPos = 100;
+		var yPos = 100;
+		var mediaType = "url";
+		var mediaObj = new Media(mediaType,iconImg,httpPath,title,img);
+		createObject(currentObjId,xPos,yPos,null,null,null,null,mediaObj);
+		saveMediaObjectInGraphicsObject(mediaObj,xPos,yPos);
+	}
+	
+	function setIconInameWidthHeight(iconImg,givenWidth){
+		if(givenWidth == null){
+			givenWidth = 75
+		}
+		var width = iconImg.width;
+		var height = iconImg.height;
+		height= height/width * givenWidth;
+		iconImg.width = givenWidth;
+		iconImg.height = height; 
+	}
+	
+	
+	function openRefUrlInWebview(url){
+		Jockey.send("AppEnterInBackgroundClientCall", {
+			msg:""+url
+		});
+	}
+	
+	
+	function createInsertedUrlIcon(mediaObj,graphicsObj){
+		paramdata = "urlStr="+encodeURIComponent(mediaObj.url);
+		jQuery.ajax({
+		  	type:	"get",
+	  		url: 	"geturlimage.action",
+	  		data: 	 paramdata,
+		  		success:function(msg) {
+		  			//alert(msg);
+		  			if(msg.actionErrors != null){
+		  				alert("Error occured in getting url info");
+		  		  	}else{
+		  		  		//console.log("showchild"+msg.jsonContent);
+		  		  		var imagePath = msg.imagePath;
+		  		  		var title = msg.title;
+		  		     	var domainName = "www.stackoverflow.com--";
+			  		 
+		  		     	
+		  		     	var mediaIconLoaded = false;
+			  			var genImgLoaded = false;
+			  		  	var iconImg = new Image();
+			  			var img = new Image();
+			  			
+			  			//iconImg.src = 'images/docicons/weblink.png'; 
+			  		   /* iconImg.width = 50;
+			  		    iconImg.height = 50;*/
+			  		  	if(imagePath != null && imagePath.trim() != ""){
+			  		  		iconImg.src = imagePath; 
+			  		  	}else{
+			  		  		iconImg.src = 'images/url_icon.png'; 
+			  		  	}
+			  		  	if(title == null || title.trim() == ""){
+			  		  		title = httpPath; 
+			  		  	}
+			  		   
+			  		   if(!weblinkImgLoaded){
+			  			   webLinkImg.src = 'images/bluelink.png';
+				  		   webLinkImg.onload = function () {
+				  			weblinkImgLoaded = true;
+				  				if(mediaIconLoaded && genImgLoaded && weblinkImgLoaded){
+				  					if(imagePath != null){
+					  					setIconInameWidthHeight(iconImg);
+					  				}
+				  					graphicsObj.media = mediaObj;
+				  					mediaIconTable.put(graphicsObj.id,true);
+				  					checkAllMediaIconCreated();
+				  				}
+				  			} 
+			  		   }
+			  		  	
+			  			
+			  		  iconImg.onload = function () {
+			  				mediaIconLoaded = true;
+			  				mediaObj.mediaIconObj = iconImg
+			  				if(mediaIconLoaded && genImgLoaded && weblinkImgLoaded){
+			  					if(imagePath != null){
+				  					setIconInameWidthHeight(iconImg);
+				  				}
+			  					graphicsObj.media = mediaObj;
+			  					mediaIconTable.put(graphicsObj.id,true);
+			  					checkAllMediaIconCreated();
+			  				}
+			  			}
+			  		  	
+			  			$('#urltitle').html(title);
+			  			$('#urldomain').html(domainName);
+			  			console.log($('#urlinfo').html());
+			  			html2canvas($("#urlinfo"), {
+			  		        onrendered: function(canvas) {
+			  		            // canvas is the final rendered <canvas> element
+			  		            var myImage = canvas.toDataURL("image/png");
+			  					var src = encodeURI(myImage);
+
+					  			img.src = src;
+					  			img.onload = function () {
+					  				genImgLoaded = true;
+					  				mediaObj.fileNameImg = img
+					  				if(mediaIconLoaded && genImgLoaded && weblinkImgLoaded){
+					  					if(imagePath != null){
+						  					setIconInameWidthHeight(iconImg);
+						  				}
+					  					graphicsObj.media = mediaObj;
+					  					mediaIconTable.put(graphicsObj.id,true);
+					  					checkAllMediaIconCreated();
+					  				}
+					  			}
+			  		        }
+			  				
+			  		    });
+			  	   }
+		  	}});
+	}
+	
+	function showviewEditIcon(displayType){
+		if(displayType){
+			  $(".document_viewedit").css({
+	              "display": "inline-block",
+	              
+	          });
+		}else{
+			  $(".document_viewedit").css({
+	              "display": "none",
+	              
+	          });
+		}
+		
+	}
+	function updateViewEditWidget(graphicsObj){
+		var bgIconPath;
+		if(graphicsObj.media.mediaType == 'pdf'){
+			bgIconPath = 'images/docicons/pdf.png';
+		}else if(graphicsObj.media.mediaType == 'doc'){
+			bgIconPath = 'images/docicons/msword.png';
+		}else if(graphicsObj.media.mediaType == 'ppt'){
+			bgIconPath = 'images/docicons/powerpoint.png';
+		}else if(graphicsObj.media.mediaType == 'excel'){
+			bgIconPath = 'images/docicons/excel.png';
+		}else if(graphicsObj.media.mediaType == 'url'){
+			bgIconPath = 'images/docicons/weblink.png';
+		}
+		//document.getElementById("viewUrl").href = graphicsObj.media.url;
+		$('#viewUrl').click(function() {
+		    alert( graphicsObj.media.url);
+		    openDocument(graphicsObj.media.url);
+		}); 
+		
+	  document.getElementById("docIcon").style.backgroundImage = "url('"+bgIconPath+"')";
+	}
+	
+	function createPinObjectImages(){
+		var profileImgLoaded = false;
+		var genImgLoaded = false;
+		var pinImgLoaded = true;
+		var userImage;
+		var usrImagePath = profilePic;
+		var pinObjTime = "Now";
+		var img = new Image();
+		var userImage = new Image();
+		
+			userImage.src = usrImagePath;
+			userImage.onload = function () {
+				profileImgLoaded = true;
+				if(profileImgLoaded && genImgLoaded && pinImgLoaded){
+						setIconInameWidthHeight(userImage,50);
+						createAndsavePinObject(userImage,usrImagePath,pinObjTime,img);
+				}
+			}
+		
+		
+			$('#pinTime').html(pinObjTime);
+			console.log($('#pinImage').html());
+			html2canvas($("#pinImage"), {
+		        onrendered: function(canvas) {
+		            // canvas is the final rendered <canvas> element
+		            var myImage = canvas.toDataURL("image/png");
+					var src = encodeURI(myImage);
+
+	  			img.src = src;
+	  			img.onload = function () {
+	  				genImgLoaded = true;
+	  				if(profileImgLoaded && genImgLoaded && pinImgLoaded){
+	  					setIconInameWidthHeight(userImage,50);
+	  					createAndsavePinObject(userImage,usrImagePath,pinObjTime,img);
+	  				}
+	  			}
+		        }
+				
+		    });
+			
+			
+			
+	}
+	function createAndsavePinObject(userImage,usrImagePath,pinObjTime,pinobjImg){
+		var xPos = getRandomArbitrary(0, canvasWidth);
+		var yPos = getRandomArbitrary(0, canvasHeight);
+		var mediaType = "pin";
+		var pinObj = new Media(mediaType,userImage,usrImagePath,pinObjTime,pinobjImg);
+		createObject(27,xPos,yPos,null,null,null,null,pinObj);
+		savePinObjectInGraphicsObject(xPos,yPos,pinObj);
+	}
+	
+	
+	function savePinObjectInGraphicsObject(x,y,pinObj){
+		var pageNum = pinPageNum;
+		var tempPointsArray = new Array();
+		count++;
+		tempPointsArray[tempPointsArray.length] = x ;
+		tempPointsArray[tempPointsArray.length] = y ;
+		tempPointsArray[tempPointsArray.length] = x + pinObj.fileNameImg.width;
+		tempPointsArray[tempPointsArray.length] = y + pinObj.fileNameImg.height ;
+		
+		graphicsObject = new GraphicsObject(count,27,tempPointsArray,null,null,null,false,fillColor,globalAlpha,false,null,null,1,null,null,pinObj);
+		if(isReplaceEnable){
+			replacedObjArr[replacedObjArr.length] = count;
+		}
+		if(!isPlayingStoped ){// Inserting object while playing
+			currentMiliSec =Math.floor(myVid.currentTime * 1000);
+			var pageObject = new PageObject(document.getElementById("pagenum").value,count);
+			insertObjectInPlayingStream(currentMiliSec,pageObject);
+		}else if(startTime != 0 && isPlayingStoped){// Inserting object while recording
+				var currentTime = new Date().getTime();
+				currentMiliSec = recFileDuration + Math.ceil(currentTime - startTime);
+				var pageObject = new PageObject(document.getElementById("pagenum").value,count);
+				objectTimeTable.put(count,currentMiliSec);
+				var recordedObjArr = timeRefTable.get(currentMiliSec);
+				if(recordedObjArr ==  null){
+					recordedObjArr = new Array();
+				}
+				recordedObjArr[recordedObjArr.length] = pageObject;
+				timeRefTable.put(currentMiliSec,recordedObjArr);
+		}else{ // Non recodring object
+			var nonRecordingObjArray = nonRecordinPageObjTable.get(document.getElementById("pagenum").value);
+			if(nonRecordingObjArray == null){
+				nonRecordingObjArray = new Array();
+				nonRecordinPageObjTable.put(document.getElementById("pagenum").value,nonRecordingObjArray);
+			}
+			nonRecordingObjArray[nonRecordingObjArray.length] = count;
+		}
+		var objectTable = pageObjTable.get(pageNum);
+		if(objectTable == null){
+			objectTable = new Hashtable();
+			pageObjTable.put(pageNum,objectTable);
+		}
+		objectTable.put(count, graphicsObject);
+		objectPageRefTable.put(count,pageNum);
+		
+	}
+	
+	function createPinObjectIcon(mediaObj,graphicsObj){
+		var profileImgLoaded = false;
+		var genImgLoaded = false;
+		var pinImgLoaded = true;
+		var userImage;
+		var usrImagePath;
+		
+		var img = new Image();
+		genImgTable.put(graphicsObj.id,img);
+		
+	    userImage = new Image();
+		userImage.src = mediaObj.url;
+		userImage.onload = function () {
+			profileImgLoaded = true;
+			mediaObj.mediaIconObj = userImage;
+			if(profileImgLoaded && genImgLoaded && pinImgLoaded){
+					setIconInameWidthHeight(userImage,50);
+					graphicsObj.media = mediaObj;
+					mediaIconTable.put(graphicsObj.id,true);
+					checkAllMediaIconCreated();
+			}
+		}
+		
+		var obj = createElement(graphicsObj.id);
+		
+		$('#pinTime'+graphicsObj.id).html(mediaObj.fileName);
+		console.log($("#"+obj.id).html());
+		html2canvas($("#"+obj.id), {
+	        onrendered: function(canvas) {
+	            // canvas is the final rendered <canvas> element
+	            var myImage = canvas.toDataURL("image/png");
+				var src = encodeURI(myImage);
+			
+			var image = genImgTable.get(graphicsObj.id);
+			image.src = src;
+			image.onload = function () {
+  				genImgLoaded = true;
+  				mediaObj.fileNameImg = image
+  				if(profileImgLoaded && genImgLoaded && pinImgLoaded){
+  					setIconInameWidthHeight(userImage,50);
+  					graphicsObj.media = mediaObj;
+  					mediaIconTable.put(graphicsObj.id,true);
+  					checkAllMediaIconCreated();
+  				}
+  			  }
+	        }
+			
+	    });
+	}
+	
+	function getRandomArbitrary(min, max) {
+	    return Math.random() * (max - min) + min;
+	}
+	function createElement(id){
+		var obj = document.createElement('div');
+		obj.id = id;
+		obj.className='pin_group'
+		obj.innerHTML = '<div class="user_circle" ><img src="" style="border-radius:100%; width:42px; height:42px;"></div>	<div class="play_pin"></div><div class="data_time" id="pinTime'+id+'">21 Jan, 2018  09:00 PM</div><div class="pinned"><img src="images/pinned.png" alt=""></div>'
+		document.body.appendChild(obj);
+		return obj;
+	}

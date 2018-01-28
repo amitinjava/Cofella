@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.ServletActionContext;
 
 import com.edspread.meeting.constants.MeetingConstant;
-import com.edspread.meeting.entity.User;
+import com.edspread.meeting.entity.UserDetails;
 import com.edspread.meeting.service.UserService;
 import com.edspread.meeting.util.SessionUtil;
 import com.opensymphony.xwork2.ActionInvocation;
@@ -28,14 +28,16 @@ public class AuthenticateInterceptor extends AbstractInterceptor {
 	public String intercept(ActionInvocation invocation) throws Exception {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		Map<String, ? extends Object> session = invocation.getInvocationContext().getSession();
-		User user = (User)session.get(MeetingConstant.USER_SESSION_VAR);
+		UserDetails user = (UserDetails)session.get(MeetingConstant.USER_SESSION_VAR);
 		//ActionContext ctx = invocation.getInvocationContext();
-		if(user == null || user.getType() != MeetingConstant.ADMIN_USERTYPE){
+		/*if(user == null || user.getType() != MeetingConstant.ADMIN_USERTYPE){
 			return MeetingConstant.LOGIN;
 		}else {
 			String result = invocation.invoke();
 			return result;
-		}
+		}*/
+		String result = invocation.invoke();
+		return result;
 	}
 
 	public UserService getUserService() {

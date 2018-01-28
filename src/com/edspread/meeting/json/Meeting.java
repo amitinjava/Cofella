@@ -7,11 +7,15 @@ public class Meeting {
 	private String channelId;
 	private String sessionId;
 	private Integer sequenceNo;
-	private Integer recSequenceNo;
+	private String recSequenceNo;
 	private String TempRecFile;
 	private String RecFname;
 	private String RecFileDuration;
+	private String meetingContextSequence;
 	private List<Page> PageList;
+	private String msgId;
+	private String send;
+	
 	public String getMeetingName() {
 		return MeetingName;
 	}
@@ -60,10 +64,29 @@ public class Meeting {
 	public void setSequenceNo(Integer sequenceNo) {
 		this.sequenceNo = sequenceNo;
 	}
-	public Integer getRecSequenceNo() {
+	
+	public String getMsgId() {
+		return msgId;
+	}
+	public void setMsgId(String msgId) {
+		this.msgId = msgId;
+	}
+	public String getSend() {
+		return send;
+	}
+	public void setSend(String send) {
+		this.send = send;
+	}
+	public String getMeetingContextSequence() {
+		return meetingContextSequence;
+	}
+	public void setMeetingContextSequence(String meetingContextSequence) {
+		this.meetingContextSequence = meetingContextSequence;
+	}
+	public String getRecSequenceNo() {
 		return recSequenceNo;
 	}
-	public void setRecSequenceNo(Integer recSequenceNo) {
+	public void setRecSequenceNo(String recSequenceNo) {
 		this.recSequenceNo = recSequenceNo;
 	}
 	

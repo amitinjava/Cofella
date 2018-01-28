@@ -139,6 +139,9 @@
      <bean id="userDao"  class="com.edspread.meeting.dao.UserDao">
 	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
+    <bean id="userDetailsDao"  class="com.edspread.meeting.dao.UserDetailsDao">
+	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
      <bean id="userLectureDao"  class="com.edspread.meeting.dao.UserLectureDao">
 	  	<property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
@@ -154,6 +157,7 @@
     <!-- Service beans Start-->
      <bean id="userService" class="com.edspread.meeting.service.UserService" scope="prototype">
 		 <property name="userDao" ref="userDao"></property>	
+		  <property name="userDetailsDao" ref="userDetailsDao"></property>	
 	 </bean>
 	 <bean id="userLectureService" class="com.edspread.meeting.service.UserLectureService" scope="prototype">
 		 <property name="userLectureDao" ref="userLectureDao"></property>	

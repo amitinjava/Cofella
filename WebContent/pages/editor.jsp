@@ -26,7 +26,7 @@
 		<script src="js/hashtable.js" ></script>
 		<script src="js/angular.js"></script>
 		<script src="js/main.js"></script>
-		
+		<script type="text/javascript" src="js/paper-full.js"></script>
 		
 	<!-- Needed for Menus, Buttons and Overlays used in the Toolbar -->
 		<script src="js/bootstrap-slider.js"></script>

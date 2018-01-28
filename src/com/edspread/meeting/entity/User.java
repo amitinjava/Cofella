@@ -22,9 +22,9 @@ import javax.persistence.TemporalType;
 
 
 @NamedQueries({
-		@NamedQuery(name = "User.findByEmailAndPwd", query = "Select u from User u where u.email = :email and u.activeStatus = 1 and u.password=:password and u.type =:userType"),
+		@NamedQuery(name = "User.findByEmailAndPwd", query = "Select u from User u where u.email = :email and u.active = 1 and u.password=:password "),
 		//@NamedQuery(name = "User.findByName", query = "Select u from User u where u.name = :name and u.activeStatus = 1 and u.type =:userType"),
-		@NamedQuery(name = "User.findByEmail", query = "Select u from User u where u.email = :email and u.activeStatus = 1 and u.type =:userType"),
+		@NamedQuery(name = "User.findByEmail", query = "Select u from User u where u.email = :email and u.active = 1 "),
 		/*	@NamedQuery(name = "User.findByEmailandFacebookId", query = "Select u from User u ,FacebookUserDetail fb where u.id=fb.user.id and u.accessToken is not null and fb.email = :email and u.status = 1 and fb.facebookId=:facebookId"),
 		@NamedQuery(name = "User.countByEmail", query = "Select count(u.id) from User u where u.email = :email"),
 		@NamedQuery(name = "User.countByMobile", query = "Select count(u.id) from User u where u.mobile = :mobile"),
@@ -42,53 +42,40 @@ import javax.persistence.TemporalType;
  * 
  */
 @Entity
-@Table(name = "user")
+@Table(name = "APIUser")
 public class User extends Domain<Integer> implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "ID")
 	private Integer id;
-
-	@Column(name = "first_name")
-	private String firstName;
-	
-	@Column(name = "last_name")
-	private String lastName;
-
-	@Column(name = "password")
-	private String password;
 
 	@Column(name = "email")
 	private String email;
-
-	@Column(name = "type")
-	private byte type;
-
-	@Column(name = "active_status")
-	private byte activeStatus;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "created_at")
-	private Date createdAt;
-
-	@Column(name = "updated_at")
-	private Timestamp updatedAt;
 	
-	@OneToMany(mappedBy="user", fetch=FetchType.LAZY)
-  	@OrderBy("id desc")
-	private Set<UserLectures> userLectures;
+	
+	@Column(name = "password")
+	private String password;
+	
+	@Column(name = "name")
+	private String name;
+
+	@Column(name = "registrationCode")
+	private String registrationCode;
+
+	
+	@Column(name = "active")
+	private byte active;
 
 	
 
-	
-
-	public String getPassword() {
-		return password;
+	public Integer getId() {
+		return id;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getEmail() {
@@ -99,72 +86,38 @@ public class User extends Domain<Integer> implements Serializable {
 		this.email = email;
 	}
 
-	public byte getType() {
-		return type;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setType(byte type) {
-		this.type = type;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
-	public byte getActiveStatus() {
-		return activeStatus;
+	public String getRegistrationCode() {
+		return registrationCode;
 	}
 
-	public void setActiveStatus(byte activeStatus) {
-		this.activeStatus = activeStatus;
+	public void setRegistrationCode(String registrationCode) {
+		this.registrationCode = registrationCode;
 	}
 
-	public Date getCreatedAt() {
-		return createdAt;
+	public byte getActive() {
+		return active;
 	}
 
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
+	public void setActive(byte active) {
+		this.active = active;
 	}
 
-	public Timestamp getUpdatedAt() {
-		return updatedAt;
+	public String getName() {
+		return name;
 	}
 
-	public void setUpdatedAt(Timestamp updatedAt) {
-		this.updatedAt = updatedAt;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	
 
-	@Override
-	public Integer getId() {
-		return id;
-	}
-
-	@Override
-	public void setId(Integer id) {
-		this.id = id;
-		
-	}
-
-	public Set<UserLectures> getUserLectures() {
-		return userLectures;
-	}
-
-	public void setUserLectures(Set<UserLectures> userLectures) {
-		this.userLectures = userLectures;
-	}
 }

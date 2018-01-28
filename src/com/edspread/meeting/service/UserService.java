@@ -7,10 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.edspread.meeting.constants.MeetingConstant;
 import com.edspread.meeting.dao.UserDao;
+import com.edspread.meeting.dao.UserDetailsDao;
 import com.edspread.meeting.entity.User;
-import com.edspread.meeting.entity.UserLectures;
+import com.edspread.meeting.entity.UserDetails;
 import com.edspread.meeting.util.MeetingException;
-import com.edspread.meeting.util.SessionUtil;
 
 
 
@@ -18,7 +18,7 @@ public class UserService {
 
 	private UserDao userDao;
 	
-	
+	private UserDetailsDao userDetailsDao;
 
 	@Transactional(rollbackFor = Exception.class)
 	public User findById(Integer userId) throws MeetingException {
@@ -91,8 +91,8 @@ public class UserService {
 			
 		}
 		User user =  userList.get(0);
-		user.setFirstName(user1.getFirstName());
-		user.setLastName(user1.getLastName());
+		//user.setFirstName(user1.getFirstName());
+		//user.setLastName(user1.getLastName());
 
 		user.setEmail(user1.getEmail());
 		user.setPassword(user1.getPassword());
@@ -107,14 +107,17 @@ public class UserService {
 	
 	}
 	
-	
+	public UserDetails findByUserId(Integer userId)throws MeetingException {
+		return userDetailsDao.findByUserId(userId);
+	}
 	
 	
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
 	}
-
 	
-
+	public void setUserDetailsDao(UserDetailsDao userDetailsDao) {
+		this.userDetailsDao = userDetailsDao;
+	}
 
 }

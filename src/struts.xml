@@ -17,13 +17,14 @@
 			<interceptor-stack name="defaultFileUploadStack">
 				<interceptor-ref name="fileUpload">
 					<param name="maximumSize">1000000000000000000</param> <!-- 10 MB -->
-					<param name="allowedTypes">
+					<!-- <param name="allowedTypes">
 						image/jpeg,
 						image/gif,
 						image/png,
 						image/tif,
 						application/msword,
 						application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+						application/vnd.openxmlformats-officedocument.wordprocessingml.template,
 						application/pdf,
 						text/plain,application/vnd.oasis.opendocument.text,
 						application/vnd.ms-excel,
@@ -37,7 +38,8 @@
 						audio/mpeg,
 						audio/mpeg3,
 						audio/x-mpeg-3
-					</param> 
+						
+					</param>  -->
 				</interceptor-ref>
 				<interceptor-ref name="params">
 					 <param name="excludeParams">struts.token.name</param>
@@ -183,7 +185,12 @@
           </action>
          
          <!-- User Lectures --> 
-          <action name="editlecture" method="editLecture" class="com.edspread.meeting.action.UserAction">
+           <action name="editlecture" method="editLecture" class="com.edspread.meeting.action.UserAction">
+               	  <result name="login">/pages/user/userlogin.jsp</result>
+           		  <result name="play">/pages/player.jsp</result>
+                  <result name="success">/pages/coffela_editor.jsp</result>
+          </action>
+          <action name="editlecture_old" method="editLecture" class="com.edspread.meeting.action.UserAction">
                	  <result name="login">/pages/user/userlogin.jsp</result>
            		  <result name="play">/pages/player.jsp</result>
                   <result name="success">/pages/editor3.jsp</result>
@@ -244,7 +251,7 @@
 			</result>
 			<result name="success" type="json">
 				<param name="enableGZIP">true</param>
-				<param name="includeProperties">jsonContent</param>
+				<param name="includeProperties">jsonContent,toUserName,toUserPic,fromUserName,fromUserPic</param>
 			</result>
 		</action>
 		
@@ -330,7 +337,16 @@
 				<param name="includeProperties">status</param>
 			</result>
 		</action>
-		
+		<action name="geturlimage" method="fetchUrlMetadata" class="com.edspread.meeting.action.UserAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">title,imagePath</param>
+			</result>
+		</action>
 		<!--  -->
 		
 		<action name="querypagetodb" method="showQueryPage" class="com.edspread.meeting.action.TreeAction">
@@ -416,7 +432,7 @@
 				   <result name="input" type="json"></result>
 				   <result name="success" type="json">
 					    <param name="enableGZIP">true</param>
-					    <param name="includeProperties">uploadFileName</param>
+					    <param name="includeProperties">uploadFileName,uploadFilePath</param>
 				   </result>
 		     </action>
         	 <action name="uploadvideo" class="com.edspread.meeting.action.UploadAction" method="uploadVideoFile">
@@ -466,8 +482,30 @@
          <action name="dateTagAction" class="com.edspread.meeting.action.HomeAction" >
 			<result name="success">/pages/user/userlectures.jsp</result>
 		</action>
+		
+         <action name="sendmessage" method="saveMessageStatusToSend" class="com.edspread.meeting.action.HomeAction">
+              <interceptor-ref name="edspreadSecureStack" /> 
+               <result name="success" type="json">
+					    <param name="enableGZIP">true</param>
+					    <param name="includeProperties">message</param>
+			  </result>
+        </action>
         
-        
+		<action name="getDraftMessages" method="retrieveDraftMessages" class="com.edspread.meeting.action.HomeAction" >
+			<result name="error" type="json">
+				<param name="ignoreHierarchy">false</param>
+				<param name="includeProperties">actionErrors\[\d+\]</param>
+			</result>
+			<result name="success" type="json">
+				<param name="enableGZIP">true</param>
+				<param name="includeProperties">
+					draftMsgList\[\d+\]\.messageId,
+					draftMsgList\[\d+\]\.title,
+					draftMsgList\[\d+\]\.createdAt,
+					draftMsgList\[\d+\]\.channelId
+				</param>
+			</result>
+		</action>
         
         
         		

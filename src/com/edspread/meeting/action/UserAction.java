@@ -9,19 +9,25 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.StrutsStatics;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.edspread.meeting.DTO.MeetingDTO;
+import com.edspread.meeting.DTO.MessageHistoryDTO;
 import com.edspread.meeting.DTO.UserLectureDTO;
 import com.edspread.meeting.constants.MeetingConstant;
 import com.edspread.meeting.entity.Channel;
-import com.edspread.meeting.entity.ExMessage;
+import com.edspread.meeting.entity.Message;
 import com.edspread.meeting.entity.User;
+import com.edspread.meeting.entity.UserDetails;
 import com.edspread.meeting.entity.UserLectures;
 import com.edspread.meeting.service.ChannelService;
 import com.edspread.meeting.service.ExMessageService;
@@ -42,8 +48,11 @@ public class UserAction extends ActionSupport {
 	 */
 	private static final long serialVersionUID = 1L;
 	private String lectureId;
-    private String meetingName;
-    private int channel_id;
+	private Integer userId;
+	private String currentSeqNumber;
+	private String meetingName;
+	private String title;
+    private String xmsgId;
 	private List<String> meetings;
 	private List<UserLectureDTO> lectureList;
 	private List<Channel> channelList;
@@ -60,8 +69,12 @@ public class UserAction extends ActionSupport {
 	private String message;
 	private String autoPlay;
 	private String timeZoneOffset;
-	private List<Integer> participants;
-
+	private List<MessageHistoryDTO> messageHistory;
+	private String draftMsgId;
+	private String sequenceNum;
+	private String urlStr;
+	private String imagePath;
+	private String userProfilePic;
 	
 
 	private UserService userService;
@@ -129,25 +142,100 @@ public class UserAction extends ActionSupport {
 	* For editing the lectures;
 	*/
     public String editLecture() {
-    	User user = (User) SessionUtil.getSession().get(
+    	/*User user = (User) SessionUtil.getSession().get(
     			MeetingConstant.USER_SESSION_VAR);
-    	System.out.println("channelId : User "+channel_id+" : email : "+user.getEmail());
-    	List<ExMessage> participantList = null;
+    	System.out.println("channelId : User "+channel_id+" : email : "+user.getEmail());*/
+    	
+    	HttpServletRequest request = SessionUtil.getHttpRequest();
+    	xmsgId = request.getParameter("xmsgId");
+    	userId = Integer.parseInt(request.getParameter("loginuserId"));
+    	meetingName = request.getParameter("title");
+    	draftMsgId =  request.getParameter("draftMsgId");
+    	sequenceNum =  request.getParameter("sequenceNum");
+    	String timeZone =  request.getParameter("timezone");
+    	if(timeZone != null && timeZone.length()>0){
+    	String[] strArr = timeZone.split("\\(");
+			
+			timeZone = strArr[1].trim(); 
+    	}
+    	List<Message> messageList = null;
     	try {
-    		participantList = exMessageService.getParticipants(channel_id, email);
+    		messageList = exMessageService.findByxMsgId(Integer.parseInt(xmsgId),MeetingConstant.SEND);
 		} catch (MeetingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	participants = new ArrayList<>();
-    	for(ExMessage em : participantList){
-    	participants.add(em.getSequenceNo());
+    	try {
+    	messageHistory = new ArrayList<>();
+    	User loggedInUser = userService.findById(userId);
+    	UserDetails loggedUserDetails = userService.findByUserId(userId);
+    	if(loggedUserDetails!= null){
+    		userProfilePic = loggedUserDetails.getProfilePix();
     	}
-    	if(autoPlay.equalsIgnoreCase(MeetingConstant.TRUE)){
-			return MeetingConstant.PLAY;
-		}else{
-			return SUCCESS;
+    	if(messageList != null && messageList.size()>1){
+	    	for(Message em : messageList){
+	    		MessageHistoryDTO messageHistoryDTO = new MessageHistoryDTO();
+	    		User fromUser;
+	    		User toUsrOrGrp;
+					fromUser = userService.findById(Integer.parseInt(em.getCreated_by()));
+					
+					if(em.getToId() != null){
+						toUsrOrGrp = userService.findById(em.getToId());
+						if(loggedInUser!= null && loggedInUser.getId().intValue() == em.getToId().intValue()){
+							messageHistoryDTO.setReceiver(MeetingConstant.ME);
+						}else{
+							if(loggedInUser!= null && toUsrOrGrp!= null && toUsrOrGrp.getEmail()!= null){
+								String name = toUsrOrGrp.getName();
+								if(name == null){
+									name = toUsrOrGrp.getEmail().substring(0, toUsrOrGrp.getEmail().indexOf("@"));
+								}
+								messageHistoryDTO.setReceiver(name);
+							}
+						}
+						UserDetails toUserDetails = userService.findByUserId(em.getToId());
+						if(toUserDetails!= null){
+							messageHistoryDTO.setReceiverPic(toUserDetails.getProfilePix());
+						}
+					}else{
+						// group case
+					}
+					if(fromUser != null){
+						if(loggedInUser!= null &&  loggedInUser.getId().intValue() == fromUser.getId().intValue()){
+							messageHistoryDTO.setSender(MeetingConstant.ME);
+						}else{
+							String name = fromUser.getName();
+							if(name == null){
+								 name = fromUser.getEmail().substring(0, fromUser.getEmail().indexOf("@"));
+							}
+							messageHistoryDTO.setSender(name);
+						}
+						UserDetails fromUserDetails = userService.findByUserId(Integer.parseInt(em.getCreated_by()));
+						if(fromUserDetails!= null){
+							messageHistoryDTO.setSenderPic(fromUserDetails.getProfilePix());
+						}
+						
+					}
+					
+		    		messageHistoryDTO.setSeqNumber(em.getSequenceNum());
+		    		messageHistoryDTO.setTitle(em.getTitle());
+		    		
+		    		messageHistoryDTO.setTime(DateUtil.convertToStringObject(em.getCreatedAt(), "dd MMM yy , hh:mmaaa",timeZone));
+		    		currentSeqNumber = em.getSequenceNum();
+				
+	    		messageHistory.add(messageHistoryDTO);
+	    	 }
+    	 }
+    	} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (MeetingException e) {
+			e.printStackTrace();
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
+    	/*if(autoPlay.equalsIgnoreCase(MeetingConstant.TRUE)){
+			return MeetingConstant.PLAY;
+		}else{*/
+			return SUCCESS;
+		//}
 		
 	}
     /**
@@ -177,7 +265,8 @@ public class UserAction extends ActionSupport {
 			if (firstName != null && email != null && pwd != null && lastName != null 
 					&& firstName.trim().length() != 0 && lastName.trim().length() != 0
 					&& email.trim().length() != 0 && pwd.trim().length() != 0 ) {
-				if(!pwd.equals(confPwd)){
+				// Done at Mobile API code
+			/*	if(!pwd.equals(confPwd)){
 					 addActionError("Both password should be same.");
 					return ERROR;
 				 }
@@ -195,7 +284,7 @@ public class UserAction extends ActionSupport {
 				user.setPassword(pwd);
 				user.setActiveStatus(MeetingConstant.ACTIVE_STATUS);
 				user.setType(MeetingConstant.USER_USERTYPE);
-				userService.save(user);
+				userService.save(user);*/
 				addActionMessage("User Created Successfully.Please login");
 				return SUCCESS;
 			} else {
@@ -209,6 +298,26 @@ public class UserAction extends ActionSupport {
 		}
 
 	}
+     
+     
+ 	/**
+ 	* The User Registration action and validation;
+ 	*/
+      public String fetchUrlMetadata() {
+ 		try {
+ 			List<String> data = applicationUtillty.parsePageHeaderInfo(urlStr);
+ 			title = data.get(0);
+ 			imagePath = data.get(1);
+ 			return SUCCESS;
+ 		} catch (Exception e) {
+ 			e.printStackTrace();
+ 			addActionError("Error Occured");
+ 			return ERROR;
+ 		}
+
+ 	}
+      
+      
 	public String getFirstName() {
 		return firstName;
 	}
@@ -288,13 +397,9 @@ public class UserAction extends ActionSupport {
 		return SUCCESS;
 	}
   
-	public int getChannel_id() {
-		return channel_id;
-	}
 
-	public void setChannel_id(int channel_id) {
-		this.channel_id = channel_id;
-	}
+
+	
 
 	/**
 	* For updating the user profile;
@@ -306,8 +411,8 @@ public class UserAction extends ActionSupport {
 					&& email.trim().length() != 0 && pwd.trim().length() != 0) {
 				
 				User user = (User) SessionUtil.getSession().get(MeetingConstant.USER_SESSION_VAR);
-				user.setFirstName(firstName);
-				user.setLastName(lastName);
+				/*user.setFirstName(firstName);
+				user.setLastName(lastName);*/
 
 				user.setEmail(email);
 				user.setPassword(pwd);
@@ -837,12 +942,88 @@ public String searchLecture(){
 		this.channelList = channelList;
 	}
 
-	public List<Integer> getParticipants() {
-		return participants;
+	
+	
+    public Integer getUserId() {
+		return userId;
 	}
 
-	public void setParticipants(List<Integer> participants) {
-		this.participants = participants;
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getXmsgId() {
+		return xmsgId;
+	}
+
+	public void setXmsgId(String xmsgId) {
+		this.xmsgId = xmsgId;
+	}
+
+	public List<MessageHistoryDTO> getMessageHistory() {
+		return messageHistory;
+	}
+
+	public void setMessageHistory(List<MessageHistoryDTO> messageHistory) {
+		this.messageHistory = messageHistory;
+	}
+
+	public String getCurrentSeqNumber() {
+		return currentSeqNumber;
+	}
+
+	public void setCurrentSeqNumber(String currentSeqNumber) {
+		this.currentSeqNumber = currentSeqNumber;
+	}
+
+	public String getDraftMsgId() {
+		return draftMsgId;
+	}
+
+	public void setDraftMsgId(String draftMsgId) {
+		this.draftMsgId = draftMsgId;
+	}
+
+	public String getSequenceNum() {
+		return sequenceNum;
+	}
+
+	public void setSequenceNum(String sequenceNum) {
+		this.sequenceNum = sequenceNum;
+	}
+
+	public String getUrlStr() {
+		return urlStr;
+	}
+
+	public void setUrlStr(String urlStr) {
+		this.urlStr = urlStr;
+	}
+
+	public String getImagePath() {
+		return imagePath;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
+	}
+
+	public String getUserProfilePic() {
+		return userProfilePic;
+	}
+
+	public void setUserProfilePic(String userProfilePic) {
+		this.userProfilePic = userProfilePic;
+	}
+
+	
 	
 }

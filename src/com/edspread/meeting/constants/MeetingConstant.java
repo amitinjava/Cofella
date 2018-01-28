@@ -20,12 +20,12 @@ public class MeetingConstant {
 	public static final String RENAMELECACTION = "renamelec";
 	public static final String DUPLICATELECACTION = "duplec";
 	public static final String DELETELECACTION = "dellec";
-	
-	
+		
 	
 	//public static final String SERVRDOWNLOADPATH = "http://117.218.36.182/mettingupload/";
 	//public static final String SERVRDOWNLOADPATH = "http://ec2-54-87-226-240.compute-1.amazonaws.com/mettingupload/";
-	public static final String SERVRDOWNLOADPATH = "http://ec2-54-148-26-34.us-west-2.compute.amazonaws.com/mettingupload/";
+	//public static final String SERVRDOWNLOADPATH = "http://ec2-54-148-26-34.us-west-2.compute.amazonaws.com/mettingupload/";
+	public static final String SERVRDOWNLOADPATH = "http://52.33.173.146//mettingupload/";
 	
 	public static final String USER_SESSION_VAR ="user";
 	public static final String USER_TIMEZONE_OFFSET ="timezoneoffset";
@@ -40,7 +40,19 @@ public class MeetingConstant {
 	public static byte USER_USERTYPE = 2;
 	public static byte ACTIVE_STATUS = 1;
 	public static byte INACTIVE_STATUS = 0;
+	public static byte DRAFT = 0;
+	public static byte SEND = 1;
+	public static String SENDSTATUS = "send";
 	public static final String DATE_FORMAT = "dd-MM-yyyy";
 	public static final String LECTUREDATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss";
+	public static final String USERID = "userId";
+	public static final String MEETINGCTXSEQ = "meetingContextSequence";
+	public static final String DRAFTMSGID = "draftMsgId";
+	public static final String TOID = "toId";
+	public static final String GROUPID = "groupId";
+	public static final String XMSG_SERVERHTTPPATH = "http://52.33.173.146/mt/editlecture";
+	public static final String ME = "me";
+	public static byte TO = 0;
+	public static byte FROM = 1;
 
 }

@@ -39,6 +39,8 @@ public class UploadAction extends ActionSupport {
 	private String nameOfFileToBeRemoved;
 	
 	private String uploadFileName;
+	
+	private String uploadFilePath;
 		
 
 	public String getUploaddedFilesNameOnServer() {
@@ -146,6 +148,7 @@ public class UploadAction extends ActionSupport {
 								File destFile = new File(actualFilePath);
 								FileUtils.copyFile(attachment[i], destFile);
 								System.out.println("Uploaded path::"+destFile.getAbsolutePath());
+								uploadFilePath = MeetingConstant.SERVRDOWNLOADPATH + "/" + uploadFileName;
 								//uploaddedFilesNameOnServer = Constants.TEMP + "/" + key;
 							} 
 						}
@@ -299,6 +302,20 @@ public class UploadAction extends ActionSupport {
 
 	public void setUploadFileName(String uploadFileName) {
 		this.uploadFileName = uploadFileName;
+	}
+
+
+
+
+	public String getUploadFilePath() {
+		return uploadFilePath;
+	}
+
+
+
+
+	public void setUploadFilePath(String uploadFilePath) {
+		this.uploadFilePath = uploadFilePath;
 	}
 	
 }

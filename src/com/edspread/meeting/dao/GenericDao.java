@@ -16,7 +16,7 @@ import org.springframework.orm.jpa.support.JpaDaoSupport;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.edspread.meeting.entity.Domain;
-import com.edspread.meeting.entity.ExMessage;
+import com.edspread.meeting.entity.Message;
 import com.edspread.meeting.util.MeetingException;
 
 
@@ -137,7 +137,6 @@ public class GenericDao<K, E extends Domain<?>> extends JpaDaoSupport implements
 			throws MeetingException {
 		Query query = null;
 		try {
-
 			query = getEntityManager().createNamedQuery(name);
 			query.setParameter(param, value);
 		} catch (Exception e) {
@@ -356,8 +355,8 @@ public class GenericDao<K, E extends Domain<?>> extends JpaDaoSupport implements
 	        try{
 	        	/*EntityTransaction trx = getEntityManager().getTransaction();
 	        	trx.begin();*/
-	        ExMessage entity = new ExMessage();
-	        entity.setSequenceNo(1233);
+	        Message entity = new Message();
+	        entity.setSequenceNum(""+1233);
 	        getEntityManager().persist(entity);
 	       /* trx.commit();
 	        getEntityManager().flush();*/

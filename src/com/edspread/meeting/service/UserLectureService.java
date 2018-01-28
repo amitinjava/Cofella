@@ -54,8 +54,8 @@ public class UserLectureService {
 		}
 	}
 	@Transactional(rollbackFor = Exception.class)
-	public void updateLectureInDB(User user, String lectureTitle,String lectureDuration,int slides) throws MeetingException {
-		List<UserLectures> UserLecturesList = userLectureDao.findByUserAndTitle(lectureTitle, user.getId());
+	public void updateLectureInDB(Integer userId, String lectureTitle,String lectureDuration,int slides) throws MeetingException {
+		List<UserLectures> UserLecturesList = userLectureDao.findByUserAndTitle(lectureTitle, userId);
 		if(UserLecturesList!= null && UserLecturesList.size()>0){
 			UserLectures userLectures = UserLecturesList.get(0);
 			userLectures.setLectureDuration(lectureDuration);;

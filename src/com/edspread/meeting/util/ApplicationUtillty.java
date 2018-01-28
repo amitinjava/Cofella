@@ -2,6 +2,7 @@ package com.edspread.meeting.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -13,6 +14,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.FileUtils;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 
 
@@ -106,6 +111,44 @@ public class ApplicationUtillty {
 
 		return true;
 	}
+	public List<String> parsePageHeaderInfo(String urlStr) throws Exception {
+
+	    StringBuilder sb = new StringBuilder();
+	    Connection con = Jsoup.connect(urlStr);
+	    /* this browseragant thing is important to trick servers into sending us the LARGEST versions of the images */
+	    con.userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36");
+	    Document doc = con.get();
+	    List<String> data = new ArrayList<>();
+	    String text = null;
+	    Elements metaOgTitle = doc.select("meta[property=og:title]");
+	    if (metaOgTitle!=null) {
+	        text = metaOgTitle.attr("content");
+	    }
+	    else {
+	        text = doc.title();
+	    }
+
+	    String imageUrl = null;
+	    Elements metaOgImage = doc.select("meta[property=og:image]");
+	    if (metaOgImage!=null) {
+	        imageUrl = metaOgImage.attr("content");
+	    }
+
+	   /* if (imageUrl!=null) {
+	        sb.append("<img src='");
+	        sb.append(imageUrl);
+	        sb.append("' align='left' hspace='12' vspace='12' width='150px'>");
+	    }
+
+	    if (text!=null) {
+	        sb.append(text);
+	    }*/
+        data.add(text);
+        data.add(imageUrl);
+	    return data;       
+	}
+	
+	
 	public EmailSettings getSettings() {
 		return settings;
 	}

@@ -67,4 +67,11 @@ public class SessionUtil
 	
 	}
 	
+	public static HttpServletRequest getHttpRequest()
+	{
+		ActionContext context = ActionContext.getContext();
+		HttpServletRequest request = (HttpServletRequest)context.get(StrutsStatics.HTTP_REQUEST);
+		return request;
+	}
+	
 }
